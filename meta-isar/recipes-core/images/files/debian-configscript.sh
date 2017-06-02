@@ -40,9 +40,13 @@ export LC_ALL=C LANGUAGE=C LANG=C
 /var/lib/dpkg/info/dash.preinst install
 
 # Configuring packages
-dpkg --configure -a
+# Note: Since qemu has problems running with multicore support, setting
+# execution to a single core is required!
+# Otherwise "uncaught target signal 11(Segmentation fault) - core dumped" message will appear
+# and segfaults the current running task.
+taskset 01 dpkg --configure -a
 mount proc -t proc /proc
-dpkg --configure -a
+taskset 01  dpkg --configure -a
 umount /proc
 
 echo "root:root" | chpasswd

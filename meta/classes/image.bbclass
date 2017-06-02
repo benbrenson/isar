@@ -20,7 +20,7 @@ do_populate() {
             sudo cp ${DEPLOY_DIR_DEB}/${p}_*.deb ${S}/deb
         done
 
-        sudo chroot ${S} /usr/bin/dpkg -i -R /deb
+        sudo chroot ${S} taskset 01 /usr/bin/dpkg -i -R /deb
 
         sudo rm -rf ${S}/deb
     fi

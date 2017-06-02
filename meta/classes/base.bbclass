@@ -18,36 +18,10 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
+inherit logging
+
 THISDIR = "${@os.path.dirname(d.getVar('FILE', True))}"
 
-die() {
-	bbfatal "$*"
-}
-
-bbnote() {
-	echo "NOTE:" "$*"
-}
-
-bbwarn() {
-	echo "WARNING:" "$*"
-}
-
-bbfatal() {
-	echo "FATAL:" "$*"
-	exit 1
-}
-
-bbdebug() {
-	test $# -ge 2 || {
-		echo "Usage: bbdebug level \"message\""
-		exit 1
-	}
-
-	test ${@bb.msg.debug_level['default']} -ge $1 && {
-		shift
-		echo "DEBUG:" $*
-	}
-}
 
 addtask showdata
 do_showdata[nostamp] = "1"

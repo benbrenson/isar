@@ -50,5 +50,8 @@ do_build() {
     sudo install -m 755 ${THISDIR}/files/build.sh ${BUILDCHROOT_DIR}
 
     # Configure root filesystem
+    sudo umount ${BUILDCHROOT_DIR}/dev || true
+    sudo mount --bind /dev ${BUILDCHROOT_DIR}/dev
     sudo chroot ${BUILDCHROOT_DIR} /configscript.sh
+    sudo umount ${BUILDCHROOT_DIR}/dev
 }
