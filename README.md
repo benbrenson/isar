@@ -1,11 +1,9 @@
-isar - Integration System for Automated Root filesystem generation
+# isar - Integration System for Automated Root filesystem generation
 
 Isar is a set of scripts for building software packages and repeatable
 generation of Debian-based root filesystems with customizations.
 
-# Download
-
-https://github.com/ilbers/isar/
+** Note: This repository was forked from https://github.com/ilbers/isar/ **
 
 # Build
 
@@ -41,13 +39,17 @@ Commercial support: info@ilbers.de
 # Release Information
 
 Built on:
-* Debian 8.2
+* Linux Mint 18.1
 
 Tested on:
 * QEMU 1.1.2+dfsg-6a+deb7u12
+* QEMU 1:2.5+dfsg-5+b1
 * Raspberry Pi 1 Model B rev 2
 
 # Credits
-
-* Developed by ilbers GmbH
-* Sponsored by Siemens AG
+* Original
+    * Developed by ilbers GmbH
+    * Sponsored by Siemens AG
+* Forked Verision
+    * Mixed Mode GmbH
+    * Sponsored by Siemens AG
