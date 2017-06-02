@@ -1,8 +1,0 @@
-all:
-  stage: build
-  script:
-    - ./scripts/ci_build.sh
-  artifacts:
-    paths:
-    - images/isar-image-base-qemuarm.ext4.img.gz
-    - images/isar-image-base.rpi-sdimg.gz
