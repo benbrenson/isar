@@ -51,4 +51,38 @@ python base_do_build () {
 	bb.note("Try running the 'listtasks' task against a .bb to see what tasks are defined.")
 }
 
+
+addtask cleanall
+python do_cleanall() {
+	import subprocess as shell
+
+	src_uri    = (d.getVar('SRC_URI', True) or "").split()
+	pf         = d.getVar('PF', True)
+	stampdir   = d.getVar('STAMPS_DIR', True)
+	extractdir = d.getVar('EXTRACTDIR', True)
+
+	# clean stamps
+	stamps = os.listdir(stampdir)
+	for stamp in stamps:
+		if pf in stamp:
+			os.remove(stampdir + '/' + stamp)
+
+	# clean workdir
+	for entry in os.scandir(extractdir):
+		if 'temp' not in entry.name:
+			shell.run(['sudo', 'rm', '-rf', entry.path])
+
+	# clean downloads
+	if len(src_uri) == 0:
+		return
+
+	try:
+		fetcher = bb.fetch2.Fetch(src_uri, d)
+		fetcher.clean()
+	except bb.fetch2.BBFetchException as e:
+		raise bb.build.FuncFailed(e)
+}
+do_cleanall[nostamp] = "1"
+
+
 EXPORT_FUNCTIONS do_clean do_mrproper do_build
