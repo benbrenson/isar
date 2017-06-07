@@ -13,7 +13,7 @@ PP = "/home/builder/${PN}"
 BUILDROOT = "${BUILDCHROOT_DIR}/${PP}"
 
 EXTRACTDIR="${BUILDROOT}"
-S ?= "${BUILDROOT}/${SRC_DIR}"
+S = "${BUILDROOT}/${SRC_DIR}"
 
 
 # Build package from sources using build script
