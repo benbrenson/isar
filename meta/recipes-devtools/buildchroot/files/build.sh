@@ -15,4 +15,4 @@ DEPS=`perl -ne 'next if /^#/; $p=(s/^Build-Depends:\s*/ / or (/^ / and $p)); s/,
 apt-get install $DEPS
 
 # Build the package
-dpkg-buildpackage
+dpkg-buildpackage -sn
