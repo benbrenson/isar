@@ -15,6 +15,13 @@ BUILDROOT = "${BUILDCHROOT_DIR}/${PP}"
 EXTRACTDIR="${BUILDROOT}"
 S = "${BUILDROOT}/${SRC_DIR}"
 
+python () {
+    s = d.getVar('S', True).rstrip('/')
+    extract_dir = d.getVar('EXTRACTDIR', True).rstrip('/')
+
+    if s == extract_dir:
+        bb.fatal('\nS equals EXTRACTDIR. Maybe SRC_DIR variable was not set.')
+}
 
 # Build package from sources using build script
 do_build() {
