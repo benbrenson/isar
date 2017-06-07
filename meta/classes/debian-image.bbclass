@@ -7,15 +7,15 @@
 
 DEPENDS += "${IMAGE_INSTALL}"
 
-WORKDIR ?= "${TMPDIR}/work/${PN}/${MACHINE}"
-S       ?= "${WORKDIR}/rootfs"
+WORKDIR = "${TMPDIR}/work/${PN}/${MACHINE}"
+S       = "${WORKDIR}/rootfs"
 
 
 KERNEL_IMAGE ?= ""
 INITRD_IMAGE ?= ""
 
 IMAGE_INSTALL ?= ""
-IMAGE_TYPES    ?= "ext4 sd-card tar.gz"
+IMAGE_TYPES   ?= "ext4 sd-card tar.gz"
 
 inherit image_types
 
