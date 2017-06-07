@@ -8,32 +8,8 @@
 # set this value to 2048 (2MiB alignment).
 IMAGE_ROOTFS_ALIGNMENT ?= "1"
 
-def imagetypes_getdepends(d):
-    def adddep(depstr, deps):
-        for i in (depstr or "").split():
-            if i not in deps:
-                deps.append(i)
-
-    deps = []
-    ctypes = d.getVar('COMPRESSIONTYPES', True).split()
-    for type in (d.getVar('IMAGE_FSTYPES', True) or "").split():
-        if type in ["vmdk", "vdi", "qcow2", "hdddirect", "live", "iso", "hddimg"]:
-            type = "ext4"
-        basetype = type
-        for ctype in ctypes:
-            if type.endswith("." + ctype):
-                basetype = type[:-len("." + ctype)]
-                adddep(d.getVar("COMPRESS_DEPENDS_%s" % ctype, True), deps)
-                break
-        for typedepends in (d.getVar("IMAGE_TYPEDEP_%s" % basetype, True) or "").split():
-            adddep(d.getVar('IMAGE_DEPENDS_%s' % typedepends, True) , deps)
-        adddep(d.getVar('IMAGE_DEPENDS_%s' % basetype, True) , deps)
-
-    depstr = ""
-    for dep in deps:
-        depstr += " " + dep + ":do_populate_sysroot"
-    return depstr
-
+IMAGE_ROOTFS = "${S}"
+IMAGE_FILE = "${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.rootfs.$fstype"
 
 XZ_COMPRESSION_LEVEL ?= "-e -6"
 XZ_INTEGRITY_CHECK ?= "crc32"
@@ -44,7 +20,19 @@ IMAGE_CMD_jffs2 = "mkfs.jffs2 --root=${IMAGE_ROOTFS} --faketime --output=${DEPLO
 
 IMAGE_CMD_cramfs = "mkfs.cramfs ${IMAGE_ROOTFS} ${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.rootfs.cramfs ${EXTRA_IMAGECMD}"
 
-oe_mkext234fs () {
+
+
+do_images(){
+    ROOTFS_SIZE=`sudo du -sm ${S} |  awk '{print $1 + ${ROOTFS_EXTRA};}'`
+
+}
+addtask images before do_build after do_populate
+
+
+# Args:
+# $1: fstype
+# $2: Rootfs source location for partition
+mkext34fs () {
 	fstype=$1
 	extra_imagecmd=""
 
@@ -63,12 +51,17 @@ oe_mkext234fs () {
 	fi
 	# Create a sparse image block
 	dd if=/dev/zero of=${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.rootfs.$fstype seek=$ROOTFS_SIZE count=$COUNT bs=1024
-	mkfs.$fstype -F $extra_imagecmd ${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.rootfs.$fstype -d ${IMAGE_ROOTFS}
+    sudo mkfs.${1} -F ${IMAGE_FILE}
+
+	mkdir -p ${WORKDIR}/mnt/${2}
+    sudo mount -o loop ${IMAGE_FILE} ${WORKDIR}/mnt/${2}
+    sudo cp -r ${S}/${2}/* ${WORKDIR}/mnt/${2}
+    sudo umount ${WORKDIR}/mnt/${2}
+    rm -r ${WORKDIR}/mnt/${2}
 }
 
-IMAGE_CMD_ext2 = "oe_mkext234fs ext2 ${EXTRA_IMAGECMD}"
-IMAGE_CMD_ext3 = "oe_mkext234fs ext3 ${EXTRA_IMAGECMD}"
-IMAGE_CMD_ext4 = "oe_mkext234fs ext4 ${EXTRA_IMAGECMD}"
+IMAGE_CMD_ext3 = "mkext34fs ext3 ${SRC} ${EXTRA_IMAGECMD}"
+IMAGE_CMD_ext4 = "mkext34fs ext4 ${SRC} ${EXTRA_IMAGECMD}"
 
 MIN_BTRFS_SIZE ?= "16384"
 IMAGE_CMD_btrfs () {
@@ -174,22 +167,7 @@ IMAGE_CMD_ubi () {
 
 IMAGE_CMD_ubifs = "mkfs.ubifs -r ${IMAGE_ROOTFS} -o ${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.rootfs.ubifs ${MKUBIFS_ARGS}"
 
-IMAGE_CMD_wic () {
-	out=${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}
-	wks=${FILE_DIRNAME}/${IMAGE_BASENAME}.${MACHINE}.wks
-	[ -e $wks ] || wks=${FILE_DIRNAME}/${IMAGE_BASENAME}.wks
-	[ -e $wks ] || bbfatal "Kiskstart file $wks doesn't exist"
-	BUILDDIR=${TOPDIR} wic create $wks --vars ${STAGING_DIR_TARGET}/imgdata/ -e ${IMAGE_BASENAME} -o $out/
-	mv $out/build/${IMAGE_BASENAME}*.direct $out.rootfs.wic
-	rm -rf $out/
-}
-
 EXTRA_IMAGECMD = ""
-
-inherit siteinfo
-JFFS2_ENDIANNESS ?= "${@base_conditional('SITEINFO_ENDIANNESS', 'le', '-l', '-b', d)}"
-JFFS2_ERASEBLOCK ?= "0x40000"
-EXTRA_IMAGECMD_jffs2 ?= "--pad ${JFFS2_ENDIANNESS} --eraseblock=${JFFS2_ERASEBLOCK} --no-cleanmarkers"
 
 # Change these if you want default mkfs behavior (i.e. create minimal inode number)
 EXTRA_IMAGECMD_ext2 ?= "-i 4096"
@@ -197,22 +175,6 @@ EXTRA_IMAGECMD_ext3 ?= "-i 4096"
 EXTRA_IMAGECMD_ext4 ?= "-i 4096"
 EXTRA_IMAGECMD_btrfs ?= ""
 EXTRA_IMAGECMD_elf ?= ""
-
-IMAGE_DEPENDS = ""
-IMAGE_DEPENDS_jffs2 = "mtd-utils-native"
-IMAGE_DEPENDS_cramfs = "util-linux-native"
-IMAGE_DEPENDS_ext2 = "e2fsprogs-native"
-IMAGE_DEPENDS_ext3 = "e2fsprogs-native"
-IMAGE_DEPENDS_ext4 = "e2fsprogs-native"
-IMAGE_DEPENDS_btrfs = "btrfs-tools-native"
-IMAGE_DEPENDS_squashfs = "squashfs-tools-native"
-IMAGE_DEPENDS_squashfs-xz = "squashfs-tools-native"
-IMAGE_DEPENDS_squashfs-lzo = "squashfs-tools-native"
-IMAGE_DEPENDS_elf = "virtual/kernel mkelfimage-native"
-IMAGE_DEPENDS_ubi = "mtd-utils-native"
-IMAGE_DEPENDS_ubifs = "mtd-utils-native"
-IMAGE_DEPENDS_multiubi = "mtd-utils-native"
-IMAGE_DEPENDS_wic = "parted-native"
 
 # This variable is available to request which values are suitable for IMAGE_FSTYPES
 IMAGE_TYPES = " \
@@ -261,7 +223,3 @@ IMAGE_EXTENSION_live = "hddimg iso"
 # The IMAGE_TYPES_MASKED variable will be used to mask out from the IMAGE_FSTYPES,
 # images that will not be built at do_rootfs time: vmdk, vdi, qcow2, hdddirect, hddimg, iso, etc.
 IMAGE_TYPES_MASKED ?= ""
-
-# The WICVARS variable is used to define list of bitbake variables used in wic code
-# variables from this list is written to <image>.env file
-WICVARS ?= "BBLAYERS DEPLOY_DIR_IMAGE HDDDIR IMAGE_BASENAME IMAGE_BOOT_FILES IMAGE_LINK_NAME IMAGE_ROOTFS INITRAMFS_FSTYPES INITRD ISODIR MACHINE_ARCH ROOTFS_SIZE STAGING_DATADIR STAGING_DIR_NATIVE STAGING_LIBDIR TARGET_SYS"

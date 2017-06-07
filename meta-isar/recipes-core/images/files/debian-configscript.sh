@@ -44,9 +44,11 @@ export LC_ALL=C LANGUAGE=C LANG=C
 # execution to a single core is required!
 # Otherwise "uncaught target signal 11(Segmentation fault) - core dumped" message will appear
 # and segfaults the current running task.
-taskset 01 dpkg --configure -a
+echo "running dpkg -a"
+dpkg --configure -a
 mount proc -t proc /proc
-taskset 01  dpkg --configure -a
+echo "running dpkg -a"
+dpkg --configure -a
 umount /proc
 
 echo "root:root" | chpasswd
