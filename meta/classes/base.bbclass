@@ -68,9 +68,10 @@ python do_cleanall() {
 			os.remove(stampdir + '/' + stamp)
 
 	# clean workdir
-	for entry in os.scandir(extractdir):
-		if 'temp' not in entry.name:
-			shell.run(['sudo', 'rm', '-rf', entry.path])
+	for entry in os.listdir(extractdir):
+		if 'temp' not in entry:
+			abspath = extractdir + '/' + entry
+			shell.call(['sudo', 'rm', '-rf', abspath])
 
 	# clean downloads
 	if len(src_uri) == 0:
@@ -100,9 +101,10 @@ python do_clean() {
 			os.remove(stampdir + '/' + stamp)
 
 	# clean workdir
-	for entry in os.scandir(extractdir):
-		if 'temp' not in entry.name:
-			shell.run(['sudo', 'rm', '-rf', entry.path])
+	for entry in os.listdir(extractdir):
+		if 'temp' not in entry:
+			abspath = extractdir + '/' + entry
+			shell.call(['sudo', 'rm', '-rf', abspath])
 }
 do_clean[nostamp] = "1"
 
