@@ -365,7 +365,12 @@ def exec_func_shell(func, d, runfile, cwd=None):
             if not os.path.isdir(d.expand(chrootdir)):
                 bb.fatal('\nTry to run a chroot function, but chrootdir ({0}) is not existent. \nPlease set a correct chrootdir flag.'\
                           .format(chrootdir))
-            script.write('chroot {0} /bin/bash -c "{1}"\n'.format(d.expand(chrootdir), func))
+            chroot_cmd = d.getVar('CHROOT', True)
+
+            if not chroot_cmd:
+                bb.fatal('\n Try to run chroot function, but no CHROOT set.')
+
+            script.write('{0} {1} /bin/bash -c "{2}"\n'.format(chroot_cmd, d.expand(chrootdir), func))
         else:
             script.write("%s\n" % func)
 
