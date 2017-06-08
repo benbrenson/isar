@@ -319,7 +319,7 @@ def exec_func_python(func, d, runfile, cwd=None, pythonexception=False):
                 bb.warn("%s: Cannot restore cwd %s: %s" % (func, olddir, e))
 
 def shell_trap_code():
-    return '''#!/bin/sh\n
+    return '''#!/bin/bash\n
 # Emit a useful diagnostic if something fails:
 bb_exit_handler() {
     ret=$?
@@ -347,6 +347,10 @@ def exec_func_shell(func, d, runfile, cwd=None):
     # Don't let the emitted shell script override PWD
     d.delVarFlag('PWD', 'export')
 
+    flags  = d.getVarFlags(func)
+    chroot = flags.get('chroot')
+    chrootdir = flags.get('chrootdir')
+
     with open(runfile, 'w') as script:
         script.write(shell_trap_code())
 
@@ -356,7 +360,15 @@ def exec_func_shell(func, d, runfile, cwd=None):
             script.write("set -x\n")
         if cwd:
             script.write("cd '%s'\n" % cwd)
-        script.write("%s\n" % func)
+
+        if chroot and chrootdir:
+            if not os.path.isdir(d.expand(chrootdir)):
+                bb.fatal('\nTry to run a chroot function, but chrootdir ({0}) is not existent. \nPlease set a correct chrootdir flag.'\
+                          .format(chrootdir))
+            script.write('chroot {0} /bin/bash -c "{1}"\n'.format(d.expand(chrootdir), func))
+        else:
+            script.write("%s\n" % func)
+
         script.write('''
 # cleanup
 ret=$?
@@ -371,6 +383,12 @@ exit $ret
         fakerootcmd = d.getVar('FAKEROOT', True)
         if fakerootcmd:
             cmd = [fakerootcmd, runfile]
+
+    if chroot and chrootdir:
+        sudocmd = d.getVar('SUDO', True)
+        if sudocmd:
+            cmd = sudocmd.split()
+            cmd.append(runfile)
 
     if bb.msg.loggerDefaultVerbose:
         logfile = LogTee(logger, sys.stdout)

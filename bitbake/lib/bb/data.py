@@ -276,6 +276,7 @@ def emit_func(func, o=sys.__stdout__, d = init()):
 
     o.write('\n')
     emit_var(func, o, d, False) and o.write('\n')
+    o.write('export -f {0}\n'.format(func))
     newdeps = bb.codeparser.ShellParser(func, logger).parse_shell(d.getVar(func, True))
     newdeps |= set((d.getVarFlag(func, "vardeps", True) or "").split())
     seen = set()
@@ -286,6 +287,7 @@ def emit_func(func, o=sys.__stdout__, d = init()):
         for dep in deps:
             if d.getVarFlag(dep, "func", False) and not d.getVarFlag(dep, "python", False):
                emit_var(dep, o, d, False) and o.write('\n')
+               o.write('export -f {0}\n'.format(dep))
                newdeps |=  bb.codeparser.ShellParser(dep, logger).parse_shell(d.getVar(dep, True))
                newdeps |= set((d.getVarFlag(dep, "vardeps", True) or "").split())
         newdeps -= seen
