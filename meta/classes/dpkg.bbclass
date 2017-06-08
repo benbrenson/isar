@@ -9,7 +9,6 @@ do_unpack[deptask] = "do_build"
 
 # Each package should have its own unique build folder, so use
 # recipe name as identifier
-PP = "/home/builder/${PN}"
 BUILDROOT = "${BUILDCHROOT_DIR}/${PP}"
 
 EXTRACTDIR="${BUILDROOT}"

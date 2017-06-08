@@ -182,7 +182,7 @@ class LogTee(object):
 
 #
 # pythonexception allows the python exceptions generated to be raised
-# as the real exceptions (not FuncFailed) and without a backtrace at the 
+# as the real exceptions (not FuncFailed) and without a backtrace at the
 # origin of the failure.
 #
 def exec_func(func, d, dirs = None, pythonexception=False):
