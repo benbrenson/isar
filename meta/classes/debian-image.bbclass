@@ -19,8 +19,6 @@ IMAGE_TYPES   ?= "ext4 sd-card tar.gz"
 
 inherit image_types
 
-do_populate[stamp-extra-info] = "${MACHINE}"
-
 # Install Debian packages, that were built from sources
 do_populate() {
     if [ -n "${IMAGE_INSTALL}" ]; then
@@ -36,8 +34,9 @@ do_populate() {
     fi
 }
 addtask populate before do_build
+do_populate[stamp-extra-info] = "${MACHINE}"
 do_populate[deptask] = "do_install"
-
+do_populate[depends] = "schroot:do_setup_schroot"
 
 do_rootfs() {
     # Copy config file
@@ -64,5 +63,5 @@ do_rootfs() {
     sudo chroot ${S} /configscript.sh ${MACHINE_SERIAL}
     sudo rm ${S}/configscript.sh
 }
-do_rootfs[stamp-extra-info] = "${MACHINE}"
 addtask rootfs before do_populate
+do_rootfs[stamp-extra-info] = "${MACHINE}"

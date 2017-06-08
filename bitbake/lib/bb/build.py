@@ -370,7 +370,7 @@ def exec_func_shell(func, d, runfile, cwd=None):
             if not chroot_cmd:
                 bb.fatal('\n Try to run chroot function, but no CHROOT set.')
 
-            script.write('{0} {1} /bin/bash -c "{2}"\n'.format(chroot_cmd, d.expand(chrootdir), func))
+            script.write('{0} -- /bin/bash -c "{1}"\n'.format(chroot_cmd, func))
         else:
             script.write("%s\n" % func)
 

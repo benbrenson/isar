@@ -5,6 +5,9 @@
 
 DESCRIPTION = "Multistrap development filesystem"
 
+DEPENDS += "schroot"
+do_build[deptask]="do_build"
+
 LICENSE = "gpl-2.0"
 LIC_FILES_CHKSUM = "file://${LAYERDIR_isar}/licenses/COPYING.GPLv2;md5=751419260aa954499f7abaabaa882bbe"
 
