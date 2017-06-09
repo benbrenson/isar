@@ -53,7 +53,7 @@ python do_test_vars () {
     test_var(d, 'DEB_EMAIL')
     test_var(d, 'DEB_FULLNAME')
 }
-addtask do_test_vars after do_unpack before do_build
+addtask do_test_vars after do_unpack before do_generate_debcontrol
 do_test_vars[stamp-extra-info] = "${DISTRO}"
 
 CONTROL="${EXTRACTDIR}/debian/control"
@@ -70,7 +70,7 @@ do_generate_debcontrol() {
     sed -i -e 's/##DEPENDS##/${DEB_DEPENDS}/g'       ${CONTROL}
     sed -i -e 's/##VERSION##/${DEB_VERSION}/g'       ${CONTROL}
 }
-addtask do_generate_debcontrol after do_test_vars before do_build
+addtask do_generate_debcontrol after do_test_vars before do_dh_make
 do_generate_debcontrol[stamp-extra-info] = "${DISTRO}"
 
 do_dh_make(){
