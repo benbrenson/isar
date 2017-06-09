@@ -3,7 +3,7 @@ inherit cross-compile
 # Build package from sources
 do_build() {
     cd ${S}
-    dpkg-buildpackage ${DEB_SIGN} -pgpg -sn --host-arch=${DEB_ARCH}
+    dpkg-buildpackage ${DEB_SIGN} -pgpg -sn --host-arch=${DEB_ARCH} -Z${DEB_COMPRESSION}
 }
 do_build[stamp-extra-info] = "${DISTRO}"
 
