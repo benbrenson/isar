@@ -13,7 +13,7 @@ PV = "1.0"
 
 inherit debian-image
 
-IMAGE_NAME = "${PN}-${PV}-${MACHINE}-${DEB_ARCH}"
+IMAGE_NAME = "${PN}-${PV}-${MACHINE}-${DISTRO_ARCH}"
 
 IMAGE_PREINSTALL += "apt \
                      dbus"

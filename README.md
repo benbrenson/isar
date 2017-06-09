@@ -24,32 +24,26 @@ section "WRITING AN IMAGE TO THE SD CARD":
 
 # Support
 
-Mailing lists:
+This version of isar has no support yet, because for now it is under heavy development.
 
-* Using Isar: https://groups.google.com/d/forum/isar-users
-  * Subscribe: isar-users+subscribe@googlegroups.com
-  * Unsubscribe: isar-users+unsubscribe@googlegroups.com
-
-* Collaboration: https://lists.debian.org/debian-embedded/
-  * Subscribe: debian-embedded-request@lists.debian.org, Subject: subscribe
-  * Unsubscribe: debian-embedded-request@lists.debian.org, Subject: unsubscribe
-
-Commercial support: info@ilbers.de
 
 # Release Information
 
 Built on:
 * Linux Mint 18.1
+* Debian 8.2
 
 Tested on:
-* QEMU 1.1.2+dfsg-6a+deb7u12
-* QEMU 1:2.5+dfsg-5+b1
-* Raspberry Pi 1 Model B rev 2
+* No target board tests, yet.
+
+**Note:** qemu-user-static has irregular problems while running multithreaded tasks.
+These problems did not appear with qemu-user-static (=2.8).
+
 
 # Credits
 * Original
     * Developed by ilbers GmbH
     * Sponsored by Siemens AG
-* Forked Verision
+* Forked Version
     * Mixed Mode GmbH
     * Sponsored by Siemens AG

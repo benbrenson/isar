@@ -14,7 +14,10 @@
  - [Add a New Machine](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#add-a-new-machine)
  - [Add a New Image](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#add-a-new-image)
  - [Add a New Image Type](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#add-a-new-image-type)
- - [Add a Custom Application](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#add-a-custom-application)
+ - [Add a Custom Application (debian compatible)](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#add-a-custom-application-(debian-compatible))
+ - [Add a Custom Application (not debian compatible)](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#add-a-custom-application-(not-debian-compatible))
+ - [Running chrooted tasks natively](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#running-chrooted-tasks-natively)
+
 
 ## Introduction
 
@@ -66,32 +69,47 @@ In the editor, allow the current user to run sudo without a password, e.g.:
 ```
 Replace `<user>` with your user name. Use the tab character between the user name and parameters.
 
-### Check out Isar
+### Check out Isar and required meta-layers
 
-Clone the isar repository:
 ```
-$ git clone http://github.com/ilbers/isar.git
+BUILDDIR="build-relase"
+mkdir ebs-isar
+cd ebs-isar
+
+mkdir sources
+mkdir $BUILDDIR
+
+git clone https://git.pixel-group.de/bennie/Siemens_CT_REE_build-config.git $BUILDDIR
+git clone https://git.pixel-group.de/bennie/Siemens_CT_REE_isar.git sources/isar
+cd sources/isar
+git checkout siemens
+cd -
+git clone https://git.pixel-group.de/bennie/Siemens_CT_REE-meta-siemens.git sources/meta-siemens
+git clone https://@git.pixel-group.de/bennie/Siemens_CT_REE-meta-sunxi.git sources/meta-sunxi
 ```
+
 
 ### Initialize the Build Directory
-
-To initialize the `isar` build directory run the following commands:
+The main parts of setting up the build directory where already done at the last step.
+Now the following have to be done:
 ```
- $ cd isar
- $ . isar-init-build-env ../build
+$ BUILDDIR="build-relase"
+$ cd ebs-isar
+$ cp $BUILDDIR/setup-environment .
+$ source setup-environment $BUILDDIR
 ```
-`../build` is the build directory. You may use a different name here.
 
 ### Build Images
 
-The following command will produce `isar-image-base` images for both machines:
+The following command will produce `isar-image-base` image:
 ```
-$ bitbake multiconfig:qemuarm:isar-image-base multiconfig:rpi:isar-image-base
+$ bitbake multiconfig:nanopi:isar-image-base
 ```
+**Note:** For now only nanopi images are possible to build.
+
 Created images are:
 ```
-tmp/deploy/images/isar-image-base-qemuarm.ext4.img
-tmp/deploy/images/isar-image-base.rpi-sdimg
+NONE
 ```
 To build just for one target, pass only its name to `bitbake`.
 
@@ -124,7 +142,7 @@ BitBake is a generic task execution engine for efficient execution of shell and 
 ## How Isar Works
 
 Isar workflow consists of stages described below.
- 
+
 ### Generation of  Buildchroot Filesystem
 
 This filesystem is used as a build environment to compile custom packages. It is generated using `apt` binaries repository, selected by the user in configuration file. Please refer to distro configuration chapter for more information.
@@ -151,12 +169,16 @@ Isar can generate various image types, e.g. an ext4 filesystem or a complete SD 
 Isar uses the following configuration files:
  - conf/local.conf
  - conf/bblayers.conf
- 
-`local.conf` defines the boards (machines) to generate images for. `bitbake` includes the respective configuration files for the chosen machines:
- - conf/multiconfig/${MACHINE}.conf
+ - conf/bitbake.conf
+ - conf/multiconfig/<board>.conf
 
-The machine config file defines which distro has to be used for the current machine. `bitbake` includes the respective distro configuration file:
- - conf/distro/${DISTRO}.conf
+`local.conf` defines some default variable values (e.g. for ${MACHINE} and ${DISTRO}). It also contains global definitions for bitbake.
+
+
+`bitbake.conf` defines global definitions for bitbake.
+
+`<board>.conf` defines the ${MACHINE} and ${DISTRO} variable values and overwrites these values in local.conf. The config file is loaded after specifying it with bitbake multiconfig:board:<target>.
+
 
 ### bblayers.conf
 
@@ -171,6 +193,11 @@ This file contains variables that will be exported to `bitbake` environment and 
  - `BBMULTICONFIG` - The list of the machines to include the respective configuration files. If this option is omitted, user has to manually define the pair `MACHINE`/`DISTRO` for specific target.
  - `IMAGE_INSTALL` - The list of custom packages to build and install to target image, please refer to relative chapter for more information.
  - `BB_NUMBER_THREADS` - The number of `bitbake` jobs that can be run in parallel. Please set this option according your host CPU cores number.
+
+### bitbake.conf
+
+This file contains the global definitions for all bitbake recipes and classes. This file also includes the `conf/distro/${DISTRO}.conf` and `conf/machine/${MACHINE}.conf` files located in respective layer directories.
+
 
 ---
 
@@ -189,9 +216,11 @@ DISTRO = "distro-name"
 
 ## Custom Package Compilation
 
-Isar provides possibility to compile and install custom packages. The current version supports only building `deb` packages using `dpkg-buildpackage`, so the sources should contain the `debian` directory with necessary meta information. To add new package to image, it needs the following:
+Isar provides possibility to compile and install custom packages. The current version supports building `deb` packages using `dpkg-buildpackage`, so the sources should contain the `debian` directory with necessary meta information. It is also possible to provide a debian directory with a `control` and `rules` file, at the recipes folder.
+
+To add new package to image, it needs the following:
  - Create package recipe and put it in your `isar` layer.
- - Append `IMAGE_INSTALL` variable by this recipe name. If this package should be included for all the machines, put `IMAGE_INSTALL` to `local.conf` file. If you want to include this package for specific machine, put it to your machine configuration file.
+ - Append `IMAGE_INSTALL` variable by this recipe name. If this package should be included for all the machines, put `IMAGE_INSTALL` to `local.conf` file. If you want to include this package for specific machine, put it to your distro configuration file.
 
 Please refer to `add custom application` section for more information about writing recipes.
 
@@ -202,7 +231,7 @@ Please refer to `add custom application` section for more information about writ
 Isar can generate various images types for specific machine. The `IMAGE_TYPE` variable contains the list of image types to generate. Currently, the following image types are provided:
  - `ext4` - Raw ext4 filesystem image (default option for `qemuarm` machine).
  - `rpi-sdimg` - A complete, partitioned Raspberry Pi SD card image (default option for the `rpi` machine).
- 
+
 ---
 
 ## Add a New Distro
@@ -213,6 +242,7 @@ The distro is defined by the set of the following variables:
  - `DISTRO_COMPONENTS` - Repository components like main, contrib, non-free etc.
  - `DISTRO_APT_SOURCE` - Repository URL.
  - `DISTRO_CONFIG_SCRIPT` - Target filesystem finalization script. This script is called after `multistrap` has unpacked the base system packages. It is designed to finalize filesystem, for example to add `fstab` according to machine hardware configuration. The script should be placed to `files` folder in image recipe folder.
+ - `IMAGE_PREINSTALL` - The list of distro-specific packages, that has to be included to image.
 
 Below is an example for Raspbian stable:
 ```
@@ -236,31 +266,43 @@ To add new distro, user should perform the following steps:
     debian-wheezy
     debian-jessie
     ```
-
+ - This file must have the same name as set in ${DISTRO} defined in the conf/multiconfig/*.conf file.
  - In this file, define the variables described above.
+ - The distro configuration file should only contain distribution specific definitions, which in turn means only including software packages for the rootfs.
+ - Do not include board dependent things within this file, except ${DISTRO_ARCH}.
 
 ---
 
 ## Add a New Machine
 
 Every machine is described in its configuration file. The file defines the following variables:
- - `IMAGE_PREINSTALL` - The list of machine-specific packages, that has to be included to image. This variable must include the name of the following packages (if applicable):
-   - Linux kernel.
-   - U-Boot or other boot loader.
-   - Machine-specific firmware.
- - `KERNEL_IMAGE` - The name of kernel binary that it installed to `/boot` folder in target filesystem. This variable is used by Isar to extract the kernel binary and put it into the deploy folder. This makes sense for embedded devices, where kernel and root filesystem are written to different flash partitions. This variable is optional.
+ - `KIMAGE_TYPE` - The name of kernel binary that it installed to `/boot` folder in target filesystem. This variable is used by isar for determing which
+ image type has to be compiled by the kernel.
  - `INITRD_IMAGE` - The name of `ramdisk` binary. The meaning of this variable is similar to `KERNEL_IMAGE`. This variable is optional.
  - `MACHINE_SERIAL` - The name of serial device that will be used for console output.
  - `IMAGE_TYPE` - The type of images to be generated for this machine.
-
-Below is an example of machine configuration file for `Raspberry Pi` board:
+ - `DTBS` - The primary device tree file. Isar will install this device tree to the location specified with ${DTB_INSTALL_DIR}.
+ - `DTBOS` - Device tree overlay files. The kernel has to be capable of compiling device tree overlays.
+ - `BOOT_IMG` - The name of the uboot image. Isar will also build a complete debian package for uboot.
+ - `UIMAGE_LOADADDR` - The uImage loadaddress. Only required if ${KIMAGE_TYPE} is uImage.
+ - `TARGET_ARCH` - The target architecture required by different buildsystems (e.g. Kconfig). Please do not set a debian specific architecture type here.
+Below is an example of machine configuration file for `NanoPi-Neo` board:
 ```
-IMAGE_PREINSTALL = "linux-image-rpi-rpfv \
-                    raspberrypi-bootloader-nokernel"
-KERNEL_IMAGE = "vmlinuz-4.4.0-1-rpi"
-INITRD_IMAGE = "initrd.img-4.4.0-1-rpi"
-MACHINE_SERIAL = "ttyAMA0"
+KIMAGE_TYPE="uImage"
+KERNEL_CMDLINE="bootargs=console=ttyS0,115200 console=tty1 root=/dev/mmcblk0p2 rw rootwait panic=10"
+
+UIMAGE_LOADADDR="0x40008000"
+DTBS="sun8i-h3-nanopi-neo.dtb"
+DTBOS="sun8i-h3-i2c0.dtbo \
+          sun8i-h3-i2c1.dtbo \
+          sun8i-h3-i2c2.dtbo \
+          sun8i-h3-spi-mcp2515.dtbo \
+          sun8i-h3-sc16is760.dtbo \
+         "
+BOOT_IMG = "u-boot-sunxi-with-spl.bin"
+MACHINE_SERIAL = "ttyS0"
 IMAGE_TYPE = "rpi-sdimg"
+TARGET_ARCH="arm"
 ```
 
 To add new machine user should perform the following steps:
@@ -272,6 +314,7 @@ To add new machine user should perform the following steps:
 
  - Create `.conf` file in machine folder with the name of your machine.
  - Define in this file variables, that described above in this chapter.
+ - The machine configuration file should only define machine specific variables, which in turn means describing hardware dependent properties like kernel, bootloader, firmware packages.
 
 ---
 
@@ -327,13 +370,41 @@ Isar contains two image type classes that can be used as reference:
 
 ---
 
-## Add a Custom Application
+## Add a Custom Application (debian compatible)
+The isar buildsystem is capable of compiling software (cross compiling **and** qemu emulated native compiling) and creating debian compatible packages.
+
+The main steps for creating custom applications is as follows:
+
+* Download the software
+* Debianize the software package
+* Compile the software (cross or native) and create a debian package
+* Install the debian package into the debian deploy folder
 
 Before creating new recipe it's highly recommended to take a look into the BitBake user manual mentioned in Terms and Definitions section.
 
-Current Isar version supports building packages in Debian format only. The package must contain the `debian` directory with the necessary metadata.
+Current Isar version supports building packages in Debian format only. The package must contain the `debian` directory with the necessary metadata.If the package is not debian compatible, it has to be debianized first. Please refer to Add a Custom Application (not debian compatible) section for more information.
 
-A typical Isar recipe looks like this:
+### Cross compilation
+A typical Isar recipe for debian compatible software looks like this:
+
+```
+DESCRIPTION = "Sample application for ISAR"
+
+LICENSE = "gpl-2.0"
+LIC_FILES_CHKSUM = "file://${LAYERDIR_isar}/licenses/COPYING.GPLv2;md5=751419260aa954499f7abaabaa882bbe"
+
+PV = "1.0"
+
+SRC_URI = "git://github.com/ilbers/hello.git"
+SRCREV = "ad7065ecc4840cc436bfcdac427386dbba4ea719"
+
+SRC_DIR = "git"
+
+inherit dpkg-cross
+```
+
+### Native compilation
+A typical Isar recipe for debian compatible software looks like this:
 
 ```
 DESCRIPTION = "Sample application for ISAR"
@@ -351,10 +422,10 @@ SRC_DIR = "git"
 inherit dpkg
 ```
 
-The following variables are used in this recipe:
+The following variables are used in the recipes:
  - `DESCRIPTION` - Textual description of the package.
  - `LICENSE` - Application license file.
- - `LIC_FILES_CHKSUM` - Reference to the license file with its checksum. Isar recommends to store license files for your applications into layer your layer folder `meta-user/licenses/`. Then you may reference it in recipe using the following path:
+ - `LIC_FILES_CHKSUM` - Reference to the license file with its checksum. Isar recommends to store license files for your applications into your layer folder `meta-user/licenses/`. Then you may reference it in recipe using the following path:
 
     ```
     LIC_FILES_CHKSUM = file://${LAYERDIR_isar}/licenses/...
@@ -367,3 +438,6 @@ This approach prevents duplication of the license files in different packages.
 
 The last line in the example above adds recipe to the Isar work chain.
 
+## Add a Custom Application (not debian compatible)
+
+## Running chrooted tasks natively
