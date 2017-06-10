@@ -10,9 +10,10 @@ do_unpack[deptask] = "do_build"
 # Each package should have its own unique build folder, so use
 # recipe name as identifier
 BUILDROOT = "${BUILDCHROOT_DIR}/${PP}"
-
 EXTRACTDIR="${BUILDROOT}"
 S = "${BUILDROOT}/${SRC_DIR}"
+
+SCHROOT_ID = "${BUILDCHROOT_ID}"
 
 python () {
     s = d.getVar('S', True).rstrip('/')
@@ -22,12 +23,24 @@ python () {
         bb.fatal('\nS equals EXTRACTDIR. Maybe SRC_DIR variable was not set.')
 }
 
-# Build package from sources using build script
+
+# Get list of dependencies manually. The package is not in apt, so no apt-get
+# build-dep. dpkg-checkbuilddeps output contains version information and isn't
+# directly suitable for apt-get install.
+#DEPS=`perl -ne 'next if /^#/; $p=(s/^Build-Depends:\s*/ / or (/^ / and $p)); s/,|\n|\([^)]+\)//mg; print if $p' < debian/control`
+
+# Install deps
+#apt-get install $DEPS
+
+# Build package from sources within chroot
+do_build[chroot] = "1"
+do_build[chrootdir] = "${BUILDCHROOT_DIR}"
 do_build() {
-    sudo chroot ${BUILDCHROOT_DIR} /build.sh ${PP}/${SRC_DIR}
+    cd ${PPS}
+    dpkg-buildpackage ${DEB_SIGN} -pgpg -sn -Z${DEB_COMPRESSION}
 }
 
-do_install[stamp-extra-info] = "${MACHINE}"
+do_install[stamp-extra-info] = "${MACHINE}.chroot"
 
 # Install package to dedicated deploy directory
 do_install() {

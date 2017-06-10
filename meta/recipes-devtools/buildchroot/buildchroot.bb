@@ -49,11 +49,6 @@ do_build() {
     # Create root filesystem
     sudo multistrap -a ${DISTRO_ARCH} -d "${BUILDCHROOT_DIR}" -f "${WORKDIR}/multistrap.conf" || true
 
-    # Install package builder script
-    install -m 755 ${THISDIR}/files/build.sh.in ${WORKDIR}
-    sed ${WORKDIR}/build.sh.in -e 's|##DEB_SIGN##|${DEB_SIGN}|g' > ${WORKDIR}/build.sh
-    sudo install -m 755 ${WORKDIR}/build.sh ${BUILDCHROOT_DIR}
-
     # Configure root filesystem
     sudo chroot ${BUILDCHROOT_DIR} /configscript.sh
 }
