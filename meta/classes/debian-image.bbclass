@@ -13,7 +13,9 @@ KERNEL_IMAGE ?= ""
 INITRD_IMAGE ?= ""
 
 IMAGE_INSTALL ?= ""
-IMAGE_TYPES   ?= "ext4 sd-card tar.gz"
+IMAGE_TYPES   ?= "ext4 sdcard tar.gz"
+
+SCHROOT_ID = "${ROOTFS_ID}"
 
 inherit image_types
 
@@ -35,6 +37,18 @@ addtask populate before do_build
 do_populate[stamp-extra-info] = "${MACHINE}"
 do_populate[deptask] = "do_install"
 do_populate[depends] = "schroot:do_setup_schroot"
+
+
+
+do_post_rootfs(){
+    bbwarn "do_post_rootfs() no function provided, yet."
+}
+addtask do_post_rootfs after do_populate before do_build
+do_post_rootfs[stamp-extra-info] = "${MACHINE}.chroot"
+do_post_rootfs[chroot] = "1"
+do_post_rootfs[chrootdir] = "${S}"
+
+
 
 do_rootfs() {
     # Copy config file
