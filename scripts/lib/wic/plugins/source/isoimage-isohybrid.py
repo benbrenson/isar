@@ -361,7 +361,7 @@ class IsoImagePlugin(SourcePlugin):
                     grub_cmd += "reboot serial terminfo iso9660 loopback tar "
                     grub_cmd += "memdisk ls search_fs_uuid udf btrfs xfs lvm "
                     grub_cmd += "reiserfs ata "
-                    exec_native_cmd(grub_cmd, native_sysroot)
+                    exec_cmd(grub_cmd, native_sysroot)
 
             else:
                 raise WicError("unrecognized bootimg-efi loader: %s" %
@@ -398,14 +398,14 @@ class IsoImagePlugin(SourcePlugin):
 
             dosfs_cmd = 'mkfs.vfat -n "EFIimg" -S 512 -C %s %d' \
                         % (bootimg, blocks)
-            exec_native_cmd(dosfs_cmd, native_sysroot)
+            exec_cmd(dosfs_cmd)
 
             mmd_cmd = "mmd -i %s ::/EFI" % bootimg
-            exec_native_cmd(mmd_cmd, native_sysroot)
+            exec_cmd(mmd_cmd)
 
             mcopy_cmd = "mcopy -i %s -s %s/EFI/* ::/EFI/" \
                         % (bootimg, isodir)
-            exec_native_cmd(mcopy_cmd, native_sysroot)
+            exec_cmd(mcopy_cmd)
 
             chmod_cmd = "chmod 644 %s" % bootimg
             exec_cmd(chmod_cmd)
@@ -454,7 +454,7 @@ class IsoImagePlugin(SourcePlugin):
         mkisofs_cmd += "-no-emul-boot %s " % isodir
 
         logger.debug("running command: %s", mkisofs_cmd)
-        exec_native_cmd(mkisofs_cmd, native_sysroot)
+        exec_cmd(mkisofs_cmd)
 
         shutil.rmtree(isodir)
 
@@ -480,7 +480,7 @@ class IsoImagePlugin(SourcePlugin):
 
         isohybrid_cmd = "isohybrid -u %s" % iso_img
         logger.debug("running command: %s", isohybrid_cmd)
-        exec_native_cmd(isohybrid_cmd, native_sysroot)
+        exec_cmd(isohybrid_cmd)
 
         # Replace the image created by direct plugin with the one created by
         # mkisofs command. This is necessary because the iso image created by

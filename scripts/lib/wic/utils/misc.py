@@ -88,6 +88,7 @@ def exec_cmd(cmd_and_args, as_shell=False):
     """
     Execute command, return output
     """
+
     return _exec_cmd(cmd_and_args, as_shell)[1]
 
 
@@ -99,6 +100,8 @@ def exec_native_cmd(cmd_and_args, native_sysroot, pseudo=""):
 
     Always need to execute native commands as_shell
     """
+
+    raise WicError('exec_native_cmd: Function not supported anymore.')
     # The reason -1 is used is because there may be "export" commands.
     args = cmd_and_args.split(';')[-1].split()
     logger.debug(args)

@@ -205,8 +205,7 @@ class DirectPlugin(ImagerPlugin):
         # Generate .bmap
         if self.bmap:
             logger.debug("Generating bmap file for %s", disk_name)
-            exec_native_cmd("bmaptool create %s -o %s.bmap" % (full_path, full_path),
-                            self.native_sysroot)
+            exec_cmd("bmaptool create %s -o %s.bmap" % (full_path, full_path))
         # Compress the image
         if self.compressor:
             logger.debug("Compressing disk %s with %s", disk_name, self.compressor)
@@ -443,7 +442,7 @@ class PartitionedImage():
             cmd += " %s" % fstype
         cmd += " %d %d" % (start, end)
 
-        return exec_native_cmd(cmd, self.native_sysroot)
+        return exec_cmd(cmd)
 
     def create(self):
         logger.debug("Creating sparse file %s", self.path)
@@ -451,8 +450,8 @@ class PartitionedImage():
             os.ftruncate(sparse.fileno(), self.min_size)
 
         logger.debug("Initializing partition table for %s", self.path)
-        exec_native_cmd("parted -s %s mklabel %s" %
-                        (self.path, self.ptable_format), self.native_sysroot)
+        exec_cmd("parted -s %s mklabel %s" %
+                        (self.path, self.ptable_format))
 
         logger.debug("Set disk identifier %x", self.identifier)
         with open(self.path, 'r+b') as img:
@@ -508,35 +507,31 @@ class PartitionedImage():
             if part.part_type:
                 logger.debug("partition %d: set type UID to %s",
                              part.num, part.part_type)
-                exec_native_cmd("sgdisk --typecode=%d:%s %s" % \
+                exec_cmd("sgdisk --typecode=%d:%s %s" % \
                                          (part.num, part.part_type,
-                                          self.path), self.native_sysroot)
+                                          self.path))
 
             if part.uuid and self.ptable_format == "gpt":
                 logger.debug("partition %d: set UUID to %s",
                              part.num, part.uuid)
-                exec_native_cmd("sgdisk --partition-guid=%d:%s %s" % \
-                                (part.num, part.uuid, self.path),
-                                self.native_sysroot)
+                exec_cmd("sgdisk --partition-guid=%d:%s %s" % \
+                                (part.num, part.uuid, self.path))
 
             if part.label and self.ptable_format == "gpt":
                 logger.debug("partition %d: set name to %s",
                              part.num, part.label)
-                exec_native_cmd("parted -s %s name %d %s" % \
-                                (self.path, part.num, part.label),
-                                self.native_sysroot)
+                exec_cmd("parted -s %s name %d %s" % \
+                                (self.path, part.num, part.label))
 
             if part.active:
                 flag_name = "legacy_boot" if self.ptable_format == 'gpt' else "boot"
                 logger.debug("Set '%s' flag for partition '%s' on disk '%s'",
                              flag_name, part.num, self.path)
-                exec_native_cmd("parted -s %s set %d %s on" % \
-                                (self.path, part.num, flag_name),
-                                self.native_sysroot)
+                exec_cmd("parted -s %s set %d %s on" % \
+                                (self.path, part.num, flag_name))
             if part.system_id:
-                exec_native_cmd("sfdisk --part-type %s %s %s" % \
-                                (self.path, part.num, part.system_id),
-                                self.native_sysroot)
+                exec_cmd("sfdisk --part-type %s %s %s" % \
+                                (self.path, part.num, part.system_id))
 
     def cleanup(self):
         # remove partition images

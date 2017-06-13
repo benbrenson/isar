@@ -110,7 +110,7 @@ class BootimgEFIPlugin(SourcePlugin):
                 raise WicError("Couldn't find DEPLOY_DIR_IMAGE, exiting")
 
             cp_cmd = "cp %s/%s %s" % (bootimg_dir, initrd, hdddir)
-            exec_cmd(cp_cmd, True)
+            exec_cmd(cp_cmd, as_shell=True)
         else:
             logger.debug("Ignoring missing initrd")
 
@@ -205,13 +205,13 @@ class BootimgEFIPlugin(SourcePlugin):
                                 "%s/grub.cfg" % cr_workdir)
                 for mod in [x for x in os.listdir(kernel_dir) if x.startswith("grub-efi-")]:
                     cp_cmd = "cp %s/%s %s/EFI/BOOT/%s" % (kernel_dir, mod, hdddir, mod[9:])
-                    exec_cmd(cp_cmd, True)
+                    exec_cmd(cp_cmd, as_shell=True)
                 shutil.move("%s/grub.cfg" % cr_workdir,
                             "%s/hdd/boot/EFI/BOOT/grub.cfg" % cr_workdir)
             elif source_params['loader'] == 'systemd-boot':
                 for mod in [x for x in os.listdir(kernel_dir) if x.startswith("systemd-")]:
                     cp_cmd = "cp %s/%s %s/EFI/BOOT/%s" % (kernel_dir, mod, hdddir, mod[8:])
-                    exec_cmd(cp_cmd, True)
+                    exec_cmd(cp_cmd, as_shell=True)
             else:
                 raise WicError("unrecognized bootimg-efi loader: %s" %
                                source_params['loader'])
@@ -221,7 +221,7 @@ class BootimgEFIPlugin(SourcePlugin):
         startup = os.path.join(kernel_dir, "startup.nsh")
         if os.path.exists(startup):
             cp_cmd = "cp %s %s/" % (startup, hdddir)
-            exec_cmd(cp_cmd, True)
+            exec_cmd(cp_cmd, as_shell=True)
 
         du_cmd = "du -bks %s" % hdddir
         out = exec_cmd(du_cmd)
@@ -241,10 +241,10 @@ class BootimgEFIPlugin(SourcePlugin):
         bootimg = "%s/boot.img" % cr_workdir
 
         dosfs_cmd = "mkdosfs -n efi -C %s %d" % (bootimg, blocks)
-        exec_native_cmd(dosfs_cmd, native_sysroot)
+        exec_cmd(dosfs_cmd)
 
         mcopy_cmd = "mcopy -i %s -s %s/* ::/" % (bootimg, hdddir)
-        exec_native_cmd(mcopy_cmd, native_sysroot)
+        exec_cmd(mcopy_cmd)
 
         chmod_cmd = "chmod 644 %s" % bootimg
         exec_cmd(chmod_cmd)
