@@ -50,9 +50,9 @@ class RootfsPlugin(SourcePlugin):
         if os.path.isdir(rootfs_dir):
             return rootfs_dir
 
-        image_rootfs_dir = get_bitbake_var("IMAGE_ROOTFS", rootfs_dir)
+        image_rootfs_dir = get_bitbake_var("ROOTFS_DIR", rootfs_dir)
         if not os.path.isdir(image_rootfs_dir):
-            raise WicError("No valid artifact IMAGE_ROOTFS from image "
+            raise WicError("No valid artifact ROOTFS_DIR from image "
                            "named %s has been found at %s, exiting." %
                            (rootfs_dir, image_rootfs_dir))
 

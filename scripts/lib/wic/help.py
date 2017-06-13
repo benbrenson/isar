@@ -211,7 +211,7 @@ DESCRIPTION
     given machine set in local.conf.  In that case, the image is
     created as if the following 'bitbake -e' variables were used:
 
-    -r:        IMAGE_ROOTFS
+    -r:        ROOTFS_DIR
     -k:        STAGING_KERNEL_DIR
     -n:        STAGING_DIR_NATIVE
     -b:        empty (plugin-specific handlers must determine this)

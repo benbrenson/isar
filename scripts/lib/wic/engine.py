@@ -164,7 +164,7 @@ def wic_create(wks_file, rootfs_dir, bootimg_dir, kernel_dir,
     local.conf.  If that's the case, the variables get the following
     values from the output of 'bitbake -e':
 
-    rootfs_dir:        IMAGE_ROOTFS
+    rootfs_dir:        ROOTFS_DIR
     kernel_dir:        DEPLOY_DIR_IMAGE
     native_sysroot:    STAGING_DIR_NATIVE
 

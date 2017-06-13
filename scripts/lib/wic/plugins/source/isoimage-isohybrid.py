@@ -244,9 +244,9 @@ class IsoImagePlugin(SourcePlugin):
                                part.rootfs_dir)
 
         if not os.path.isdir(rootfs_dir):
-            rootfs_dir = get_bitbake_var("IMAGE_ROOTFS")
+            rootfs_dir = get_bitbake_var("ROOTFS_DIR")
         if not os.path.isdir(rootfs_dir):
-            raise WicError("Couldn't find IMAGE_ROOTFS, exiting.")
+            raise WicError("Couldn't find ROOTFS_DIR, exiting.")
 
         part.rootfs_dir = rootfs_dir
 
