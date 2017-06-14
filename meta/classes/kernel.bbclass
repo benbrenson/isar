@@ -43,7 +43,11 @@ do_copy_defconfig(){
 addtask do_copy_defconfig after do_patch before do_copy_device_tree
 
 do_copy_device_tree() {
-    cp -r ${EXTRACTDIR}/dts ${S}/arch/arm/boot
+    cp -r ${EXTRACTDIR}/dts ${S}/arch/${TARGET_ARCH}/boot
 }
 addtask do_copy_device_tree after do_copy_device_tree before do_build
 
+do_install_append(){
+    install -m 0644 ${S}/arch/${TARGET_ARCH}/boot/${KIMAGE_TYPE} ${DEPLOY_DIR_IMAGE}
+}
+do_install[dirs] += "${DEPLOY_DIR_IMAGE}"
