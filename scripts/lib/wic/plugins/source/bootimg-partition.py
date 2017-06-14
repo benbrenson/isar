@@ -67,6 +67,12 @@ class BootimgPartitionPlugin(SourcePlugin):
 
         boot_files = get_bitbake_var("IMAGE_BOOT_FILES")
 
+        # First try to search in ROOTFS_DIR/boot
+        if not boot_files:
+            boot_dir = get_bitbake_var("ROOTFS_DIR")
+            boot_dir = os.path.join(boot_dir, 'boot')
+            boot_files = ' '.join(os.listdir(boot_dir))
+
         if not boot_files:
             raise WicError('No boot files defined, IMAGE_BOOT_FILES unset')
 
@@ -114,9 +120,12 @@ class BootimgPartitionPlugin(SourcePlugin):
                 src_path, dst_path = task
                 logger.debug('Install %s as %s',
                              os.path.basename(src_path), dst_path)
-                install_cmd = "install -m 0644 -D %s %s" \
+                install_cmd = "cp -ar %s %s" \
                               % (src_path, dst_path)
                 exec_cmd(install_cmd)
+
+                chmod_cmd = "chmod 0644 %s" % dst_path
+                exec_cmd(chmod_cmd)
 
         logger.debug('Prepare boot partition using rootfs in %s', hdddir)
         part.prepare_rootfs(cr_workdir, oe_builddir, hdddir,
