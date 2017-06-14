@@ -5,7 +5,7 @@
 # Copyright (C) 2017 Mixed-Mode GmbH
 
 
-DEPENDS += "${IMAGE_INSTALL}"
+DEPENDS += "${IMAGE_INSTALL} schroot"
 S       = "${ROOTFS_DIR}"
 
 
@@ -15,6 +15,8 @@ INITRD_IMAGE ?= ""
 IMAGE_INSTALL ?= ""
 IMAGE_TYPES   ?= "ext4 sdcard tar.gz"
 
+# Change to / inside chroot.
+PP="/"
 SCHROOT_ID = "${ROOTFS_ID}"
 
 inherit image_types
@@ -36,10 +38,9 @@ do_populate() {
 addtask populate before do_build
 do_populate[stamp-extra-info] = "${MACHINE}"
 do_populate[deptask] = "do_install"
-do_populate[depends] = "schroot:do_setup_schroot"
 
 
-
+export LC_ALL="C"
 do_post_rootfs(){
     bbwarn "do_post_rootfs() no function provided, yet."
 }
