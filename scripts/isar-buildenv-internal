@@ -63,6 +63,7 @@ export BUILDDIR
 PATH=$ISARROOT/bitbake/bin:$ISARROOT/scripts:$PATH
 export PATH
 
+PYTHONPATH=$ISARROOT/scripts/lib
 BBPATH="${BUILDDIR}"
 export BBPATH
 
