@@ -318,9 +318,9 @@ class Partition():
 
         dosfs_cmd = "mkdosfs %s -S 512 %s -C %s %d" % (label_str, size_str,
                                                        rootfs, rootfs_size)
-        exec_cmd(dosfs_cmd,)
+        exec_cmd(dosfs_cmd)
 
-        mcopy_cmd = "mcopy -i %s -s %s/* ::/" % (rootfs, rootfs_dir)
+        mcopy_cmd = "export MTOOLS_SKIP_CHECK=1 ; mcopy -i %s -s %s/* ::/" % (rootfs, rootfs_dir)
         exec_cmd(mcopy_cmd, as_shell=True)
 
         chmod_cmd = "chmod 644 %s" % rootfs
