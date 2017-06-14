@@ -76,13 +76,6 @@ class DirectPlugin(ImagerPlugin):
         self.ptable_format = self.ks.bootloader.ptable
         self.parts = self.ks.partitions
 
-        # as a convenience, set source to the boot partition source
-        # instead of forcing it to be set via bootloader --source
-        for part in self.parts:
-            if not self.ks.bootloader.source and part.mountpoint == "/boot":
-                self.ks.bootloader.source = part.source
-                break
-
         image_path = self._full_path(self.workdir, self.parts[0].disk, "direct")
         self._image = PartitionedImage(image_path, self.ptable_format,
                                        self.parts, self.native_sysroot)
