@@ -23,6 +23,7 @@
 # AUTHORS
 # Tom Zanussi <tom.zanussi (at] linux.intel.com>
 # Ed Bartosh <ed.bartosh> (at] linux.intel.com>
+# Benedikt Niedermayr <Benedikt.Niedermayr> (at] mixed-mode.de>
 
 import logging
 import os
@@ -203,8 +204,7 @@ class Partition():
 
         Currently handles ext2/3/4, btrfs and vfat.
         """
-        pseudo = "sudo "
-
+        pseudo=""
         rootfs = "%s/rootfs_%s.%s.%s" % (cr_workdir, self.label,
                                          self.lineno, self.fstype)
         if os.path.isfile(rootfs):
@@ -254,11 +254,23 @@ class Partition():
         if self.label:
             label_str = "-L %s" % self.label
 
-        mkfs_cmd = "mkfs.%s -F %s %s %s -d %s" % \
-            (self.fstype, extra_imagecmd, rootfs, label_str, rootfs_dir)
+        mkfs_cmd = "mkfs.%s -F %s %s %s" % \
+            (self.fstype, extra_imagecmd, rootfs, label_str)
         exec_cmd(mkfs_cmd)
 
-        mkfs_cmd = "fsck.%s -pvfD %s" % (self.fstype, rootfs)
+        rootfs_mnt = rootfs + '.mnt'
+        os.makedirs(rootfs_mnt)
+
+        mnt_cmd = 'mount -o loop %s %s' % (rootfs, rootfs_mnt)
+        exec_cmd(mnt_cmd)
+
+        cpy_cmd = 'cp -aR %s/* %s' % (rootfs_dir, rootfs_mnt)
+        exec_cmd(cpy_cmd, as_shell=True)
+
+        umnt_cmd = 'umount %s' % rootfs_mnt
+        exec_cmd(umnt_cmd)
+
+        mkfs_cmd = "fsck.%s -pvf %s" % (self.fstype, rootfs)
         exec_cmd(mkfs_cmd)
 
     def prepare_rootfs_btrfs(self, rootfs, oe_builddir, rootfs_dir,
@@ -306,10 +318,10 @@ class Partition():
 
         dosfs_cmd = "mkdosfs %s -S 512 %s -C %s %d" % (label_str, size_str,
                                                        rootfs, rootfs_size)
-        exec_cmd(dosfs_cmd)
+        exec_cmd(dosfs_cmd,)
 
         mcopy_cmd = "mcopy -i %s -s %s/* ::/" % (rootfs, rootfs_dir)
-        exec_cmd(mcopy_cmd)
+        exec_cmd(mcopy_cmd, as_shell=True)
 
         chmod_cmd = "chmod 644 %s" % rootfs
         exec_cmd(chmod_cmd)
