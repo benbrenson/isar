@@ -1,3 +1,6 @@
+# This software is a part of ISAR.
+# Copyright (C) 2017 Mixed Mode GmbH
+
 DESCRIPTION="Recipe for setting up schroot and required configs on the host build machine."
 
 inherit fetch

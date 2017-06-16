@@ -1,4 +1,6 @@
-# Fetch package from the source link
+# This software is a part of ISAR.
+# Copyright (C) 2017 Mixed Mode GmbH
+
 python do_fetch() {
     src_uri = (d.getVar('SRC_URI', True) or "").split()
     if len(src_uri) == 0:

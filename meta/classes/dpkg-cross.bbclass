@@ -1,7 +1,10 @@
-DEPENDS += "buildchroot"
-do_unpack[deptask] = "do_build"
+# This software is a part of ISAR.
+# Copyright (C) 2017 Mixed Mode GmbH
 
 inherit cross-compile
+
+DEPENDS += "buildchroot"
+do_unpack[deptask] = "do_build"
 
 # Build package from sources
 do_build() {

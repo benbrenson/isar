@@ -26,20 +26,21 @@ do_images(){
     ROOTFS_SIZE=`sudo du -sm ${S} |  awk '{print $1 + ${ROOTFS_EXTRA};}'`
 
 }
-addtask images before do_build after do_populate
+#addtask images before do_build after do_populate
 
 
 # Args:
 # $1: fstype
 # $2: Rootfs source location for partition
+# $3: Extra arguments
 mkext34fs () {
 	fstype=$1
 	extra_imagecmd=""
 
-	if [ $# -gt 1 ]; then
-		shift
-		extra_imagecmd=$@
-	fi
+	#if [ $# -gt 1 ]; then
+	#	shift
+	#	extra_imagecmd=$@
+	#fi
 
 	# If generating an empty image the size of the sparse block should be large
 	# enough to allocate an ext4 filesystem using 4096 bytes per inode, this is
@@ -177,25 +178,19 @@ EXTRA_IMAGECMD_btrfs ?= ""
 EXTRA_IMAGECMD_elf ?= ""
 
 # This variable is available to request which values are suitable for IMAGE_FSTYPES
-IMAGE_TYPES = " \
+IMAGE_TYPES_AVAIL = " \
     jffs2 jffs2.sum \
     cramfs \
     ext2 ext2.gz ext2.bz2 ext2.lzma \
     ext3 ext3.gz \
     ext4 ext4.gz \
     btrfs \
-    iso \
     hddimg \
     squashfs squashfs-xz squashfs-lzo \
     ubi ubifs multiubi \
     tar tar.gz tar.bz2 tar.xz tar.lz4 \
     cpio cpio.gz cpio.xz cpio.lzma cpio.lz4 \
-    vmdk \
-    vdi \
-    qcow2 \
-    hdddirect \
-    elf \
-    wic wic.gz wic.bz2 wic.lzma \
+    sdcard \
 "
 
 COMPRESSIONTYPES = "gz bz2 lzma xz lz4 sum"
@@ -215,10 +210,7 @@ COMPRESS_DEPENDS_sum = "mtd-utils-native"
 RUNNABLE_IMAGE_TYPES ?= "ext2 ext3 ext4"
 RUNNABLE_MACHINE_PATTERNS ?= "qemu"
 
-DEPLOYABLE_IMAGE_TYPES ?= "hddimg iso"
-
-# Use IMAGE_EXTENSION_xxx to map image type 'xxx' with real image file extension name(s) for Hob
-IMAGE_EXTENSION_live = "hddimg iso"
+DEPLOYABLE_IMAGE_TYPES ?= "hddimg iso sdcard ubifs"
 
 # The IMAGE_TYPES_MASKED variable will be used to mask out from the IMAGE_FSTYPES,
 # images that will not be built at do_rootfs time: vmdk, vdi, qcow2, hdddirect, hddimg, iso, etc.

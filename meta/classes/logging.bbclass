@@ -1,4 +1,6 @@
-###
+# This software is a part of ISAR.
+# Copyright (C) 2017 Mixed Mode GmbH
+
 # The following logging mechanisms are to be used in bash functions of recipes.
 # They are intended to map one to one in intention and output format with the
 # python recipe logging functions of a similar naming convention: bb.plain(),
@@ -17,7 +19,7 @@ bbplain() {
 	fi
 }
 
-# Notify the user of a noteworthy condition. 
+# Notify the user of a noteworthy condition.
 # Output: logs
 bbnote() {
 	if [ -p ${LOGFIFO} ] ; then
@@ -84,7 +86,7 @@ bbdebug() {
 	if [ $# -lt 2 ]; then
 		bbfatal "$USAGE"
 	fi
-	
+
 	# Strip off the debug level and ensure it is an integer
 	DBGLVL=$1; shift
 	NONDIGITS=$(echo "$DBGLVL" | tr -d [:digit:])

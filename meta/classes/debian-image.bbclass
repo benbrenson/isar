@@ -17,37 +17,6 @@ IMAGE_TYPES   ?= "ext4 sdcard tar.gz"
 PP="/"
 SCHROOT_ID = "${ROOTFS_ID}"
 
-inherit image_types wic
-
-# Install Debian packages, that were built from sources
-do_populate() {
-    if [ -n "${IMAGE_INSTALL}" ]; then
-        sudo mkdir -p ${S}/deb
-
-        for p in ${IMAGE_INSTALL}; do
-            sudo cp ${DEPLOY_DIR_DEB}/${p}_*.deb ${S}/deb
-        done
-
-        sudo chroot ${S} taskset 01 /usr/bin/dpkg -i -R /deb
-
-        sudo rm -rf ${S}/deb
-    fi
-}
-addtask populate before do_build
-do_populate[stamp-extra-info] = "${MACHINE}"
-do_populate[deptask] = "do_install"
-
-
-do_post_rootfs(){
-    bbwarn "do_post_rootfs() no function provided, yet."
-}
-addtask do_post_rootfs after do_populate before do_build
-do_post_rootfs[stamp-extra-info] = "${MACHINE}.chroot"
-do_post_rootfs[chroot] = "1"
-do_post_rootfs[chrootdir] = "${S}"
-
-
-
 
 do_rootfs() {
     # Copy config file
@@ -77,3 +46,31 @@ do_rootfs() {
 addtask rootfs before do_populate
 do_rootfs[stamp-extra-info] = "${MACHINE}"
 do_rootfs[depends] = "schroot:do_setup_schroot"
+
+
+# Install Debian packages, that were built from sources
+do_populate() {
+    if [ -n "${IMAGE_INSTALL}" ]; then
+        sudo mkdir -p ${S}/deb
+
+        for p in ${IMAGE_INSTALL}; do
+            sudo cp ${DEPLOY_DIR_DEB}/${p}_*.deb ${S}/deb
+        done
+
+        sudo chroot ${S} taskset 01 /usr/bin/dpkg -i -R /deb
+
+        sudo rm -rf ${S}/deb
+    fi
+}
+addtask populate before do_build
+do_populate[stamp-extra-info] = "${MACHINE}"
+do_populate[deptask] = "do_install"
+
+
+do_post_rootfs(){
+    bbwarn "do_post_rootfs() no function provided, yet."
+}
+addtask do_post_rootfs after do_populate before do_build
+do_post_rootfs[stamp-extra-info] = "${MACHINE}.chroot"
+do_post_rootfs[chroot] = "1"
+do_post_rootfs[chrootdir] = "${S}"

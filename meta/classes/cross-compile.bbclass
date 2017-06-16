@@ -1,3 +1,6 @@
+# This software is a part of ISAR.
+# Copyright (C) 2017 Mixed Mode GmbH
+
 # Class for running builds with cross-compile support.
 # Since qemu emulated compilation suffers under bad performance,
 # cross compiling can solve this problem, especially in development

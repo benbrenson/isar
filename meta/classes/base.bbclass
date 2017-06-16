@@ -1,4 +1,5 @@
 # Copyright (C) 2003  Chris Larson
+# Copyright (C) 2017 Mixed Mode GmbH
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),

@@ -1,8 +1,3 @@
-# Sample application
-#
-# This software is a part of ISAR.
-# Copyright (C) 2015-2016 ilbers GmbH
-
 DESCRIPTION = "Sample application for ISAR"
 
 LICENSE = "gpl-2.0"

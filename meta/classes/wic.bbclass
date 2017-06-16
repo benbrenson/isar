@@ -1,6 +1,3 @@
-# Class including support for creating bootable images with
-# wic.
-#
 # This software is a part of ISAR.
 # Copyright (C) 2017 Mixed Mode GmbH
 

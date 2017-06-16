@@ -1,5 +1,6 @@
 # This software is a part of ISAR.
 # Copyright (C) 2015-2016 ilbers GmbH
+# Copyright (C) 2017 Mixed Mode GmbH
 
 inherit fetch
 

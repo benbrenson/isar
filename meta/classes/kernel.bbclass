@@ -1,3 +1,6 @@
+# This software is a part of ISAR.
+# Copyright (C) 2017 Mixed Mode GmbH
+
 # Class implementing common functionalities for compiling the kernel.
 # The kernel has to be capable to compile device tree overlays with the '-@' option.
 # See commit baa05fa for information how the kernels kconfig system gets capable of compiling device tree overlays.
@@ -11,15 +14,12 @@ SRC_DIR ?= "git"
 
 export DTB_SRC_DIR ?= "arch/${CCARCH}/boot/dts"
 export DTBS        ?= ""
-
 export DTB_INSTALL_DIR_BASE ?= "boot"
 export DTB_INSTALL_DIR ?= "${DTB_INSTALL_DIR_BASE}/dts"
-
 export KIMAGE_TYPE ?= "zImage"
 export UIMAGE_LOADADDR ?= ""
 
 MAKE="make ARCH=${CCARCH} CROSS_COMPILE=${CROSS_COMPILE}"
-
 SECTION = "kernel"
 PRIORITY = "optional"
 LICENSE  = "gpl"
