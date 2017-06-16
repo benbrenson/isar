@@ -79,13 +79,13 @@ cd ebs-isar
 mkdir sources
 mkdir $BUILDDIR
 
-git clone https://git.pixel-group.de/bennie/Siemens_CT_REE_build-config.git $BUILDDIR
-git clone https://git.pixel-group.de/bennie/Siemens_CT_REE_isar.git sources/isar
+git clone https://git.pixel-group.de/siemens-ct/Siemens_CT_REE_build-config.git $BUILDDIR
+git clone https://git.pixel-group.de/siemens-ct/Siemens_CT_REE_isar.git sources/isar
 cd sources/isar
 git checkout siemens
 cd -
-git clone https://git.pixel-group.de/bennie/Siemens_CT_REE-meta-siemens.git sources/meta-siemens
-git clone https://@git.pixel-group.de/bennie/Siemens_CT_REE-meta-sunxi.git sources/meta-sunxi
+git clone https://git.pixel-group.de/siemens-ct/Siemens_CT_REE-meta-siemens.git sources/meta-siemens
+git clone https://@git.pixel-group.de/siemens-ct/Siemens_CT_REE-meta-sunxi.git sources/meta-sunxi
 ```
 
 
