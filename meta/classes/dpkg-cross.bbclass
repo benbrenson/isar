@@ -1,3 +1,6 @@
+DEPENDS += "buildchroot"
+do_unpack[deptask] = "do_build"
+
 inherit cross-compile
 
 # Build package from sources
