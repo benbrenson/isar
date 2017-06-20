@@ -19,7 +19,7 @@ python do_emit_wicvars() {
                 envf.write('%s="%s"\n' % (var, value.strip()))
 }
 addtask do_emit_wicvars after do_post_rootfs before do_image
-
+do_emit_wicvars[stamp-extra-info] = "${MACHINE}"
 
 do_image(){
 

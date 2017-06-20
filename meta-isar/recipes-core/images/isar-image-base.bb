@@ -5,7 +5,7 @@ LIC_FILES_CHKSUM = "file://${LAYERDIR_isar}/licenses/COPYING.GPLv2;md5=751419260
 
 PV = "1.0"
 
-inherit debian-image
+inherit debian-image initramfs
 
 IMAGE_NAME = "${PN}-${PV}-${MACHINE}-${DISTRO_ARCH}"
 

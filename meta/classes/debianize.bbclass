@@ -15,7 +15,7 @@
 #URL          (Package repository url, also required for recipes)
 #DEB_ARCH     (Target Architecture: amd64, armhf, armel ... etc.)
 #DESCRIPTION  (See recipes description)
-#LICENSE
+#LICENSE      (gpl, gpl2, gpl3, lgpl, lgpl2 lgpl3, artistic, apache, bsd, mit or custom)
 #DEBEMAIL
 #DEBFULLNAME
 
@@ -41,7 +41,7 @@ def test_var(d, varname):
         bb.fatal('Variable "{}" must be defined.'.format(varname))
 
 
-# Test at parser time if all required variables where set
+# Test if all required variables where set
 python do_test_vars () {
     test_var(d, 'PACKAGE_NAME')
     test_var(d, 'SOURCE_NAME')
