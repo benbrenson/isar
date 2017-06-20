@@ -188,6 +188,7 @@ def emit_var(var, o=sys.__stdout__, d = init(), all=False):
 
     export = d.getVarFlag(var, "export", False)
     unexport = d.getVarFlag(var, "unexport", False)
+    chroot = d.getVarFlag(var, "chroot", False)
     if not all and not export and not unexport and not func:
         return False
 
@@ -228,7 +229,10 @@ def emit_var(var, o=sys.__stdout__, d = init(), all=False):
     if func:
         # NOTE: should probably check for unbalanced {} within the var
         val = val.rstrip('\n')
-        o.write("%s() {\n%s\n}\n" % (varExpanded, val))
+        if chroot:
+            o.write("%s() {\nset -e\n%s\n}\n" % (varExpanded, val))
+        else:
+            o.write("%s() {\n%s\n}\n" % (varExpanded, val))
         return 1
 
     if export:
