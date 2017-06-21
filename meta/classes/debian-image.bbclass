@@ -10,12 +10,13 @@ S       = "${ROOTFS_DIR}"
 KERNEL_IMAGE ?= ""
 INITRD_IMAGE ?= ""
 
+INIT = "${@bb.utils.contains('IMAGE_FEATURES', 'systemd', 'systemd systemd-sysv', 'sysvinit-core sysvinit-utils', d)}"
+IMAGE_PREINSTALL += " ${INIT} "
 IMAGE_INSTALL ?= ""
 
 # Change to / inside chroot.
 PP="/"
 SCHROOT_ID = "${ROOTFS_ID}"
-
 
 do_rootfs() {
     # Copy config file
