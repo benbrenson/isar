@@ -28,8 +28,7 @@ do_image(){
                -v ${WICVARS_DIR} \
                -e ${PN} \
                ${WIC_DEBUG} \
-               --rootfs-dir rootfs1=${ROOTFS_DIR} \
-               --rootfs-dir rootfs2=${ROOTFS_DIR}  \
+               --rootfs-dir rootfs=${ROOTFS_DIR} \
                ${IMAGE_PART_DESC}
 }
 addtask do_image after do_emit_wicvars before do_build
