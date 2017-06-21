@@ -1,7 +1,7 @@
 # This software is a part of ISAR.
 # Copyright (C) 2017 Mixed-Mode GmbH
 
-inherit image_types wic
+inherit wic
 
 DEPENDS += " ${IMAGE_INSTALL} "
 S       = "${ROOTFS_DIR}"
@@ -11,7 +11,6 @@ KERNEL_IMAGE ?= ""
 INITRD_IMAGE ?= ""
 
 IMAGE_INSTALL ?= ""
-IMAGE_TYPES   ?= "ext4 sdcard tar.gz"
 
 # Change to / inside chroot.
 PP="/"
