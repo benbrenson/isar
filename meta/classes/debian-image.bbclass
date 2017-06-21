@@ -73,3 +73,49 @@ addtask do_post_rootfs after do_populate before do_build
 do_post_rootfs[stamp-extra-info] = "${MACHINE}.chroot"
 do_post_rootfs[chroot] = "1"
 do_post_rootfs[chrootdir] = "${S}"
+
+
+# cleaning of ROOTFS_DIR
+do_clean_append() {
+
+    rootfs_dir = d.getVar('ROOTFS_DIR', True)
+    err = False
+
+    if shell.call(['mountpoint', rootfs_dir + '/dev']) == 0:
+        err = True
+    elif shell.call(['mountpoint', rootfs_dir + '/dev/pts']) == 0:
+        err = True
+    elif shell.call(['mountpoint', rootfs_dir + '/proc']) == 0:
+        err = True
+    elif shell.call(['mountpoint', rootfs_dir + '/dev/pts']) == 0:
+        err = True
+    elif shell.call(['mountpoint', rootfs_dir + '/etc/resolv.conf']) == 0:
+        err = True
+
+    if err == True:
+        bb.fatal('Cleaning ROOTFS_DIR not possible. Still busy.')
+
+    shell.call(['sudo', 'rm', '-rf', rootfs_dir])
+}
+
+do_cleanall_append() {
+
+    rootfs_dir = d.getVar('ROOTFS_DIR', True)
+    err = False
+
+    if shell.call(['mountpoint', rootfs_dir + '/dev']) == 0:
+        err = True
+    elif shell.call(['mountpoint', rootfs_dir + '/dev/pts']) == 0:
+        err = True
+    elif shell.call(['mountpoint', rootfs_dir + '/proc']) == 0:
+        err = True
+    elif shell.call(['mountpoint', rootfs_dir + '/dev/pts']) == 0:
+        err = True
+    elif shell.call(['mountpoint', rootfs_dir + '/etc/resolv.conf']) == 0:
+        err = True
+
+    if err == True:
+        bb.fatal('Cleaning ROOTFS_DIR not possible. Still busy.')
+
+    shell.call(['sudo', 'rm', '-rf', rootfs_dir])
+}

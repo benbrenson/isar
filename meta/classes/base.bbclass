@@ -55,57 +55,49 @@ python base_do_build () {
 
 addtask cleanall
 python do_cleanall() {
-	import subprocess as shell
-
-	src_uri    = (d.getVar('SRC_URI', True) or "").split()
-	pf         = d.getVar('PF', True)
-	stampdir   = d.getVar('STAMPS_DIR', True)
-	extractdir = d.getVar('EXTRACTDIR', True)
-
-	# clean stamps
-	stamps = os.listdir(stampdir)
-	for stamp in stamps:
-		if pf in stamp:
-			os.remove(stampdir + '/' + stamp)
-
-	# clean workdir
-	for entry in os.listdir(extractdir):
-		if 'temp' not in entry:
-			abspath = extractdir + '/' + entry
-			shell.call(['sudo', 'rm', '-rf', abspath])
-
-	# clean downloads
-	if len(src_uri) == 0:
-		return
-
-	try:
-		fetcher = bb.fetch2.Fetch(src_uri, d)
-		fetcher.clean()
-	except bb.fetch2.BBFetchException as e:
-		raise bb.build.FuncFailed(e)
+    import subprocess as shell
+    src_uri    = (d.getVar('SRC_URI', True) or "").split()
+    pf         = d.getVar('PF', True)
+    stampdir   = d.getVar('STAMPS_DIR', True)
+    extractdir = d.getVar('EXTRACTDIR', True)
+    # clean stamps
+    stamps = os.listdir(stampdir)
+    for stamp in stamps:
+    	if pf in stamp:
+    		os.remove(stampdir + '/' + stamp)
+    # clean workdir
+    for entry in os.listdir(extractdir):
+    	if 'temp' not in entry:
+    		abspath = extractdir + '/' + entry
+    		shell.call(['sudo', 'rm', '-rf', abspath])
+    # clean downloads
+    if len(src_uri) == 0:
+    	return
+    try:
+    	fetcher = bb.fetch2.Fetch(src_uri, d)
+    	fetcher.clean()
+    except bb.fetch2.BBFetchException as e:
+    	raise bb.build.FuncFailed(e)
 }
 do_cleanall[nostamp] = "1"
 
 addtask clean
 python do_clean() {
-	import subprocess as shell
-
-	src_uri    = (d.getVar('SRC_URI', True) or "").split()
-	pf         = d.getVar('PF', True)
-	stampdir   = d.getVar('STAMPS_DIR', True)
-	extractdir = d.getVar('EXTRACTDIR', True)
-
-	# clean stamps
-	stamps = os.listdir(stampdir)
-	for stamp in stamps:
-		if pf in stamp:
-			os.remove(stampdir + '/' + stamp)
-
-	# clean workdir
-	for entry in os.listdir(extractdir):
-		if 'temp' not in entry:
-			abspath = extractdir + '/' + entry
-			shell.call(['sudo', 'rm', '-rf', abspath])
+    import subprocess as shell
+    src_uri    = (d.getVar('SRC_URI', True) or "").split()
+    pf         = d.getVar('PF', True)
+    stampdir   = d.getVar('STAMPS_DIR', True)
+    extractdir = d.getVar('EXTRACTDIR', True)
+    # clean stamps
+    stamps = os.listdir(stampdir)
+    for stamp in stamps:
+    	if pf in stamp:
+    		os.remove(stampdir + '/' + stamp)
+    # clean workdir
+    for entry in os.listdir(extractdir):
+    	if 'temp' not in entry:
+    		abspath = extractdir + '/' + entry
+    		shell.call(['sudo', 'rm', '-rf', abspath])
 }
 do_clean[nostamp] = "1"
 
