@@ -71,7 +71,7 @@ if [ ! -e /dev/console ]; then
 fi
 
 # Enable tty
-echo "T0:23:respawn:/sbin/getty -L $1 9600 vt100" >> /etc/inittab
+echo "T0:23:respawn:/sbin/getty -L $1 115200 vt100" >> /etc/inittab
 
 # Undo setup script changes
 if [ -x "$TARGET/sbin/start-stop-daemon.REAL" ]; then
