@@ -2,20 +2,20 @@
 
 ## Contents
 
- - [Introduction](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#introduction)
- - [Getting Started](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#getting-started)
- - [Terms and Definitions](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#terms-and-definitions)
- - [How Isar Works](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#how-isar-works)
- - [General Isar Configuration](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#general-isar-configuration)
- - [Isar Distro Configuration](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#isar-distro-configuration)
- - [Custom Package Compilation](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#custom-package-compilation-1)
- - [Image Type Selection](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#image-type-selection)
- - [Add a New Distro](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#add-a-new-distro)
- - [Add a New Machine](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#add-a-new-machine)
- - [Add a New Image](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#add-a-new-image)
- - [Add a New Image Type](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#add-a-new-image-type)
- - [Add a Custom Application (debian compatible)](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#add-a-custom-application-(debian-compatible))
- - [Add a Custom Application (not debian compatible)](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#add-a-custom-application-(not-debian-compatible))
+ - [Introduction](https://git.pixel-group.de/siemens-ct/Siemens_CT_REE_isar/blob/siemens/doc/user_manual.md#introduction)
+ - [Getting Started](https://git.pixel-group.de/siemens-ct/Siemens_CT_REE_isar/blob/siemens/doc/user_manual.md#getting-started)
+ - [Terms and Definitions](https://git.pixel-group.de/siemens-ct/Siemens_CT_REE_isar/blob/siemens/doc/user_manual.md#terms-and-definitions)
+ - [How Isar Works](https://git.pixel-group.de/siemens-ct/Siemens_CT_REE_isar/blob/siemens/doc/user_manual.md#how-isar-works)
+ - [General Isar Configuration](https://git.pixel-group.de/siemens-ct/Siemens_CT_REE_isar/blob/siemens/doc/user_manual.md#general-isar-configuration)
+ - [Isar Distro Configuration](https://git.pixel-group.de/siemens-ct/Siemens_CT_REE_isar/blob/siemens/doc/user_manual.md#isar-distro-configuration)
+ - [Custom Package Compilation](https://git.pixel-group.de/siemens-ct/Siemens_CT_REE_isar/blob/siemens/doc/user_manual.md#custom-package-compilation-1)
+ - [Image Type Selection](https://git.pixel-group.de/siemens-ct/Siemens_CT_REE_isar/blob/siemens/doc/user_manual.md#image-type-selection)
+ - [Add a New Distro](https://git.pixel-group.de/siemens-ct/Siemens_CT_REE_isar/blob/siemens/doc/user_manual.md#add-a-new-distro)
+ - [Add a New Machine](https://git.pixel-group.de/siemens-ct/Siemens_CT_REE_isar/blob/siemens/doc/user_manual.md#add-a-new-machine)
+ - [Add a New Image](https://git.pixel-group.de/siemens-ct/Siemens_CT_REE_isar/blob/siemens/doc/user_manual.md#add-a-new-image)
+ - [Add a New Image Type](https://git.pixel-group.de/siemens-ct/Siemens_CT_REE_isar/blob/siemens/doc/user_manual.md#add-a-new-image-type)
+ - [Add a Custom Application (debian compatible)](https://git.pixel-group.de/siemens-ct/Siemens_CT_REE_isar/blob/siemens/doc/user_manual.md#add-a-custom-application-(debian-compatible))
+ - [Add a Custom Application (not debian compatible)](https://git.pixel-group.de/siemens-ct/Siemens_CT_REE_isar/blob/master/doc/user_manual.md#add-a-custom-application-(not-debian-compatible))
  - [Running chrooted tasks natively](https://github.com/ilbers/isar/blob/master/doc/user_manual.md#running-chrooted-tasks-natively)
 
 
@@ -32,11 +32,6 @@ Isar provides:
 ---
 
 ## Getting Started
-
-For demonstration purposes, Isar provides support for two machines:
- - QEMU ARM
- - Raspberry Pi 1 Model B
-
 The steps below describe how to build the images provided by default.
 
 ### Install Host Tools
@@ -50,12 +45,17 @@ multistrap
 parted
 python3
 qemu
-qemu-user-static
+qemu-user-static (>= 2.8)
 sudo
+schroot
+mtd-utils
+util-linux
 ```
 Notes:
 * BitBake requires Python 3.4+.
 * The python3 package is required for the correct `alternatives` setting.
+* qemu-user-static should be higher or equal than 2.8, because this version supports propper threading support.
+  * Otherwise the build will fail arbitrarily at rootfs creation time with qemu `core dumped` errors.
 
 ### Setup Sudo
 
@@ -70,6 +70,7 @@ In the editor, allow the current user to run sudo without a password, e.g.:
 Replace `<user>` with your user name. Use the tab character between the user name and parameters.
 
 ### Check out Isar and required meta-layers
+This section describes how to fetch and prepare the build environment by your own.
 
 ```
 BUILDDIR="build-relase"
@@ -88,6 +89,11 @@ git clone https://git.pixel-group.de/siemens-ct/Siemens_CT_REE-meta-siemens.git 
 git clone https://@git.pixel-group.de/siemens-ct/Siemens_CT_REE-meta-sunxi.git sources/meta-sunxi
 ```
 
+**Note: Since some repositories are reachable via https, you need to provide the required credentials via git-credentials:**
+```
+git config --global credential.helper store
+echo "https://<username>:<password>@git.pixel-group.de.de" ~/.git-credentials
+```
 
 ### Initialize the Build Directory
 The main parts of setting up the build directory where already done at the last step.
@@ -332,57 +338,75 @@ The user may use `met-isar/recipes-core-images` as a template for new image reci
 
 ---
 
-## Add a New Image Type
+## Add a new Image
 ### General Information
 The image recipe in Isar creates a folder with target root filesystem. The default its location is:
 ```
-tmp/work/${IMAGE}/${MACHINE}/rootfs
+tmp/rootfs/${MACHINE}
 ```
-Every image type in Isar is implemented as a `bitbake` class. The goal of these classes is to pack root filesystem folder to appropriate format.
+Isar uses the openembedded tool called **wic** for creating bootable rootfs images.
+For describing the partition layout for images, wic in turn uses so called **kickstart** files.
 
-### Create Custom Image Type
+There are two thing to be done in order to create new image types:
+1. Create a new kickstart file
+2. Set the **IMAGE_PART_DESC** variable to point to the the new created kickstart file.
+
+
+### Create Custom Image
 
 As already mentioned, Isar uses `bitbake`to accomplish the work. The whole build process is a sequence of tasks. This sequence is generated using task dependencies, so the next task in chain requires completion of previous ones.
-The last task of image recipe is `do_populate`, so the class that implement new image type should continue execution from this point. According to the BitBake syntax, this can be implemented as follows:
+The last task of image recipe is `do_post_rootfs`, so if you want to do customize the rootfs at the very last moment of creation you can overwrite this task.
+**Note: The `do_post_rootfs` task will per default run in a chrooted environment, so only access to directories within tmp/rootfs/${MACHINE} will be possible.
+For more information about chrooted tasks please refer to `Running chrooted tasks natively` section.
 
-Create a new class:
+new_image.bb:
 ```
-$ vim meta-user/classes/my-image.bbclass
-```
-Add these lines:
-```
-do_my_image() {
-}
-addtask my_image before do_build after do_populate
-```
-The content of `do_my_image` function can be implemented either in shell or in Python.
+include isar-image-base
+IMAGE_PART_DESC = "${THISDIR}/files/new_image.wks"
 
-In the machine configuration file, set the following:
-```
-IMAGE_TYPE = "my-image"
+# Extra space appended to rootfs partitions
+ROOTFS_EXTRA="100"
+
+# Additional packages to install (from debian repositories)
+IMAGE_PREINSTALL += " openssh-server "
+
+# Additional packages to install (from other recipes)
+IMAGE_INSTALL += " example_recipe "
 ```
 
-### Reference Classes
+new_image.wks:
+```
+# Example kickstart file for creating a sd-card image with two redundant rootfs partitions.
 
-Isar contains two image type classes that can be used as reference:
- - `ext4-img`
- - `rpi-sdimg`
+# Save the bootloader into free space after the MBR and before the start of the first partition.
+bootloader --source bootstream
+
+# Bootpartition
+part /boot --source bootimg-partition --ondisk mmcblk --fstype=vfat --label boot --active --align 2048
+
+# First rootfs partition
+part / --source rootfs --rootfs-dir=rootfs1 --ondisk mmcblk --fstype=ext4 --label root --align 2048
+
+# Second rootfs partition
+part /rescue --source rootfs --rootfs-dir=rootfs2 --ondisk mmcblk --fstype=ext4 --label root --align 2048
+```
+
+**Note: No flash filesystems are supported (e.g. ubifs or jffs), yet.**
 
 ---
 
 ## Add a Custom Application (debian compatible)
 The isar buildsystem is capable of compiling software (cross compiling **and** qemu emulated native compiling) and creating debian compatible packages.
 
-The main steps for creating custom applications is as follows:
+The main steps for creating, already debian compatible, custom applications is as follows:
 
 * Download the software
-* Debianize the software package
 * Compile the software (cross or native) and create a debian package
 * Install the debian package into the debian deploy folder
 
 Before creating new recipe it's highly recommended to take a look into the BitBake user manual mentioned in Terms and Definitions section.
 
-Current Isar version supports building packages in Debian format only. The package must contain the `debian` directory with the necessary metadata.If the package is not debian compatible, it has to be debianized first. Please refer to Add a Custom Application (not debian compatible) section for more information.
+Current Isar version supports building packages in Debian format only. The package itself must contain the `debian` directory with the necessary metadata.If the package is not debian compatible, it has to be debianized first. Please refer to Add a Custom Application (not debian compatible) section for more information.
 
 ### Cross compilation
 A typical Isar recipe for debian compatible software looks like this:
