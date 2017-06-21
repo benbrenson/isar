@@ -55,7 +55,7 @@ echo "root:root" | chpasswd
 
 cat > /etc/fstab << "EOF"
 # Begin /etc/fstab
-/dev/mmcblk0	/		ext4		defaults		1	1
+#/dev/mmcblk0	/		ext4		defaults		1	1
 proc		/proc		proc		nosuid,noexec,nodev	0	0
 sysfs		/sys		sysfs		nosuid,noexec,nodev	0	0
 devpts		/dev/pts	devpts		gid=5,mode=620		0	0
