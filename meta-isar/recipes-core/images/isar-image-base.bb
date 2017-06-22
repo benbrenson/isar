@@ -25,7 +25,7 @@ DEV_PACKAGES=" \
               strace \
              "
 
-ADD_INSTALL = "${@bb.utils.contains('IMAGE_FEATURES', 'develop', ${DEV_PACKAGES}, '', d)}"
+ADD_INSTALL = "${@bb.utils.contains('IMAGE_FEATURES', 'develop', '${DEV_PACKAGES}', '', d)}"
 
 IMAGE_PREINSTALL += " \
                     ${ADD_INSTALL} \
