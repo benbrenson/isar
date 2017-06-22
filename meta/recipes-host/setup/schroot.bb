@@ -5,7 +5,9 @@ DESCRIPTION="Recipe for setting up schroot and required configs on the host buil
 
 inherit fetch
 
-SRC_URI = "file://01_isar.conf"
+SRC_URI = "file://01_isar.conf \
+           file://fstab \
+          "
 
 do_setup_schroot() {
     # Check if schroot is installed
@@ -20,6 +22,8 @@ do_setup_schroot() {
 
     [ -d "/etc/schroot/chroot.d" ] || bbfatal "Config directory /etc/schroot/chroot.d not available."
     sudo install -m 0644 ${WORKDIR}/01_isar.conf /etc/schroot/chroot.d/01_isar.conf
+
+    sudo install -m 0644 ${WORKDIR}/fstab /etc/schroot/default/fstab
 
 }
 addtask do_setup_schroot after do_unpack before do_build
