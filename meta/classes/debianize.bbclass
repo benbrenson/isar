@@ -5,6 +5,9 @@
 # software packages to be debian compatible.
 # Please make sure you have already created a rules and control file for your package,
 # which resides at the recipes' file folder (<path_to_recipe>/files/debian/[rules,control]).
+# Instead of providing a rules file, it is also possible to define all required debianized_* tasks
+# as bitbake shell tasks. The makefile generator will then generate a debian rules file with rules consisting of
+# the defined bitbake shell tasks.
 
 #Variables
 #PACKAGE_NAME (Name of the binary package build from source package)
@@ -33,9 +36,27 @@ export DEBEMAIL    = "${DEB_EMAIL}"
 export DEBFULLNAME = "${DEB_FULLNAME}"
 
 
+# Functions for creating the debian/rules file
+def do_mcreate(func, mfile, d):
+    if d.getVar(func, False):
+        bb.data.emit_func_make(func, mfile, d)
+
+
+def create (filename, d):
+    with open(filename, 'w') as mfile:
+        mfile.write('#!/usr/bin/make -f')
+        do_mcreate('debianize_build', mfile, d)
+        do_mcreate('debianize_clean', mfile, d)
+        do_mcreate('debianize_build-indep', mfile, d)
+        do_mcreate('debianize_install', mfile, d)
+        do_mcreate('debianize_binary-arch', mfile, d)
+        do_mcreate('debianize_binary-indep', mfile, d)
+        do_mcreate('debianize_binary', mfile, d)
+        mfile.write('\n .PHONY: build clean binary-indep binary-arch binary install \n')
+
+
 def test_var(d, varname):
     var = d.getVar(varname, True)
-    #bb.warn("Testing Var: {0}. Value:{1}".format(varname, var))
 
     if not var or len(var) == 0:
         bb.fatal('Variable "{}" must be defined.'.format(varname))
@@ -57,6 +78,7 @@ python do_test_vars () {
 addtask do_test_vars after do_unpack before do_generate_debcontrol
 do_test_vars[stamp-extra-info] = "${DISTRO}"
 
+
 CONTROL="${EXTRACTDIR}/debian/control"
 do_generate_debcontrol() {
 
@@ -73,6 +95,21 @@ do_generate_debcontrol() {
 }
 addtask do_generate_debcontrol after do_test_vars before do_dh_make
 do_generate_debcontrol[stamp-extra-info] = "${DISTRO}"
+
+
+python do_generate_rules(){
+    if d.getVar('GENERATE_RULES', True) != 'true':
+        return
+
+    import shutil
+    workdir = d.getVar('EXTRACTDIR', True)
+    makefile = os.path.join(workdir, 'rules.generated')
+    create(makefile, d)
+    shutil.copy(makefile, workdir + '/debian/rules')
+}
+addtask do_generate_rules after do_generate_debcontrol before do_dh_make
+do_generate_rules[stamp-extra-info] = "${DISTRO}"
+
 
 do_dh_make(){
     cd ${S}

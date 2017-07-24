@@ -10,16 +10,28 @@
 # 3. Modify the kernel makefiles for beeing capable of compiling overlays (see commit baa05fa of kernel repository).
 # TODO: Maybe we should move the dt compilation into a seperate bbclass, to get independent from kernel dtc support?
 
-SRC_DIR ?= "git"
-
-export DTB_SRC_DIR ?= "arch/${CCARCH}/boot/dts"
+export DTB_SRC_DIR ?= "arch/${TARGET_ARCH}/boot/dts"
 export DTBS        ?= ""
-export DTB_INSTALL_DIR_BASE ?= "boot"
-export DTB_INSTALL_DIR ?= "${DTB_INSTALL_DIR_BASE}/dts"
+export DTB_DEST_DIR ?= "boot/dts"
 export KIMAGE_TYPE ?= "zImage"
 export UIMAGE_LOADADDR ?= ""
 
-MAKE="make ARCH=${CCARCH} CROSS_COMPILE=${CROSS_COMPILE}"
+MAKE = "\
+${@bb.utils.contains('CROSS_COMPILE_ENABLED', \
+                     'true', \
+                     'make ARCH=${TARGET_ARCH} CROSS_COMPILE=${CROSS_COMPILE}', \
+                     'make ARCH=${TARGET_ARCH}', \
+                      d)} \
+                     "
+
+KERNEL_EXTRA_OPTS_append = "\
+${@bb.utils.contains('KIMAGE_TYPE', \
+                     'uImage', \
+                     'LOADADDR=${UIMAGE_LOADADDR}', \
+                     '', \
+                     d)} \
+                     "
+
 SECTION = "kernel"
 PRIORITY = "optional"
 LICENSE  = "gpl"
@@ -53,3 +65,86 @@ do_install_append(){
     install -m 0644 ${S}/arch/${TARGET_ARCH}/boot/${KIMAGE_TYPE} ${DEPLOY_DIR_IMAGE}
 }
 do_install[dirs] += "${DEPLOY_DIR_IMAGE}"
+
+
+
+###                              ###
+### debianize makefile functions ###
+###                              ###
+
+debianize_build[target] = "build"
+debianize_build() {
+	@echo "Running build target."
+	${MAKE} olddefconfig
+	${MAKE} -j${PARALLEL_MAKE} ${KIMAGE_TYPE} ${KERNEL_EXTRA_OPTS}
+	${MAKE} modules
+	${MAKE} ${DTBOS}
+	${MAKE} ${DTBS}
+}
+
+debianize_clean[target] = "clean"
+debianize_clean() {
+	@echo "Running clean target."
+}
+
+debianize_build-arch[target] = "build-arch"
+debianize_build-arch() {
+	@echo "Running build-arch target."
+}
+
+debianize_build-indep[target] = "build-indep"
+debianize_build-indep() {
+	@echo "Running build-indep target."
+}
+
+debianize_install[target] = "install"
+debianize_install[tdeps] = "build"
+debianize_install() {
+	@echo "Running install target."
+	dh_testdir
+	dh_testroot
+
+	mkdir -p debian/${PN}
+	mkdir -p debian/${PN}/${DTB_DEST_DIR}
+	mkdir -p debian/${PN}/${DTBO_DEST_DIR}
+
+	${MAKE} modules_install INSTALL_MOD_PATH=debian/${PN}
+
+	install -m 0644 arch/${TARGET_ARCH}/boot/${KIMAGE_TYPE}      debian/${PN}/boot/${KIMAGE_TYPE}
+	install -m 0644 $(shell find ${DTB_SRC_DIR} -name "*.dtb")   debian/${PN}/${DTB_DEST_DIR}
+	install -m 0644 $(shell find ${DTBO_SRC_DIR} -name "*.dtbo") debian/${PN}/${DTBO_DEST_DIR}
+}
+
+debianize_binary-arch[target] = "binary-arch"
+debianize_binary-arch[tdeps] = "build install"
+debianize_binary-arch() {
+	@echo "Running binary-arch target."
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs
+	dh_installdocs
+	dh_installexamples
+	dh_install
+	dh_installman
+	dh_link
+	dh_strip
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+}
+
+debianize_binary-indep[target] = "binary-indep"
+debianize_binary-indep[tdeps] = "build install"
+debianize_binary-indep() {
+	@echo "Running binary-indep target."
+}
+
+debianize_binary[target] = "binary"
+debianize_binary[tdeps] = "binary-arch binary-indep"
+debianize_binary() {
+	@echo "Running binary target."
+}

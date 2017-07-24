@@ -7,6 +7,8 @@
 # state.
 inherit fetch
 
+CROSS_COMPILE_ENABLED = "true"
+
 DEPENDS += "cross-toolchain"
 do_build[deptask] = "do_install"
 

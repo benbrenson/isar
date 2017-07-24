@@ -300,6 +300,19 @@ _functionfmt = """
 def {function}(d):
 {body}"""
 
+
+def emit_func_make(func, o=sys.__stdout__, d = init()):
+    """ Emit all items of a function in a format such that it can be sourced by a makefile. """
+    o.write('\n')
+    o.write('%s: ' % d.getVarFlag(func, 'target', True))
+    tdeps = d.getVarFlag(func, 'tdeps', True)
+
+    if tdeps:
+        o.write('%s' % tdeps)
+    o.write('\n')
+    o.write(d.getVar(func,True))
+
+
 def emit_func_python(func, o=sys.__stdout__, d = init()):
     """Emits all items in the data store in a format such that it can be sourced by a shell."""
 
