@@ -1,11 +1,10 @@
 # This software is a part of ISAR.
 # Copyright (C) 2017 Mixed-Mode GmbH
 
-inherit wic
+inherit wic useradd
 
 DEPENDS += " ${IMAGE_INSTALL} "
 S       = "${ROOTFS_DIR}"
-
 
 KERNEL_IMAGE ?= ""
 INITRD_IMAGE ?= ""
@@ -13,6 +12,8 @@ INITRD_IMAGE ?= ""
 INIT = "${@bb.utils.contains('IMAGE_FEATURES', 'systemd', 'systemd systemd-sysv', 'sysvinit-core sysvinit-utils', d)}"
 IMAGE_PREINSTALL += " ${INIT} "
 IMAGE_INSTALL ?= ""
+
+
 
 # Change to / inside chroot.
 PP="/"
@@ -66,14 +67,24 @@ addtask populate before do_build
 do_populate[stamp-extra-info] = "${MACHINE}"
 do_populate[deptask] = "do_install"
 
+# Post tasks running after all other important base tasks have finished.
+# It is useful for doing late stuff like modifying, customizing or cleaning
+# the root filesystem.
+python do_post_rootfs(){
+    post_tasks = d.getVar('POST_ROOTFS_TASKS', True)
+    bb.note('Running last tasks on rootfs. (%s)' % post_tasks)
+    for task in post_tasks.strip().split(';'):
+            task = task.strip()
 
-do_post_rootfs(){
-    bbwarn "do_post_rootfs() no function provided, yet."
+            if task != '':
+                if not d.getVar(task,'True'):
+                    bb.fatal('Task %s not found.' % task)
+
+                bb.note("Executing %s() ..." % task)
+                bb.build.exec_func(task, d)
+
 }
 addtask do_post_rootfs after do_populate before do_build
-do_post_rootfs[stamp-extra-info] = "${MACHINE}.chroot"
-do_post_rootfs[chroot] = "1"
-do_post_rootfs[chrootdir] = "${S}"
 
 
 # cleaning of ROOTFS_DIR
