@@ -10,6 +10,13 @@ ${@bb.utils.contains('CROSS_COMPILE_ENABLED', \
 d)} \
 "
 
+DH_SHLIBDEPS="\
+${@bb.utils.contains('CROSS_COMPILE_ENABLED', \
+'true', \
+'dh_shlibdeps -l${ROOTFS_DIR}/lib/arm-linux-gnueabihf/', \
+'dh_shlibdeps', \
+d)} \
+"
 
 debianize_build[target] = "build"
 debianize_build() {
@@ -46,7 +53,7 @@ debianize_install() {
 	dh_clean  -k
 
 	install -d debian/${PN}/boot
-	install -m 0064 ${S}/${BOOT_IMG} debian/${PN}/boot/${BOOT_IMG}
+	install -m 0644 ${S}/${BOOT_IMG} debian/${PN}/boot/${BOOT_IMG}
 	install -m 0644 ${S}/cmdline.txt debian/${PN}/boot/cmdline.txt
 	install -m 0644 boot.scr debian/${PN}/boot/${BOOTSCRIPT}
 }
@@ -67,7 +74,7 @@ debianize_binary-arch() {
 	dh_compress
 	dh_fixperms
 	dh_installdeb
-	dh_shlibdeps
+	${DH_SHLIBDEPS} --dpkg-shlibdeps-params=--ignore-missing-info
 	dh_gencontrol
 	dh_md5sums
 	dh_builddeb
