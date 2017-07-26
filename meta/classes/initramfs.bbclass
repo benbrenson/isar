@@ -47,7 +47,7 @@ do_prepare_initramfs[chrootdir] = "${ROOTFS_DIR}"
 
 do_generate_initramfs() {
 
-    LINUX_VERSION=$(dpkg-query --showformat='${Version}' --show linux-image)
+    LINUX_VERSION=$(dpkg-query --showformat='${Version}' --show linux-image || true)
     if [ -n "${LINUX_VERSION}" ]; then
         rm -rf /boot/initrd.img-${LINUX_VERSION}
         update-initramfs -k ${LINUX_VERSION} -c
