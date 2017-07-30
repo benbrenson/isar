@@ -469,4 +469,30 @@ The last line in the example above adds recipe to the Isar work chain.
 ## Add a Custom Application (not debian compatible)
 ### Native compilation
 ### Cross compilation
-## Running chrooted tasks natively
+## Running chrooted tasks
+Isar provides the functionality of running chrooted tasks within the created rootfs or buildchroot filesystem, and defining these tasks as normal bitbake
+shell tasks. For now only shell tasks where supported.
+From the developers point of view defined chroot tasks where implemented and executed completely abstracted from chrooted tasks, so the only thing to be done in order
+to run chrooted tasks is to write normal bitbake shell tasks and set some Variables, so the bitbake task execution engine knows how to handle these taks.
+
+The chrooted environment is setup with the `schroot` tool, which in turn represents a wrapper for chroot.
+Isar will setup the hosts schroot settings and configs at a very soon stage in the build process.
+
+The following example shows how to setup simple chroot tasks:
+
+```
+SCHROOT_ID = "${BUILDCHROOT_ID}"
+PP ="/home/builder"
+
+do_mytask() {
+  do somethin within the chroot target....
+}
+
+addtask do_mytask
+do_do_mytask[chroot] = "1"
+```
+
+So basically the following variables have to be set:
+- `SCHROOT_ID` - This will set the location of target chroot environment. One target (`ROOTFS_ID`) specifies the final rootfs location , which points to `ROOTFS_DIR`. And the other target (`BUILDCHROOT_ID`) specifies the buildchroot directory `BUILDCHROOT_DIR`.
+- `PP` - The directory to switch within chroot. This has to be a existend directory.
+- `do_task[chroot]` - Enables the chroot if `1` is set.
