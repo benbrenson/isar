@@ -8,6 +8,18 @@ PV = "1.0"
 inherit debian-image initramfs
 
 IMAGE_NAME = "${PN}-${PV}-${MACHINE}-${DISTRO_ARCH}"
+BASE_PACKAGES = " \
+                python3 \
+                python3-serial \
+                "
+
+ADMIN_PACKAGES=" \
+                sudo \
+                vim \
+                openssh-server \
+                net-tools \
+               "
+
 
 DEV_PACKAGES=" \
               gcc \
@@ -28,11 +40,15 @@ DEV_PACKAGES=" \
 ADD_INSTALL = "${@bb.utils.contains('IMAGE_FEATURES', 'develop', '${DEV_PACKAGES}', '', d)}"
 
 IMAGE_PREINSTALL += " \
-                    ${ADD_INSTALL} \
-                    "
+                   ${BASE_PACKAGES} \
+                   ${ADMIN_PACKAGES} \
+                   ${ADD_INSTALL} \
+                   apt \
+                   dbus \
+                   "
 
-IMAGE_PREINSTALL += "apt \
-                     dbus"
 
+IMAGE_FEATURES ?= " systemd "
+IMAGE_INSTALL_append = " linux-image u-boot "
 
 ROOTFS_EXTRA="100"
