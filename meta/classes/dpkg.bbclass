@@ -35,7 +35,6 @@ python () {
 
 # Build package from sources within chroot
 do_build[chroot] = "1"
-do_build[chrootdir] = "${BUILDCHROOT_DIR}"
 do_build() {
     cd ${PPS}
     dpkg-buildpackage ${DEB_SIGN} -pgpg -sn -Z${DEB_COMPRESSION}

@@ -361,10 +361,7 @@ def exec_func_shell(func, d, runfile, cwd=None):
         if cwd:
             script.write("cd '%s'\n" % cwd)
 
-        if chroot and chrootdir:
-            if not os.path.isdir(d.expand(chrootdir)):
-                bb.fatal('\nTry to run a chroot function, but chrootdir ({0}) is not existent. \nPlease set a correct chrootdir flag.'\
-                          .format(chrootdir))
+        if chroot:
             chroot_cmd = d.getVar('CHROOT', True)
 
             if not chroot_cmd:
@@ -389,7 +386,7 @@ exit $ret
         if fakerootcmd:
             cmd = [fakerootcmd, runfile]
 
-    if chroot and chrootdir:
+    if chroot:
         sudocmd = d.getVar('SUDO', True)
         if sudocmd:
             cmd = sudocmd.split()
