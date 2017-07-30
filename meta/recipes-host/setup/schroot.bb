@@ -8,6 +8,7 @@ inherit fetch
 SRC_URI = "file://01_isar.conf \
            file://fstab \
            file://nssdatabases \
+           file://15binfmt \
           "
 
 do_setup_schroot() {
@@ -22,10 +23,10 @@ do_setup_schroot() {
     sed -i -e 's|##ROOTFS_ID##|${ROOTFS_ID}|g' ${WORKDIR}/01_isar.conf
 
     [ -d "/etc/schroot/chroot.d" ] || bbfatal "Config directory /etc/schroot/chroot.d not available."
-    sudo install -m 0644 ${WORKDIR}/01_isar.conf /etc/schroot/chroot.d/01_isar.conf
 
+    sudo install -m 0644 ${WORKDIR}/01_isar.conf /etc/schroot/chroot.d/01_isar.conf
     sudo install -m 0644 ${WORKDIR}/fstab /etc/schroot/default/fstab
     sudo install -m 0644 ${WORKDIR}/nssdatabases /etc/schroot/default/nssdatabases
-
+    sudo install -m 0755 ${WORKDIR}/15binfmt /etc/schroot/setup.d/15binfmt
 }
 addtask do_setup_schroot after do_unpack before do_build
