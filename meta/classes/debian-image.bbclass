@@ -190,7 +190,7 @@ do_populate() {
         sudo rm -rf ${S}/deb
     fi
 }
-addtask populate before do_build
+addtask populate before do_post_rootfs
 do_populate[stamp-extra-info] = "${MACHINE}"
 do_populate[deptask] = "do_install"
 
@@ -213,7 +213,7 @@ python do_post_rootfs(){
                 bb.build.exec_func(task, d)
 
 }
-addtask do_post_rootfs after do_populate before do_build
+addtask do_post_rootfs after do_populate before do_package_tunes
 
 
 

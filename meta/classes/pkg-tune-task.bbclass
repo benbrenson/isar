@@ -76,6 +76,6 @@ python do_package_tunes() {
 
 
 }
-addtask do_package_tunes after do_post_rootfs before do_build
+addtask do_package_tunes after do_post_rootfs before do_image
 
 
