@@ -29,7 +29,6 @@ WORKDIR = "${TMPDIR}/work/${PF}/${DISTRO}"
 
 # Change to /home/builder inside chroot.
 PP ="/home/builder"
-SCHROOT_ID = "${BUILDCHROOT_ID}"
 
 
 do_buildchroot() {
@@ -157,3 +156,4 @@ apt-get update
 addtask do_configure_buildchroot before do_build
 do_configure_buildchroot[stamp-extra-info] = "${DISTRO}.chroot"
 do_configure_buildchroot[chroot] = "1"
+do_configure_buildchroot[id] = "${BUILDCHROOT_ID}"

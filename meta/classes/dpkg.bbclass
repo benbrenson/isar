@@ -14,8 +14,6 @@ BUILDROOT = "${BUILDCHROOT_DIR}/${PP}"
 EXTRACTDIR="${BUILDROOT}"
 S = "${BUILDROOT}/${SRC_DIR}"
 
-SCHROOT_ID = "${BUILDCHROOT_ID}"
-
 python () {
     s = d.getVar('S', True).rstrip('/')
     extract_dir = d.getVar('EXTRACTDIR', True).rstrip('/')
@@ -34,18 +32,18 @@ python () {
 #apt-get install $DEPS
 
 # Build package from sources within chroot
-do_build[chroot] = "1"
 do_build() {
     cd ${PPS}
     dpkg-buildpackage ${DEB_SIGN} -pgpg -sn -Z${DEB_COMPRESSION}
 }
-
-do_install[stamp-extra-info] = "${MACHINE}.chroot"
+do_build[stamp-extra-info] = "${MACHINE}.chroot"
+do_build[chroot] = "1"
+do_build[id] = "${BUILDCHROOT_ID}"
 
 # Install package to dedicated deploy directory
 do_install() {
     install -d ${DEPLOY_DIR_DEB}
     install -m 755 ${BUILDROOT}/*.deb ${DEPLOY_DIR_DEB}/
 }
-
 addtask do_install after do_build
+do_install[stamp-extra-info] = "${MACHINE}.chroot"

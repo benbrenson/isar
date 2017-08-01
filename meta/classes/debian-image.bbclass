@@ -17,7 +17,6 @@ IMAGE_INSTALL ?= ""
 
 # Change to / inside chroot.
 PP="/"
-SCHROOT_ID = "${ROOTFS_ID}"
 
 
 # Multistrap based creation of rootfs
@@ -174,6 +173,7 @@ EOF
 addtask do_configure_rootfs after do_setup_rootfs before do_populate
 do_configure_rootfs[stamp-extra-info] = "${MACHINE}.chroot"
 do_configure_rootfs[chroot] = "1"
+do_configure_rootfs[id] = "${ROOTFS_ID}"
 
 
 # Install Debian packages, that were built from sources

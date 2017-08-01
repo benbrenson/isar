@@ -7,13 +7,15 @@
 # bb.note(), etc.
 
 LOGFIFO = "${T}/fifo.${@os.getpid()}"
-
+LOGFIFO_CHROOT = "/fifo.${@os.getpid()}"
 # Print the output exactly as it is passed in. Typically used for output of
 # tasks that should be seen on the console. Use sparingly.
 # Output: logs console
 bbplain() {
 	if [ -p ${LOGFIFO} ] ; then
 		printf "%b\0" "bbplain $*" > ${LOGFIFO}
+	elif [ -p ${LOGFIFO_CHROOT} ] ; then
+		printf "%b\0" "bbplain $*" > ${LOGFIFO_CHROOT}
 	else
 		echo "$*"
 	fi
@@ -24,6 +26,8 @@ bbplain() {
 bbnote() {
 	if [ -p ${LOGFIFO} ] ; then
 		printf "%b\0" "bbnote $*" > ${LOGFIFO}
+	elif [ -p ${LOGFIFO_CHROOT} ] ; then
+		printf "%b\0" "bbnote $*" > ${LOGFIFO_CHROOT}
 	else
 		echo "NOTE: $*"
 	fi
@@ -35,6 +39,8 @@ bbnote() {
 bbwarn() {
 	if [ -p ${LOGFIFO} ] ; then
 		printf "%b\0" "bbwarn $*" > ${LOGFIFO}
+	elif [ -p ${LOGFIFO_CHROOT} ] ; then
+		printf "%b\0" "bbwarn $*" > ${LOGFIFO_CHROOT}
 	else
 		echo "WARNING: $*"
 	fi
@@ -46,6 +52,8 @@ bbwarn() {
 bberror() {
 	if [ -p ${LOGFIFO} ] ; then
 		printf "%b\0" "bberror $*" > ${LOGFIFO}
+	elif [ -p ${LOGFIFO_CHROOT} ] ; then
+		printf "%b\0" "bberror $*" > ${LOGFIFO_CHROOT}
 	else
 		echo "ERROR: $*"
 	fi
@@ -57,6 +65,8 @@ bberror() {
 bbfatal() {
 	if [ -p ${LOGFIFO} ] ; then
 		printf "%b\0" "bbfatal $*" > ${LOGFIFO}
+	elif [ -p ${LOGFIFO_CHROOT} ] ; then
+		printf "%b\0" "bbfatal $*" > ${LOGFIFO_CHROOT}
 	else
 		echo "ERROR: $*"
 	fi
@@ -69,6 +79,8 @@ bbfatal() {
 bbfatal_log() {
 	if [ -p ${LOGFIFO} ] ; then
 		printf "%b\0" "bbfatal_log $*" > ${LOGFIFO}
+	elif [ -p ${LOGFIFO_CHROOT} ] ; then
+		printf "%b\0" "bbfatal_log $*" > ${LOGFIFO_CHROOT}
 	else
 		echo "ERROR: $*"
 	fi
@@ -97,6 +109,8 @@ bbdebug() {
 	# All debug output is printed to the logs
 	if [ -p ${LOGFIFO} ] ; then
 		printf "%b\0" "bbdebug $DBGLVL $*" > ${LOGFIFO}
+	elif [ -p ${LOGFIFO_CHROOT} ] ; then
+		printf "%b\0" "bbdebug $DBGLVL $*" > ${LOGFIFO_CHROOT}
 	else
 		echo "DEBUG: $*"
 	fi

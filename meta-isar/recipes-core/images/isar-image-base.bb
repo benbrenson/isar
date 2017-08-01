@@ -47,6 +47,7 @@ IMAGE_PREINSTALL += " \
                    dbus \
                    "
 
+PACKAGE_TUNES_append = "openssh-server"
 
 IMAGE_FEATURES ?= " systemd "
 IMAGE_INSTALL_append = " linux-image u-boot "

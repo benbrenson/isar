@@ -347,9 +347,10 @@ def exec_func_shell(func, d, runfile, cwd=None):
     # Don't let the emitted shell script override PWD
     d.delVarFlag('PWD', 'export')
 
-    flags  = d.getVarFlags(func)
+    flags  = d.getVarFlags(func, expand=['id'])
     chroot = flags.get('chroot')
-    chrootdir = flags.get('chrootdir')
+    buildchroot_id = d.getVar('BUILDCHROOT_ID', True) or ""
+    rootfs_id = d.getVar('ROOTFS_ID', True) or ""
 
     with open(runfile, 'w') as script:
         script.write(shell_trap_code())
@@ -362,8 +363,18 @@ def exec_func_shell(func, d, runfile, cwd=None):
             script.write("cd '%s'\n" % cwd)
 
         if chroot:
-            chroot_cmd = d.getVar('CHROOT', True)
+            schroot_id = flags.get('id')
 
+            if schroot_id == buildchroot_id:
+                chrootdir = d.getVar('BUILDCHROOT_DIR', True)
+            elif schroot_id == rootfs_id:
+                chrootdir = d.getVar('ROOTFS_DIR', True)
+            else:
+                bb.fatal('No valid id (\'%s\') set' % schroot_id)
+
+            d.setVar('SCHROOT_ID', schroot_id)
+
+            chroot_cmd = d.getVar('CHROOT', True)
             if not chroot_cmd:
                 bb.fatal('\n Try to run chroot function, but no CHROOT set.')
 
@@ -449,11 +460,16 @@ exit $ret
             else:
                 break
 
-    tempdir = d.getVar('T', True)
+
+    if chroot:
+        tempdir = chrootdir
+    else:
+        tempdir = d.getVar('T', True)
+
     fifopath = os.path.join(tempdir, 'fifo.%s' % os.getpid())
-    if os.path.exists(fifopath):
-        os.unlink(fifopath)
-    os.mkfifo(fifopath)
+    bb.process.run(['sudo', 'rm', '-f', '{}'.format(fifopath)], shell=False, log=logfile)
+    bb.process.run(['sudo', 'mkfifo', '-m', '0777', '{}'.format(fifopath)], shell=False, log=logfile)
+
     with open(fifopath, 'r+b', buffering=0) as fifo:
         try:
             bb.debug(2, "Executing shell function %s" % func)
@@ -465,7 +481,7 @@ exit $ret
                 logfn = d.getVar('BB_LOGFILE', True)
                 raise FuncFailed(func, logfn)
         finally:
-            os.unlink(fifopath)
+            bb.process.run(['sudo', 'rm', '-f', '{}'.format(fifopath)], shell=False, log=logfile)
 
     bb.debug(2, "Shell function %s finished" % func)
 

@@ -481,7 +481,6 @@ Isar will setup the hosts schroot settings and configs at a very soon stage in t
 The following example shows how to setup simple chroot tasks:
 
 ```
-SCHROOT_ID = "${BUILDCHROOT_ID}"
 PP ="/home/builder"
 
 do_mytask() {
@@ -489,10 +488,13 @@ do_mytask() {
 }
 
 addtask do_mytask
-do_do_mytask[chroot] = "1"
+do_mytask[chroot] = "1"
+do_mytask[stamp-extra-info] = "${MACHINE}.chroot
+do_mytask[id] = "${BUILDCHROOT_ID}"
 ```
 
 So basically the following variables have to be set:
-- `SCHROOT_ID` - This will set the location of target chroot environment. One target (`ROOTFS_ID`) specifies the final rootfs location , which points to `ROOTFS_DIR`. And the other target (`BUILDCHROOT_ID`) specifies the buildchroot directory `BUILDCHROOT_DIR`.
+- `do_mytask[id]` - This will set the location of target chroot environment. One target (`ROOTFS_ID`) specifies the final rootfs location , which points to `ROOTFS_DIR`. And the other target (`BUILDCHROOT_ID`) specifies the buildchroot directory `BUILDCHROOT_DIR`.
 - `PP` - The directory to switch within chroot. This has to be a existend directory.
-- `do_task[chroot]` - Enables the chroot if `1` is set.
+- `do_mytask[chroot]` - Enables the chroot if `1` is set.
+- `do_mytask[stamp-extra-info]` - This function flag is not mandatory, but may be helpfull in case of detecting chrooted tasks at the recipes temp folder.
