@@ -350,6 +350,7 @@ def exec_func_shell(func, d, runfile, cwd=None):
     flags  = d.getVarFlags(func, expand=['id'])
     chroot = flags.get('chroot')
     buildchroot_id = d.getVar('BUILDCHROOT_ID', True) or ""
+    cross_buildchroot_id = d.getVar('CROSS_BUILDCHROOT_ID', True) or ""
     rootfs_id = d.getVar('ROOTFS_ID', True) or ""
 
     with open(runfile, 'w') as script:
@@ -367,6 +368,8 @@ def exec_func_shell(func, d, runfile, cwd=None):
 
             if schroot_id == buildchroot_id:
                 chrootdir = d.getVar('BUILDCHROOT_DIR', True)
+            elif schroot_id == cross_buildchroot_id:
+                chrootdir = d.getVar('CROSS_BUILDCHROOT_DIR', True)
             elif schroot_id == rootfs_id:
                 chrootdir = d.getVar('ROOTFS_DIR', True)
             else:

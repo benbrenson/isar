@@ -13,13 +13,15 @@ SRC_URI = "file://01_isar.conf \
 
 do_setup_schroot() {
     # Check if schroot is installed
-    schroot -V
+    schroot -V || bbfatal "schroot not installed on the build host system."
 
     sed -i -e 's|##users##|${USER},root|g' ${WORKDIR}/01_isar.conf
     sed -i -e 's|##BUILDCHROOT##|${BUILDCHROOT_DIR}|g' ${WORKDIR}/01_isar.conf
     sed -i -e 's|##ROOTFS_DIR##|${ROOTFS_DIR}|g' ${WORKDIR}/01_isar.conf
+    sed -i -e 's|##CROSS_BUILDCHROOT##|${CROSS_BUILDCHROOT_DIR}|g' ${WORKDIR}/01_isar.conf
 
     sed -i -e 's|##BUILDCHROOT_ID##|${BUILDCHROOT_ID}|g' ${WORKDIR}/01_isar.conf
+    sed -i -e 's|##CROSS_BUILDCHROOT_ID##|${CROSS_BUILDCHROOT_ID}|g' ${WORKDIR}/01_isar.conf
     sed -i -e 's|##ROOTFS_ID##|${ROOTFS_ID}|g' ${WORKDIR}/01_isar.conf
 
     [ -d "/etc/schroot/chroot.d" ] || bbfatal "Config directory /etc/schroot/chroot.d not available."

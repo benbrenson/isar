@@ -24,12 +24,18 @@ BUILDCHROOT_PREINSTALL ?= "gcc \
                            apt \
                            automake \
                            gnupg \
-                           python \
+                           vim \
                            flex \
                            git \
                            bison \
                            bc \
                            u-boot-tools"
+
+
+# Some packages are only installable after late configurations for
+# apt
+BUILDCHROOT_POSTINSTALL ?= "crossbuild-essential-${DISTRO_ARCH} \
+                            devscripts"
 
 WORKDIR = "${TMPDIR}/work/${PF}/${DISTRO}"
 
@@ -46,66 +52,68 @@ do_buildchroot() {
     sed -i 's|##DISTRO_COMPONENTS##|${DISTRO_COMPONENTS}|' ${WORKDIR}/multistrap.conf
 
     # Install QEMU emulator to execute ARM binaries
-    sudo mkdir -p ${BUILDCHROOT_DIR}/usr/bin
-    sudo cp /usr/bin/qemu-arm-static ${BUILDCHROOT_DIR}/usr/bin
+    #sudo mkdir -p ${CROSS_BUILDCHROOT_DIR}/usr/bin
+    #sudo cp /usr/bin/qemu-arm-static ${CROSS_BUILDCHROOT_DIR}/usr/bin
 
     # Create root filesystem
-    sudo multistrap -a ${DISTRO_ARCH} -d "${BUILDCHROOT_DIR}" -f "${WORKDIR}/multistrap.conf" || true
+    sudo multistrap -a ${DEB_HOST_ARCH} -d "${CROSS_BUILDCHROOT_DIR}" -f "${WORKDIR}/multistrap.conf" || true
 
 }
 addtask do_buildchroot before do_setup_buildchroot
 do_buildchroot[stamp-extra-info] = "${DISTRO}"
+do_buildchroot[dirs] += "${SYSROOT}"
+
 
 
 do_setup_buildchroot() {
 
   # Prevent daemons from starting in buildchroot
-  if [ -x "${BUILDCHROOT_DIR}/sbin/start-stop-daemon" ]; then
-      echo "initctl: Trying to prevent daemons from starting in ${BUILDCHROOT_DIR}"
+  if [ -x "${CROSS_BUILDCHROOT_DIR}/sbin/start-stop-daemon" ]; then
+      echo "initctl: Trying to prevent daemons from starting in ${CROSS_BUILDCHROOT_DIR}"
 
       # Disable start-stop-daemon
-      sudo mv ${BUILDCHROOT_DIR}/sbin/start-stop-daemon ${BUILDCHROOT_DIR}/sbin/start-stop-daemon.REAL
-      sudo tee ${BUILDCHROOT_DIR}/sbin/start-stop-daemon > /dev/null  << EOF
+      sudo mv ${CROSS_BUILDCHROOT_DIR}/sbin/start-stop-daemon ${CROSS_BUILDCHROOT_DIR}/sbin/start-stop-daemon.REAL
+      sudo tee ${CROSS_BUILDCHROOT_DIR}/sbin/start-stop-daemon > /dev/null  << EOF
 #!/bin/sh
 echo
 echo Warning: Fake start-stop-daemon called, doing nothing
 EOF
-      sudo chmod 755 ${BUILDCHROOT_DIR}/sbin/start-stop-daemon
+      sudo chmod 755 ${CROSS_BUILDCHROOT_DIR}/sbin/start-stop-daemon
   fi
 
-  if [ -x "${BUILDCHROOT_DIR}/sbin/initctl" ]; then
-      echo "start-stop-daemon: Trying to prevent daemons from starting in ${BUILDCHROOT_DIR}"
+  if [ -x "${CROSS_BUILDCHROOT_DIR}/sbin/initctl" ]; then
+      echo "start-stop-daemon: Trying to prevent daemons from starting in ${CROSS_BUILDCHROOT_DIR}"
 
       # Disable initctl
-      sudo mv "${BUILDCHROOT_DIR}/sbin/initctl" "${BUILDCHROOT_DIR}/sbin/initctl.REAL"
-      sudo tee ${BUILDCHROOT_DIR}/sbin/initctl > /dev/null << EOF
+      sudo mv "${CROSS_BUILDCHROOT_DIR}/sbin/initctl" "${CROSS_BUILDCHROOT_DIR}/sbin/initctl.REAL"
+      sudo tee ${CROSS_BUILDCHROOT_DIR}/sbin/initctl > /dev/null << EOF
 #!/bin/sh
 echo
 echo "Warning: Fake initctl called, doing nothing"
 EOF
-      sudo chmod 755 ${BUILDCHROOT_DIR}/sbin/initctl
+      sudo chmod 755 ${CROSS_BUILDCHROOT_DIR}/sbin/initctl
   fi
 
   # Define sysvinit policy 101 to prevent daemons from starting in buildchroot
-  if [ -x "${BUILDCHROOT_DIR}/sbin/init" -a ! -f "${BUILDCHROOT_DIR}/usr/sbin/policy-rc.d" ]; then
-    echo "sysvinit: Using policy-rc.d to prevent daemons from starting in ${BUILDCHROOT_DIR}"
+  if [ -x "${CROSS_BUILDCHROOT_DIR}/sbin/init" -a ! -f "${CROSS_BUILDCHROOT_DIR}/usr/sbin/policy-rc.d" ]; then
+    echo "sysvinit: Using policy-rc.d to prevent daemons from starting in ${CROSS_BUILDCHROOT_DIR}"
 
-    sudo tee ${BUILDCHROOT_DIR}/usr/sbin/policy-rc.d > /dev/null << EOF
+    sudo tee ${CROSS_BUILDCHROOT_DIR}/usr/sbin/policy-rc.d > /dev/null << EOF
 #!/bin/sh
 echo "sysvinit: All runlevel operations denied by policy" >&2
 exit 101
 EOF
-    sudo chmod a+x ${BUILDCHROOT_DIR}/usr/sbin/policy-rc.d
+    sudo chmod a+x ${CROSS_BUILDCHROOT_DIR}/usr/sbin/policy-rc.d
   fi
 
   # Set hostname
-  sudo sh -c 'echo "isar" > ${BUILDCHROOT_DIR}/etc/hostname'
+  sudo sh -c 'echo "isar" > ${CROSS_BUILDCHROOT_DIR}/etc/hostname'
 
   # Create packages build folder
-  sudo install -m 0777 -d ${BUILDCHROOT_DIR}/home/builder
+  sudo install -m 0777 -d ${CROSS_BUILDCHROOT_DIR}/home/builder
 
   # Install host networking settings
-  sudo cp /etc/resolv.conf ${BUILDCHROOT_DIR}/etc
+  sudo cp /etc/resolv.conf ${CROSS_BUILDCHROOT_DIR}/etc
 
 }
 addtask do_setup_buildchroot before do_configure_buildchroot
@@ -119,7 +127,6 @@ do_configure_buildchroot() {
     echo "LANGUAGE=en_US.UTF-8" >> /etc/default/locale
     echo "LC_ALL=C"             >> /etc/default/locale
     echo "LC_CTYPE=C"           >> /etc/default/locale
-
 
 
     ## Configuration file for localepurge(8)
@@ -138,24 +145,35 @@ en_US.UTF-8
 EOF
 
 
-debconf-set-selections <<END
+    debconf-set-selections <<END
 locales locales/locales_to_be_generated multiselect en_US.UTF-8 UTF-8
 locales locales/default_environment_locale select en_US.UTF-8
 END
 
-#set up non-interactive configuration
-export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
-export LC_ALL=C LANGUAGE=C LANG=C
+    #set up non-interactive configuration
+    export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
+    export LC_ALL=C LANGUAGE=C LANG=C
 
-#run pre installation script
-/var/lib/dpkg/info/dash.preinst install
+    #run pre installation script
+    /var/lib/dpkg/info/dash.preinst install
 
-#configuring packages
-dpkg --configure -a
-dpkg --configure -a
-apt-get update
+    rm -f /etc/dpkg/dpkg.cfg.d/multiarch
+
+    #configuring packages
+    dpkg --configure -a
+    dpkg --configure -a
+    apt-get update
+
+
+    # Configure root filesystem for cross compiling
+    # multistraps multiarch is not working
+    dpkg --add-architecture ${DISTRO_ARCH}
+    echo "Acquire::AllowInsecureRepositories \"true\";" > /etc/apt/apt.conf.d/10allowunauth
+
+    apt-get update
+    apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" ${BUILDCHROOT_POSTINSTALL}
 }
 addtask do_configure_buildchroot before do_build
 do_configure_buildchroot[stamp-extra-info] = "${DISTRO}.chroot"
 do_configure_buildchroot[chroot] = "1"
-do_configure_buildchroot[id] = "${BUILDCHROOT_ID}"
+do_configure_buildchroot[id] = "${CROSS_BUILDCHROOT_ID}"

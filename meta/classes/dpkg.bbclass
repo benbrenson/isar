@@ -10,9 +10,12 @@ do_unpack[deptask] = "do_build"
 
 # Each package should have its own unique build folder, so use
 # recipe name as identifier
+CHROOT_DIR = "${BUILDCHROOT_DIR}"
 BUILDROOT = "${BUILDCHROOT_DIR}/${PP}"
-EXTRACTDIR="${BUILDROOT}"
+EXTRACTDIR = "${BUILDROOT}"
 S = "${BUILDROOT}/${SRC_DIR}"
+
+CROSS_COMPILE_ENABLED = "false"
 
 python () {
     s = d.getVar('S', True).rstrip('/')
@@ -23,17 +26,14 @@ python () {
 }
 
 
-# Get list of dependencies manually. The package is not in apt, so no apt-get
-# build-dep. dpkg-checkbuilddeps output contains version information and isn't
-# directly suitable for apt-get install.
-#DEPS=`perl -ne 'next if /^#/; $p=(s/^Build-Depends:\s*/ / or (/^ / and $p)); s/,|\n|\([^)]+\)//mg; print if $p' < debian/control`
-
-# Install deps
-#apt-get install $DEPS
-
 # Build package from sources within chroot
 do_build() {
     cd ${PPS}
+    # Get list of dependencies manually. The package is not in apt, so no apt-get
+    # build-dep. dpkg-checkbuilddeps output contains version information and isn't
+    # directly suitable for apt-get install.
+    DEPS=`perl -ne 'next if /^#/; $p=(s/^Build-Depends:\s*/ / or (/^ / and $p)); s/,|\n|\([^)]+\)//mg; print if $p' < debian/control`
+    apt-get install -y $DEPS
     dpkg-buildpackage ${DEB_SIGN} -pgpg -sn -Z${DEB_COMPRESSION}
 }
 do_build[stamp-extra-info] = "${MACHINE}.chroot"

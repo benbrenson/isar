@@ -98,7 +98,8 @@ do_generate_debcontrol[stamp-extra-info] = "${DISTRO}"
 
 
 python do_generate_rules(){
-    if d.getVar('GENERATE_RULES', True) != 'true':
+    rules_exist = d.getVar('RULE_EXIST', True) or "false"
+    if rules_exist == 'true':
         return
 
     import shutil
@@ -123,3 +124,5 @@ do_dh_make(){
 addtask do_dh_make after do_generate_debcontrol before do_build
 do_dh_make[stamp-extra-info] = "${DISTRO}"
 
+
+#EXPORT_FUNCTIONS debianize_build debianize_clean debianize_build-arch debianize_build-indep debianize_install debianize_binary-arch debianize_binary-indep debianize_binary

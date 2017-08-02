@@ -10,11 +10,14 @@
 # 3. Modify the kernel makefiles for beeing capable of compiling overlays (see commit baa05fa of kernel repository).
 # TODO: Maybe we should move the dt compilation into a seperate bbclass, to get independent from kernel dtc support?
 
-export DTB_SRC_DIR ?= "arch/${TARGET_ARCH}/boot/dts"
-export DTBS        ?= ""
-export DTB_DEST_DIR ?= "boot/dts"
-export KIMAGE_TYPE ?= "zImage"
-export UIMAGE_LOADADDR ?= ""
+DTB_SRC_DIR ?= "arch/${TARGET_ARCH}/boot/dts"
+DTBS        ?= ""
+DTB_DEST_DIR ?= "boot/dts"
+KIMAGE_TYPE ?= "zImage"
+UIMAGE_LOADADDR ?= ""
+
+CROSS_COMPILE ?= ""
+UIMAGE_LOADADDR ?= ""
 
 MAKE = "\
 ${@bb.utils.contains('CROSS_COMPILE_ENABLED', \
@@ -82,20 +85,24 @@ debianize_build() {
 	${MAKE} ${DTBS}
 }
 
+
 debianize_clean[target] = "clean"
 debianize_clean() {
 	@echo "Running clean target."
 }
+
 
 debianize_build-arch[target] = "build-arch"
 debianize_build-arch() {
 	@echo "Running build-arch target."
 }
 
+
 debianize_build-indep[target] = "build-indep"
 debianize_build-indep() {
 	@echo "Running build-indep target."
 }
+
 
 debianize_install[target] = "install"
 debianize_install[tdeps] = "build"
@@ -114,6 +121,7 @@ debianize_install() {
 	install -m 0644 $(shell find ${DTB_SRC_DIR} -name "*.dtb")   debian/${PN}/${DTB_DEST_DIR}
 	install -m 0644 $(shell find ${DTBO_SRC_DIR} -name "*.dtbo") debian/${PN}/${DTBO_DEST_DIR}
 }
+
 
 debianize_binary-arch[target] = "binary-arch"
 debianize_binary-arch[tdeps] = "build install"
@@ -137,11 +145,13 @@ debianize_binary-arch() {
 	dh_builddeb
 }
 
+
 debianize_binary-indep[target] = "binary-indep"
 debianize_binary-indep[tdeps] = "build install"
 debianize_binary-indep() {
 	@echo "Running binary-indep target."
 }
+
 
 debianize_binary[target] = "binary"
 debianize_binary[tdeps] = "binary-arch binary-indep"
