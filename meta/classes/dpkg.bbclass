@@ -5,7 +5,7 @@
 inherit fetch
 
 # Add dependency from buildchroot creation
-DEPENDS += "buildchroot"
+DEPENDS = "buildchroot"
 do_unpack[deptask] = "do_build"
 
 # Each package should have its own unique build folder, so use
@@ -33,7 +33,14 @@ do_build() {
     # build-dep. dpkg-checkbuilddeps output contains version information and isn't
     # directly suitable for apt-get install.
     DEPS=`perl -ne 'next if /^#/; $p=(s/^Build-Depends:\s*/ / or (/^ / and $p)); s/,|\n|\([^)]+\)//mg; print if $p' < debian/control`
-    apt-get install -y $DEPS
+
+    (
+
+        flock 200
+        apt-get install -y $DEPS
+
+    )   200>/lock
+
     dpkg-buildpackage ${DEB_SIGN} -pgpg -sn -Z${DEB_COMPRESSION}
 }
 do_build[stamp-extra-info] = "${MACHINE}.chroot"
@@ -42,8 +49,9 @@ do_build[id] = "${BUILDCHROOT_ID}"
 
 # Install package to dedicated deploy directory
 do_install() {
-    install -d ${DEPLOY_DIR_DEB}
-    install -m 755 ${BUILDROOT}/*.deb ${DEPLOY_DIR_DEB}/
+    install -d ${DEPLOY_DIR_DEB}/${DISTRO_ARCH}
+    install -m 755 ${BUILDROOT}/*.deb ${DEPLOY_DIR_DEB}/${DISTRO_ARCH}
 }
 addtask do_install after do_build
+do_install[dirs] += "${DEPLOY_DIR_DEB}/${DISTRO_ARCH}"
 do_install[stamp-extra-info] = "${MACHINE}.chroot"

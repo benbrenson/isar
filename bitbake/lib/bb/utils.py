@@ -1503,3 +1503,40 @@ def load_plugins(logger, plugins, pluginpath):
                 plugins.append(obj or plugin)
             else:
                 plugins.append(plugin)
+
+def prune_suffix(var, suffixes, d):
+    # See if var ends with any of the suffixes listed and
+    # remove it if found
+    for suffix in suffixes:
+        if var.endswith(suffix):
+            var = var.replace(suffix, '')
+    return var
+    #prefix = d.getVar("MLPREFIX", True)
+    #if prefix and var.startswith(prefix):
+    #    var = var.replace(prefix, "")
+
+
+def explode_dep_pkg_suffix(s, d):
+    # Take a RDEPENDS like string and unbind
+    # all pkg suffixes
+    suffixes = d.getVar('SPECIAL_PKGSUFFIX', True).split()
+    s = s.split()
+    for i in range(len(s)):
+        for suffix in suffixes:
+            if s[i].endswith(suffix):
+                s[i] = s[i].replace(suffix, '')
+
+    return ' '.join(s)
+
+
+def append_dep_pkg_suffix(suffix, s, d):
+    # Append pkg suffixes to an RDEPENDS like
+    # string
+    new = explode_dep_pkg_sufix(s,d)
+
+    new = old.split()
+
+    for i in range(len(new)):
+        new[i] += suffix
+
+    return ' '.join(new)

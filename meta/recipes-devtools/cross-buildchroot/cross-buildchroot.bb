@@ -23,13 +23,15 @@ BUILDCHROOT_PREINSTALL ?= "gcc \
                            docbook-to-man \
                            apt \
                            automake \
+                           autoconf \
                            gnupg \
                            vim \
                            flex \
                            git \
                            bison \
                            bc \
-                           u-boot-tools"
+                           u-boot-tools \
+                           pkg-config"
 
 
 # Some packages are only installable after late configurations for
@@ -111,6 +113,9 @@ EOF
 
   # Create packages build folder
   sudo install -m 0777 -d ${CROSS_BUILDCHROOT_DIR}/home/builder
+
+  # Create deb folder for installing potential dependencies
+  sudo install -m 0777 -d ${CROSS_BUILDCHROOT_DIR}/home/opt/deb
 
   # Install host networking settings
   sudo cp /etc/resolv.conf ${CROSS_BUILDCHROOT_DIR}/etc

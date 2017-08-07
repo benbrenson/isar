@@ -22,7 +22,7 @@ UIMAGE_LOADADDR ?= ""
 MAKE = "\
 ${@bb.utils.contains('CROSS_COMPILE_ENABLED', \
                      'true', \
-                     'make ARCH=${TARGET_ARCH} CROSS_COMPILE=${CROSS_COMPILE}', \
+                     'make ARCH=${TARGET_ARCH} CROSS_COMPILE=${TARGET_PREFIX}-', \
                      'make ARCH=${TARGET_ARCH}', \
                       d)} \
                      "
@@ -111,15 +111,15 @@ debianize_install() {
 	dh_testdir
 	dh_testroot
 
-	mkdir -p debian/${PN}
-	mkdir -p debian/${PN}/${DTB_DEST_DIR}
-	mkdir -p debian/${PN}/${DTBO_DEST_DIR}
+	mkdir -p debian/${BPN}
+	mkdir -p debian/${BPN}/${DTB_DEST_DIR}
+	mkdir -p debian/${BPN}/${DTBO_DEST_DIR}
 
-	${MAKE} modules_install INSTALL_MOD_PATH=debian/${PN}
+	${MAKE} modules_install INSTALL_MOD_PATH=debian/${BPN}
 
-	install -m 0644 arch/${TARGET_ARCH}/boot/${KIMAGE_TYPE}      debian/${PN}/boot/${KIMAGE_TYPE}
-	install -m 0644 $(shell find ${DTB_SRC_DIR} -name "*.dtb")   debian/${PN}/${DTB_DEST_DIR}
-	install -m 0644 $(shell find ${DTBO_SRC_DIR} -name "*.dtbo") debian/${PN}/${DTBO_DEST_DIR}
+	install -m 0644 arch/${TARGET_ARCH}/boot/${KIMAGE_TYPE}      debian/${BPN}/boot/${KIMAGE_TYPE}
+	install -m 0644 $(shell find ${DTB_SRC_DIR} -name "*.dtb")   debian/${BPN}/${DTB_DEST_DIR}
+	install -m 0644 $(shell find ${DTBO_SRC_DIR} -name "*.dtbo") debian/${BPN}/${DTBO_DEST_DIR}
 }
 
 

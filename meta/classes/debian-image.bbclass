@@ -177,12 +177,13 @@ do_configure_rootfs[id] = "${ROOTFS_ID}"
 
 
 # Install Debian packages, that were built from sources
+IMAGE_INSTALL_DEBS="${@bb.utils.explode_dep_pkg_suffix(d.getVar('IMAGE_INSTALL', True), d)}"
 do_populate() {
-    if [ -n "${IMAGE_INSTALL}" ]; then
+    if [ -n "${IMAGE_INSTALL_DEBS}" ]; then
         sudo mkdir -p ${S}/deb
 
-        for p in ${IMAGE_INSTALL}; do
-            sudo cp ${DEPLOY_DIR_DEB}/${p}_*.deb ${S}/deb
+        for p in ${IMAGE_INSTALL_DEBS}; do
+            sudo cp ${DEPLOY_DIR_DEB}/${DISTRO_ARCH}/${p}_*.deb ${S}/deb
         done
 
         sudo schroot -p -c ${ROOTFS_ID} -d / -- /usr/bin/dpkg -i -R /deb

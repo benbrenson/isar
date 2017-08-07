@@ -4,13 +4,9 @@
 
 CROSS_COMPILE ?= ""
 
-MAKE = "\
-${@bb.utils.contains('CROSS_COMPILE_ENABLED', \
-'true', \
-'make ARCH=${TARGET_ARCH} CROSS_COMPILE=${CROSS_COMPILE}', \
-'make ARCH=${TARGET_ARCH}', \
-d)} \
-"
+MAKE ?= "make ARCH=${TARGET_ARCH}"
+MAKE_class-cross = "make ARCH=${TARGET_ARCH} CROSS_COMPILE=${TARGET_PREFIX}-"
+
 
 DH_SHLIBDEPS="\
 ${@bb.utils.contains('CROSS_COMPILE_ENABLED', \
@@ -35,7 +31,7 @@ debianize_clean[target] = "clean"
 debianize_clean() {
 	@echo "Running clean target."
 	${MAKE} mrproper
-	rm -rf debian/${PN}
+	rm -rf debian/${BPN}
 }
 
 
@@ -59,10 +55,10 @@ debianize_install() {
 	dh_testroot
 	dh_clean  -k
 
-	install -d debian/${PN}/boot
-	install -m 0644 ${PPS}/${BOOT_IMG} debian/${PN}/boot/${BOOT_IMG}
-	install -m 0644 ${PPS}/cmdline.txt debian/${PN}/boot/cmdline.txt
-	install -m 0644 boot.scr debian/${PN}/boot/${BOOTSCRIPT}
+	install -d debian/${BPN}/boot
+	install -m 0644 ${PPS}/${BOOT_IMG} debian/${BPN}/boot/${BOOT_IMG}
+	install -m 0644 ${PPS}/cmdline.txt debian/${BPN}/boot/cmdline.txt
+	install -m 0644 boot.scr debian/${BPN}/boot/${BOOTSCRIPT}
 }
 
 

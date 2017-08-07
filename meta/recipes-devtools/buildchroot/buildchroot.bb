@@ -23,13 +23,15 @@ BUILDCHROOT_PREINSTALL ?= "gcc \
                            docbook-to-man \
                            apt \
                            automake \
+                           autoconf \
                            gnupg \
                            python \
                            flex \
                            git \
                            bison \
                            bc \
-                           u-boot-tools"
+                           u-boot-tools \
+                           pkg-config"
 
 WORKDIR = "${TMPDIR}/work/${PF}/${DISTRO}"
 
@@ -103,6 +105,9 @@ EOF
 
   # Create packages build folder
   sudo install -m 0777 -d ${BUILDCHROOT_DIR}/home/builder
+
+  # Create deb folder for installing potential dependencies
+  sudo install -m 0777 -d ${BUILDCHROOT_DIR}/home/opt/deb
 
   # Install host networking settings
   sudo cp /etc/resolv.conf ${BUILDCHROOT_DIR}/etc

@@ -12,7 +12,11 @@
 #Variables
 #PACKAGE_NAME (Name of the binary package build from source package)
 #SOURCE_NAME  (Name of the debianized source package, this has to be the basename of PACKAGE_NAME, since each package will be build from source package)
-#DEB_DEPENDS  (Package runtime dependencies)
+#DEB_DEPENDS  (Source package build dependencies)
+#DEB_RDEPENDS (Binary package runtime dependencies)
+#DEB_RDEPENDS_DEV (Binary dev-package runtime dependencies)
+#DEB_RDEPENDS_DBG (Binary dbg-package runtime dependencies)
+#DEPENDS_VARS (Collection of all DEPENDS vars, required for extending vars in recipes)
 #PRIORITY     (Debian priority: optional, required, important, standard, extra)
 #SECTION      (Debian section of this package: main, non-free, contrib, devel, doc, libs, admin, mail, net... etc.)
 #URL          (Package repository url, also required for recipes)
@@ -22,13 +26,17 @@
 #DEBEMAIL
 #DEBFULLNAME
 
-PACKAGE_NAME ?= "${PN}"
-SOURCE_NAME  ?= "${PN}"
-DEB_PKG      ?= "${PN}_${PV}"
+PACKAGE_NAME ?= "${BPN}"
+SOURCE_NAME  ?= "${BPN}"
+DEB_PKG      ?= "${BPN}_${PV}"
 DEB_VERSION  ?= "${PV}"
 MAINTAINER   ?= "${DEB_FULLNAME} ${DEB_EMAIL}"
 DEB_ARCH     ?= "${DISTRO_ARCH}"
-DEB_DEPENDS  ?= ""
+DEB_DEPENDS  ?= "debhelper:(>=9) "
+DEB_RDEPENDS ?= "${shlibs:Depends} ${misc:Depends} "
+DEB_RDEPENDS_DEV ?= "${shlibs:Depends} ${misc:Depends} "
+DEPENDS_VARS = "DEB_DEPENDS DEB_RDEPENDS DEB_RDEPENDS_DEV"
+
 DEB_ORIG_SUFFIX ?= ".orig.tar.xz"
 DEB_DEBIANIZED_SUFFIX ?= "-*.debian.tar.xz"
 
@@ -44,7 +52,8 @@ def do_mcreate(func, mfile, d):
 
 def create (filename, d):
     with open(filename, 'w') as mfile:
-        mfile.write('#!/usr/bin/make -f')
+        mfile.write('#!/usr/bin/make -f\n')
+        mfile.write('DH_VERBOSE=1')
         do_mcreate('debianize_build', mfile, d)
         do_mcreate('debianize_clean', mfile, d)
         do_mcreate('debianize_build-indep', mfile, d)
@@ -79,6 +88,28 @@ addtask do_test_vars after do_unpack before do_generate_debcontrol
 do_test_vars[stamp-extra-info] = "${DISTRO}"
 
 
+# Generate Depends and Build-Depends strings
+python do_deb_depends() {
+
+	vars = d.getVar('DEPENDS_VARS', True)
+
+	for var in vars.split():
+		depends = d.getVar(var, True)
+
+		if not len(depends):
+			return
+
+		depends = depends.split()
+		for i in range(len(depends)):
+			if depends[i].startswith('$'):
+				continue
+			depends[i] = depends[i].replace(':',' ')
+
+		depends = ', '.join(depends)
+		depends += ', '
+		d.setVar(var, depends)
+}
+
 CONTROL="${EXTRACTDIR}/debian/control"
 do_generate_debcontrol() {
 
@@ -92,9 +123,11 @@ do_generate_debcontrol() {
     sed -i -e 's/##MAINTAINER##/${MAINTAINER}/g'     ${CONTROL}
     sed -i -e 's/##DEPENDS##/${DEB_DEPENDS}/g'       ${CONTROL}
     sed -i -e 's/##VERSION##/${DEB_VERSION}/g'       ${CONTROL}
+    sed -i -e 's/##RDEPENDS##/${DEB_RDEPENDS}/g'       ${CONTROL}
 }
 addtask do_generate_debcontrol after do_test_vars before do_dh_make
 do_generate_debcontrol[stamp-extra-info] = "${DISTRO}"
+do_generate_debcontrol[prefuncs] = "do_deb_depends"
 
 
 python do_generate_rules(){
@@ -111,17 +144,18 @@ python do_generate_rules(){
 addtask do_generate_rules after do_generate_debcontrol before do_dh_make
 do_generate_rules[stamp-extra-info] = "${DISTRO}"
 
-
+DH_MAKE ?= "dh_make -n --copyright ${LICENSE} -y --createorig --single -t ${EXTRACTDIR}/debian/ -p ${DEB_PKG}"
 do_dh_make(){
     cd ${S}
-    rm -f ${WORKDIR}/${DEB_PKG}${DEB_ORIG_SUFFIX}
-    rm -f ${WORKDIR}/${DEB_PKG}${DEB_DEBIANIZED_SUFFIX}
-    rm -rf ${S}/debian
-    rm -f ${WORKDIR}/${DEB_PKG}-*.dsc
 
-    dh_make -n --copyright ${LICENSE} -y --createorig --single -t ${EXTRACTDIR}/debian/ -p ${DEB_PKG}
+    rm -f ${BUILDROOT}/${DEB_PKG}${DEB_ORIG_SUFFIX}
+    rm -f ${BUILDROOT}/${DEB_PKG}${DEB_DEBIANIZED_SUFFIX}
+    rm -rf ${S}/debian
+    rm -f ${BUILDROOT}/${DEB_PKG}-*.dsc
+
+    ${DH_MAKE}
 }
-addtask do_dh_make after do_generate_debcontrol before do_build
+addtask do_dh_make after do_generate_rules before do_build
 do_dh_make[stamp-extra-info] = "${DISTRO}"
 
 
