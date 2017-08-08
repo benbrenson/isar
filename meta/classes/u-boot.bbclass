@@ -56,11 +56,13 @@ debianize_install() {
 	dh_clean  -k
 
 	install -d debian/${BPN}/boot
+	install -d debian/tmp
+
 	install -m 0644 ${PPS}/${BOOT_IMG} debian/${BPN}/boot/${BOOT_IMG}
 	install -m 0644 ${PPS}/cmdline.txt debian/${BPN}/boot/cmdline.txt
 	install -m 0644 boot.scr debian/${BPN}/boot/${BOOTSCRIPT}
+	install -m 0644 tools/env/lib.a debian/tmp/libubootenv.a
 }
-
 
 
 debianize_binary-arch[target] = "binary-arch"
