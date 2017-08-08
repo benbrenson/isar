@@ -24,6 +24,9 @@ do_setup_schroot() {
     sed -i -e 's|##CROSS_BUILDCHROOT_ID##|${CROSS_BUILDCHROOT_ID}|g' ${WORKDIR}/01_isar.conf
     sed -i -e 's|##ROOTFS_ID##|${ROOTFS_ID}|g' ${WORKDIR}/01_isar.conf
 
+    sed -i -e 's|##DEPLOY_DEB##|${DEPLOY_DIR_DEB}|g' ${WORKDIR}/fstab
+    sed -i -e 's|##CHROOT_DEPLOY_DEB##|${CHROOT_DEPLOY_DIR_DEB}|g' ${WORKDIR}/fstab
+
     [ -d "/etc/schroot/chroot.d" ] || bbfatal "Config directory /etc/schroot/chroot.d not available."
 
     sudo install -m 0644 ${WORKDIR}/01_isar.conf /etc/schroot/chroot.d/01_isar.conf

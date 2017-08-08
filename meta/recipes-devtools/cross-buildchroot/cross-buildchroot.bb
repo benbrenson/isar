@@ -115,7 +115,7 @@ EOF
   sudo install -m 0777 -d ${CROSS_BUILDCHROOT_DIR}/home/builder
 
   # Create deb folder for installing potential dependencies
-  sudo install -m 0777 -d ${CROSS_BUILDCHROOT_DIR}/home/opt/deb
+  sudo install -m 0777 -d ${CROSS_BUILDCHROOT_DIR}${CHROOT_DEPLOY_DIR_DEB}
 
   # Install host networking settings
   sudo cp /etc/resolv.conf ${CROSS_BUILDCHROOT_DIR}/etc

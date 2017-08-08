@@ -7,8 +7,9 @@
 /sys            /sys            none    rw,bind         0       0
 /dev            /dev            none    rw,bind         0       0
 /dev/pts        /dev/pts        none    rw,bind         0       0
-#/home           /home           none    rw,bind         0       0
 /tmp            /tmp            none    rw,bind         0       0
+##DEPLOY_DEB##  ##CHROOT_DEPLOY_DEB## none    rw,bind         0       0
+
 
 # It may be desirable to have access to /run, especially if you wish
 # to run additional services in the chroot.  However, note that this
