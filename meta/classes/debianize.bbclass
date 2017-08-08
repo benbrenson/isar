@@ -51,16 +51,22 @@ def do_mcreate(func, mfile, d):
 
 
 def create (filename, d):
+    keys = []
+    for key in bb.data.keys(d):
+        if 'debianize_' in key:
+            keys.append(key)
+
+    if not len(keys):
+        bb.warn('No debianize_* function defined. Skipping...')
+        return
+
     with open(filename, 'w') as mfile:
         mfile.write('#!/usr/bin/make -f\n')
         mfile.write('DH_VERBOSE=1')
-        do_mcreate('debianize_build', mfile, d)
-        do_mcreate('debianize_clean', mfile, d)
-        do_mcreate('debianize_build-indep', mfile, d)
-        do_mcreate('debianize_install', mfile, d)
-        do_mcreate('debianize_binary-arch', mfile, d)
-        do_mcreate('debianize_binary-indep', mfile, d)
-        do_mcreate('debianize_binary', mfile, d)
+
+        for deb in keys:
+            do_mcreate(deb, mfile, d)
+
         mfile.write('\n .PHONY: build clean binary-indep binary-arch binary install \n')
 
 
