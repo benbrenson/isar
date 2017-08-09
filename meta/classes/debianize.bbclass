@@ -35,7 +35,19 @@ DEB_ARCH     ?= "${DISTRO_ARCH}"
 DEB_DEPENDS  ?= "debhelper:(>=9) "
 DEB_RDEPENDS ?= "${shlibs:Depends} ${misc:Depends} "
 DEB_RDEPENDS_DEV ?= "${shlibs:Depends} ${misc:Depends} "
-DEPENDS_VARS = "DEB_DEPENDS DEB_RDEPENDS DEB_RDEPENDS_DEV"
+
+RDEPENDS_VARS = " DEB_RDEPENDS DEB_RDEPENDS_DEV RDEPENDS"
+BUILD_DEPENDS_VARS = " DEB_DEPENDS DEPENDS"
+DEPENDS_VARS = "${BUILD_DEPENDS_VARS} ${RDEPENDS_VARS} "
+
+# Skipp these variables since these are no debian package based dependencies
+SKIPP_DEPENDS = "buildchroot cross-buildchroot"
+
+# What we do here is to concentate the fixed DEP strings (e.g. DEPENDS="bar foo" -> DEPENDS_FIXED="bar, foo, ")
+# into a new variable which then will substitute the Build depends variable in control file.
+# We won't make use use of the original DEP vars, since changing them may break bitbakes dependency chain.
+DEPS_FIXED = ""
+RDEPS_FIXED = ""
 
 DEB_ORIG_SUFFIX ?= ".orig.tar.xz"
 DEB_DEBIANIZED_SUFFIX ?= "-*.debian.tar.xz"
@@ -94,27 +106,59 @@ addtask do_test_vars after do_unpack before do_generate_debcontrol
 do_test_vars[stamp-extra-info] = "${DISTRO}"
 
 
-# Generate Depends and Build-Depends strings
+# Generate Build-Depends and Depends for debian control
 python do_deb_depends() {
 
-	vars = d.getVar('DEPENDS_VARS', True)
+    vars          = d.getVar('DEPENDS_VARS', True)
+    deb_host_arch = d.getVar('DEB_HOST_ARCH', True)
+    distro_arch   = d.getVar('DISTRO_ARCH', True)
+    skipps        = d.getVar('SKIPP_DEPENDS', True)
+    build_depends = ''
+    rdepends      = ''
 
-	for var in vars.split():
-		depends = d.getVar(var, True)
+    for var in vars.split():
+        depends = d.getVar(var, True) or ""
+        d_set = set(depends.split())
+        depends = list(d_set)
 
-		if not len(depends):
-			return
+        # Try to clean depends from possible skipp value, since
+        # these depends are no debian packages.
+        # Do this silently!
+        for skipp in skipps.split():
+            try:
+                depends.remove(skipp)
+            except ValueError:
+                pass
 
-		depends = depends.split()
-		for i in range(len(depends)):
-			if depends[i].startswith('$'):
-				continue
-			depends[i] = depends[i].replace(':',' ')
+        if not len(depends):
+            continue
 
-		depends = ', '.join(depends)
-		depends += ', '
-		d.setVar(var, depends)
+        for i in range(len(depends)):
+            # Skipp ${*:*} similiar vars
+            if depends[i].startswith('$'):
+                continue
+            depends[i] = depends[i].replace(':',' ')
+
+            # Exchange -native suffix with DEB_HOST_ARCH and
+            # -cross suffix with DISTRO_ARCH
+            if depends[i].endswith('-native'):
+                depends[i] = depends[i].replace('-native', ':' + deb_host_arch)
+            if depends[i].endswith('-cross'):
+                depends[i] = depends[i].replace('-cross', ':' + distro_arch)
+
+        # Now concentate fixed strings
+        if var in d.getVar('BUILD_DEPENDS_VARS', True):
+            build_depends += ', '.join(depends)
+            build_depends += ', '
+        if var in d.getVar('RDEPENDS_VARS', True):
+            rdepends = ', '.join(depends)
+            rdepends += ', '
+
+    # Now concentate DEPENDS and RDEPENDS and DEB_DEPENDS into DEPS_FIXED
+    d.setVar('DEPS_FIXED', build_depends)
+    d.setVar('RDEPS_FIXED', rdepends)
 }
+
 
 CONTROL="${EXTRACTDIR}/debian/control"
 do_generate_debcontrol() {
@@ -127,9 +171,9 @@ do_generate_debcontrol() {
     sed -i -e 's/##DEB_ARCH##/${DEB_ARCH}/g'         ${CONTROL}
     sed -i -e 's/##DESCRIPTION##/${DESCRIPTION}/g'   ${CONTROL}
     sed -i -e 's/##MAINTAINER##/${MAINTAINER}/g'     ${CONTROL}
-    sed -i -e 's/##DEPENDS##/${DEB_DEPENDS}/g'       ${CONTROL}
+    sed -i -e 's/##DEPENDS##/${DEPS_FIXED}/g'        ${CONTROL}
     sed -i -e 's/##VERSION##/${DEB_VERSION}/g'       ${CONTROL}
-    sed -i -e 's/##RDEPENDS##/${DEB_RDEPENDS}/g'       ${CONTROL}
+    sed -i -e 's/##RDEPENDS##/${RDEPS_FIXED}/g'      ${CONTROL}
 }
 addtask do_generate_debcontrol after do_test_vars before do_dh_make
 do_generate_debcontrol[stamp-extra-info] = "${DISTRO}"
