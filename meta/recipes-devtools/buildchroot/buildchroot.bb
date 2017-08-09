@@ -35,6 +35,8 @@ BUILDCHROOT_PREINSTALL ?= "gcc \
 
 WORKDIR = "${TMPDIR}/work/${PF}/${DISTRO}"
 
+APT_SRC_DIR = "${BUILDCHROOT_DIR}/etc/apt/sources.list.d/"
+APT_SRC_FILE = "${APT_SRC_DIR}/local.list"
 
 do_buildchroot() {
     # Copy config files
@@ -109,6 +111,16 @@ EOF
   # Create deb folder for installing potential dependencies
   sudo install -m 0777 -d ${BUILDCHROOT_DIR}${CHROOT_DEPLOY_DIR_DEB}
 
+  # Add local apt repository for auto install dependencies
+  sudo install -m 0755 -d ${APT_SRC_DIR}
+  install -m 0755 -d ${DEPLOY_DIR_DEB}/${DISTRO_ARCH}
+  install -m 0755 -d ${DEPLOY_DIR_DEB}/${DEB_HOST_ARCH}
+  sudo sh -c 'echo "deb [ trusted=yes ] file:${CHROOT_DEPLOY_DIR_DEB}/${DEB_HOST_ARCH}/ ./" > ${APT_SRC_FILE}'
+  sudo sh -c 'echo "deb [ trusted=yes ] file:${CHROOT_DEPLOY_DIR_DEB}/${DISTRO_ARCH}/ ./" >> ${APT_SRC_FILE}'
+  touch ${DEPLOY_DIR_DEB}/${DEB_HOST_ARCH}/Packages
+  touch ${DEPLOY_DIR_DEB}/${DISTRO_ARCH}/Packages
+
+
   # Install host networking settings
   sudo cp /etc/resolv.conf ${BUILDCHROOT_DIR}/etc
 
@@ -164,3 +176,9 @@ addtask do_configure_buildchroot before do_build
 do_configure_buildchroot[stamp-extra-info] = "${DISTRO}.chroot"
 do_configure_buildchroot[chroot] = "1"
 do_configure_buildchroot[id] = "${BUILDCHROOT_ID}"
+
+
+do_install() {
+  :
+}
+addtask do_install after do_build

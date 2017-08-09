@@ -12,15 +12,10 @@ S = "${EXTRACTDIR}/${SRC_DIR}"
 
 DEB_ARCH = "${DEB_HOST_ARCH}"
 
-# Install package to dedicated deploy directory
-do_install() {
-    install -d ${DEPLOY_DIR_DEB}/${DEB_HOST_ARCH}
-    install -m 755 ${BUILDROOT}/*.deb ${DEPLOY_DIR_DEB}/${DEB_HOST_ARCH}
-}
 
-
-# Set chroot environment for do build task
+# Set chroot environment for do build and do_install task
 do_build[id] = "${CROSS_BUILDCHROOT_ID}"
+do_install[id] = "${CROSS_BUILDCHROOT_ID}"
 
 
 

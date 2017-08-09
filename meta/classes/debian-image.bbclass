@@ -180,21 +180,24 @@ do_configure_rootfs[id] = "${ROOTFS_ID}"
 IMAGE_INSTALL_DEBS="${@bb.utils.explode_dep_pkg_suffix(d.getVar('IMAGE_INSTALL', True), d)}"
 do_populate() {
     if [ -n "${IMAGE_INSTALL_DEBS}" ]; then
-        sudo mkdir -p ${S}/deb
+       
+        # Temporary add local sources for installing packages created by isar
+        echo "deb [ trusted=yes ] file:${CHROOT_DEPLOY_DIR_DEB}/${DEB_HOST_ARCH}/ ./" > /etc/apt/sources.list.d/local.list
+        echo "deb [ trusted=yes ] file:${CHROOT_DEPLOY_DIR_DEB}/${DISTRO_ARCH}/ ./" >> /etc/apt/sources.list.d/local.list
+        
+        apt-get update
+        apt-get install -y ${IMAGE_INSTALL_DEBS}
 
-        for p in ${IMAGE_INSTALL_DEBS}; do
-            sudo cp ${DEPLOY_DIR_DEB}/${DISTRO_ARCH}/${p}_*.deb ${S}/deb
-        done
-
-        sudo schroot -p -c ${ROOTFS_ID} -d / -- /usr/bin/dpkg -i -R /deb
-
-        sudo rm -rf ${S}/deb
+        # Cleanup
+        rm -f /etc/apt/sources.list.d/local.list
+        apt-get update
     fi
 }
 addtask populate before do_post_rootfs
 do_populate[stamp-extra-info] = "${MACHINE}"
 do_populate[deptask] = "do_install"
-
+do_populate[chroot] = "1"
+do_populate[id] = "${ROOTFS_ID}"
 
 
 # Post tasks running after all other important base tasks have finished.

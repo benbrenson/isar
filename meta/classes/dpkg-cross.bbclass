@@ -8,8 +8,8 @@
 
 inherit fetch
 
-DEPENDS = "buildchroot cross-buildchroot"
-do_unpack[deptask] = "do_build"
+DEPENDS += "buildchroot cross-buildchroot"
+do_unpack[deptask] = "do_install"
 
 
 CHROOT_DIR = "${CROSS_BUILDCHROOT_DIR}"
@@ -36,11 +36,11 @@ do_build() {
     DEPS=`perl -ne 'next if /^#/; $p=(s/^Build-Depends:\s*/ / or (/^ / and $p)); s/,|\n|\([^)]+\)//mg; print if $p' < debian/control`
 
     (
-
         flock 200
-        apt-get install -y $DEPS
-
-    )   200>/lock
+        for dep in $DEPS; do
+            apt-get ${APT_EXTRA_OPTS} install -y ${dep}
+        done
+    )   200>${CHROOT_DEPLOY_DIR_DEB}/lock
 
     dpkg-buildpackage ${DEB_SIGN} -pgpg -sn --host-arch=${DEB_ARCH} -Z${DEB_COMPRESSION}
 }
@@ -51,10 +51,27 @@ do_build[id] = "${CROSS_BUILDCHROOT_ID}"
 
 
 # Install package to dedicated deploy directory
+do_pre_install() {
+    install -d ${DEPLOY_DIR_DEB}/${DEB_ARCH}
+    install -m 755 ${BUILDROOT}/*.deb ${DEPLOY_DIR_DEB}/${DEB_ARCH}
+}
+addtask do_pre_install after do_build before do_install
+do_pre_install[stamp-extra-info] = "${DISTRO}"
+do_pre_install[dirs] += "${DEPLOY_DIR_IMAGE}"
+
+# Update the local apt cache
 do_install() {
-    install -d ${DEPLOY_DIR_DEB}/${DISTRO_ARCH}
-    install -m 755 ${BUILDROOT}/*.deb ${DEPLOY_DIR_DEB}/${DISTRO_ARCH}
+    (
+        flock 200
+        # Need to cd into directory, since index is relative
+        cd ${CHROOT_DEPLOY_DIR_DEB}/${DEB_ARCH}
+        # gzip is not required for local repos
+        dpkg-scanpackages ./ > ${CHROOT_DEPLOY_DIR_DEB}/${DEB_ARCH}/Packages
+        apt-get update
+    )   200>${CHROOT_DEPLOY_DIR_DEB}/lock
 }
 addtask do_install after do_build
-do_install[dirs] += "${DEPLOY_DIR_DEB}"
+do_install[prefuncs] = "do_pre_install"
 do_install[stamp-extra-info] = "${DISTRO}"
+do_install[chroot] = "1"
+do_install[id] = "${CROSS_BUILDCHROOT_ID}"

@@ -5,8 +5,8 @@
 inherit fetch
 
 # Add dependency from buildchroot creation
-DEPENDS = "buildchroot"
-do_unpack[deptask] = "do_build"
+DEPENDS += "buildchroot"
+do_unpack[deptask] = "do_install"
 
 # Each package should have its own unique build folder, so use
 # recipe name as identifier
@@ -35,23 +35,43 @@ do_build() {
     DEPS=`perl -ne 'next if /^#/; $p=(s/^Build-Depends:\s*/ / or (/^ / and $p)); s/,|\n|\([^)]+\)//mg; print if $p' < debian/control`
 
     (
-
         flock 200
-        apt-get install -y $DEPS
+        # DEPS can either be DEB_HOST_ARCH when running in cross buildchroot
+        # or DISTRO_ARCH when running in buildchroot. Both cases differ when
+        # setting DEB_ARCH in cross.bbclass or native.bbclass.
+        for dep in $DEPS; do
+            apt-get ${APT_EXTRA_OPTS} install -y ${dep}
+        done
+    )   200>${CHROOT_DEPLOY_DIR_DEB}/lock
 
-    )   200>/lock
-
-    dpkg-buildpackage ${DEB_SIGN} -pgpg -sn -Z${DEB_COMPRESSION}
+    dpkg-buildpackage ${DEB_SIGN} -pgpg -sn --host-arch=${DEB_ARCH} -Z${DEB_COMPRESSION}
 }
 do_build[stamp-extra-info] = "${MACHINE}.chroot"
 do_build[chroot] = "1"
 do_build[id] = "${BUILDCHROOT_ID}"
 
+
 # Install package to dedicated deploy directory
-do_install() {
-    install -d ${DEPLOY_DIR_DEB}/${DISTRO_ARCH}
-    install -m 755 ${BUILDROOT}/*.deb ${DEPLOY_DIR_DEB}/${DISTRO_ARCH}
+do_pre_install() {
+    install -d ${DEPLOY_DIR_DEB}/${DEB_ARCH}
+    install -m 755 ${BUILDROOT}/*.deb ${DEPLOY_DIR_DEB}/${DEB_ARCH}
 }
-addtask do_install after do_build
-do_install[dirs] += "${DEPLOY_DIR_DEB}/${DISTRO_ARCH}"
-do_install[stamp-extra-info] = "${MACHINE}.chroot"
+addtask do_pre_install after do_build before do_install
+do_pre_install[stamp-extra-info] = "${DISTRO}"
+do_pre_install[dirs] += "${DEPLOY_DIR_IMAGE}"
+
+# Update the local apt cache
+do_install() {
+    (
+        flock 200
+        # Need to cd into directory, since index is relative
+        cd ${CHROOT_DEPLOY_DIR_DEB}/${DEB_ARCH}
+        # gzip is not required for local repos
+        dpkg-scanpackages ./ > ${CHROOT_DEPLOY_DIR_DEB}/${DEB_ARCH}/Packages
+        apt-get update
+    )   200>${CHROOT_DEPLOY_DIR_DEB}/lock
+}
+addtask do_install after do_pre_install before do_post_install
+do_install[stamp-extra-info] = "${DISTRO}.chroot"
+do_install[chroot] = "1"
+do_install[id] = "${BUILDCHROOT_ID}"

@@ -64,7 +64,7 @@ do_copy_device_tree() {
 }
 addtask do_copy_device_tree after do_copy_device_tree before do_build
 
-do_install_append(){
+do_pre_install_append(){
     install -m 0644 ${S}/arch/${TARGET_ARCH}/boot/${KIMAGE_TYPE} ${DEPLOY_DIR_IMAGE}
 }
 do_install[dirs] += "${DEPLOY_DIR_IMAGE}"
