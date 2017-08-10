@@ -192,6 +192,8 @@ DESCRIPTION
 
     The -f option is used to build rootfs by running "bitbake <image>"
 
+    The -F option used to set the output name of the created image.
+
     The -s option is used to skip the build check.  The build check is
     a simple sanity check used to determine whether the user has
     sourced the build environment so that the -e option can operate

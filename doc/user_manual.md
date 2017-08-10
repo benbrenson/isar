@@ -85,9 +85,12 @@ mkdir sources
 mkdir $BUILDDIR
 
 git clone https://git.pixel-group.de/siemens-ct/Siemens_CT_REE_build-config.git $BUILDDIR
+
+cd sources
 git clone https://git.pixel-group.de/siemens-ct/Siemens_CT_REE_isar.git sources/isar
 git clone https://git.pixel-group.de/siemens-ct/Siemens_CT_REE-meta-siemens.git sources/meta-siemens
 git clone https://@git.pixel-group.de/siemens-ct/Siemens_CT_REE-meta-sunxi.git sources/meta-sunxi
+git clone https://git.pixel-group.de/siemens-ct/Siemens_CT_REE_meta-swupdate.git
 ```
 
 **Note: Since some repositories are reachable via https, you need to provide the required credentials via git-credentials:**
@@ -287,9 +290,8 @@ To add new distro, user should perform the following steps:
 Every machine is described in its configuration file. The file defines the following variables:
  - `KIMAGE_TYPE` - The name of kernel binary that it installed to `/boot` folder in target filesystem. This variable is used by isar for determing which
  image type has to be compiled by the kernel.
- - `INITRD_IMAGE` - The name of `ramdisk` binary. The meaning of this variable is similar to `KERNEL_IMAGE`. This variable is optional.
  - `MACHINE_SERIAL` - The name of serial device that will be used for console output.
- - `IMAGE_TYPE` - The type of images to be generated for this machine.
+ - `IMAGE_FSTYPES` - The type of images to be generated for this machine (e.g. sdcard).
  - `DTBS` - The primary device tree file. Isar will install this device tree to the location specified with ${DTB_INSTALL_DIR}.
  - `DTBOS` - Device tree overlay files. The kernel has to be capable of compiling device tree overlays.
  - `BOOT_IMG` - The name of the uboot image. Isar will also build a complete debian package for uboot.
@@ -307,11 +309,15 @@ DTBOS="sun8i-h3-i2c0.dtbo \
           sun8i-h3-i2c2.dtbo \
           sun8i-h3-spi-mcp2515.dtbo \
           sun8i-h3-sc16is760.dtbo \
+          sun8i-h3-spi-w5500.dtbo \
          "
 BOOT_IMG = "u-boot-sunxi-with-spl.bin"
 MACHINE_SERIAL = "ttyS0"
-IMAGE_TYPE = "rpi-sdimg"
+IMAGE_FSTYPES = "sdcard-redundant ext4"
+
+# This sets the compiler target architecture type:
 TARGET_ARCH="arm"
+
 ```
 
 To add new machine user should perform the following steps:

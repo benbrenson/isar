@@ -75,10 +75,19 @@ class DirectPlugin(ImagerPlugin):
         self._image = None
         self.ptable_format = self.ks.bootloader.ptable
         self.parts = self.ks.partitions
+        self.file_name = options.file_name
 
-        image_path = self._full_path(self.workdir, self.parts[0].disk, "direct")
-        self._image = PartitionedImage(image_path, self.ptable_format,
-                                       self.parts, self.native_sysroot)
+        if self.file_name:
+            _image_path = self._full_path(self.workdir, self.file_name)
+        else:
+            _image_path = self._full_path(self.workdir, self.parts[0].disk, "direct")
+
+        if len(self.parts) == 1 and self.parts[0].no_table:
+            self._image = StandaloneImage(_image_path, self.ptable_format,
+                                           self.parts, self.native_sysroot)
+        else:
+            self._image = PartitionedImage(_image_path, self.ptable_format,
+                                           self.parts, self.native_sysroot)
 
     def do_create(self):
         """
@@ -136,10 +145,12 @@ class DirectPlugin(ImagerPlugin):
 
         return updated
 
-    def _full_path(self, path, name, extention):
+    def _full_path(self, path, name, extention=None):
         """ Construct full file path to a file we generate. """
-        return os.path.join(path, "%s-%s.%s" % (self.name, name, extention))
-
+        if extention:
+            return os.path.join(path, "%s-%s.%s" % (self.name, name, extention))
+        else:
+            return os.path.join(path, "%s" % name)
     #
     # Actual implemention
     #
@@ -273,6 +284,37 @@ GPT_OVERHEAD = 34
 
 # Size of a sector in bytes
 SECTOR_SIZE = 512
+
+
+
+class StandaloneImage():
+    """ Filesystem on a single file, without any parition table."""
+    def __init__(self, path, ptable_format, partitions, native_sysroot=None):
+        self.path = path   # Path to the final image file
+        self.partitions = partitions
+
+
+    def prepare(self, imager):
+        """Prepare an image. Call prepare method of all image partitions."""
+        self.partitions[0].prepare(imager, imager.workdir, imager.oe_builddir,
+                                   imager.rootfs_dir, imager.bootimg_dir,
+                                   imager.kernel_dir, imager.native_sysroot)
+
+    def layout_partitions(self):
+        pass
+
+    def create(self):
+        source = self.partitions[0].source_file
+        os.rename(source, self.path)
+
+    def cleanup(self):
+        pass
+
+    def assemble(self):
+        pass
+
+
+
 
 class PartitionedImage():
     """
@@ -438,6 +480,7 @@ class PartitionedImage():
         return exec_cmd(cmd)
 
     def create(self):
+
         logger.debug("Creating sparse file %s", self.path)
         with open(self.path, 'w') as sparse:
             os.ftruncate(sparse.fileno(), self.min_size)

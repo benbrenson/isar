@@ -270,6 +270,9 @@ def wic_init_parser_create(subparser):
     subparser.add_argument("-e", "--image-name", dest="image_name",
                       help="name of the image to use the artifacts from "
                            "e.g. core-image-sato")
+    subparser.add_argument("-F", "--file-name", dest="file_name",
+                      help="name of the created image file "
+                           "e.g. isar-image-base.sdcard")
     subparser.add_argument("-r", "--rootfs-dir", action=RootfsArgAction,
                       help="path to the /rootfs dir to use as the "
                            ".wks rootfs source")
