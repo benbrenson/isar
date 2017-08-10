@@ -11,17 +11,19 @@ IMAGE_NAME = "${PN}-${PV}-${MACHINE}-${DISTRO_ARCH}"
 BASE_PACKAGES = " \
                 python3 \
                 python3-serial \
+                apt \
+                dbus \
                 "
 
 ADMIN_PACKAGES=" \
                 sudo \
-                vim \
                 openssh-server \
                 net-tools \
                "
 
 
 DEV_PACKAGES=" \
+              vim \
               gcc \
               gdb \
               i2c-tools \
@@ -43,8 +45,6 @@ IMAGE_PREINSTALL += " \
                    ${BASE_PACKAGES} \
                    ${ADMIN_PACKAGES} \
                    ${ADD_INSTALL} \
-                   apt \
-                   dbus \
                    "
 
 PACKAGE_TUNES_append = "openssh-server"
