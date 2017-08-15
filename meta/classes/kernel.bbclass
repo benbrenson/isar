@@ -19,13 +19,28 @@ UIMAGE_LOADADDR ?= ""
 CROSS_COMPILE ?= ""
 UIMAGE_LOADADDR ?= ""
 
-MAKE = "\
-${@bb.utils.contains('CROSS_COMPILE_ENABLED', \
-                     'true', \
-                     'make ARCH=${TARGET_ARCH} CROSS_COMPILE=${TARGET_PREFIX}-', \
-                     'make ARCH=${TARGET_ARCH}', \
-                      d)} \
-                     "
+MAKE = " make ARCH=${TARGET_ARCH} "
+MAKE_append_class-cross = "CROSS_COMPILE=${TARGET_PREFIX}-"
+
+
+python() {
+	base_make = d.getVar('MAKE', True)
+	dtbos = d.getVar('DTBOS', True)
+	dtbs  = d.getVar('DTBS', True)
+
+	if len(dtbos) != 0:
+		make = base_make + ' ' + dtbos
+		d.setVar('MAKE_DTBOS', make)
+	else:
+		d.setVar('MAKE_DTBOS', '')
+
+	if len(dtbs) != 0:
+		make = base_make + ' ' + dtbs
+		d.setVar('MAKE_DTBS', make)
+	else:
+		d.setVar('MAKE_DTBS', '')
+
+}
 
 KERNEL_EXTRA_OPTS_append = "\
 ${@bb.utils.contains('KIMAGE_TYPE', \
@@ -35,9 +50,17 @@ ${@bb.utils.contains('KIMAGE_TYPE', \
                      d)} \
                      "
 
+
 SECTION = "kernel"
 PRIORITY = "optional"
 LICENSE  = "gpl"
+
+do_unpack_post() {
+    mv ${EXTRACTDIR}/dts-${MACHINE} ${EXTRACTDIR}/dts
+    mv ${EXTRACTDIR}/${MACHINE}_defconfig ${EXTRACTDIR}/defconfig
+}
+do_unpack[postfuncs] += "do_unpack_post"
+
 
 do_patch() {
     cd ${S}
@@ -81,8 +104,8 @@ debianize_build() {
 	${MAKE} olddefconfig
 	${MAKE} -j${PARALLEL_MAKE} ${KIMAGE_TYPE} ${KERNEL_EXTRA_OPTS}
 	${MAKE} modules
-	${MAKE} ${DTBOS}
-	${MAKE} ${DTBS}
+	${MAKE_DTBOS}
+	${MAKE_DTBS}
 }
 
 
@@ -118,8 +141,8 @@ debianize_install() {
 	${MAKE} modules_install INSTALL_MOD_PATH=debian/${BPN}
 
 	install -m 0644 arch/${TARGET_ARCH}/boot/${KIMAGE_TYPE}      debian/${BPN}/boot/${KIMAGE_TYPE}
-	install -m 0644 $(shell find ${DTB_SRC_DIR} -name "*.dtb")   debian/${BPN}/${DTB_DEST_DIR}
-	install -m 0644 $(shell find ${DTBO_SRC_DIR} -name "*.dtbo") debian/${BPN}/${DTBO_DEST_DIR}
+	install -m 0644 $(shell find ${DTB_SRC_DIR} -name "*.dtb")   debian/${BPN}/${DTB_DEST_DIR}  || true
+	install -m 0644 $(shell find ${DTBO_SRC_DIR} -name "*.dtbo") debian/${BPN}/${DTBO_DEST_DIR} || true
 }
 
 
