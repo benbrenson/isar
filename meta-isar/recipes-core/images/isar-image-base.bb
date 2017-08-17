@@ -37,6 +37,7 @@ DEV_PACKAGES=" \
               python3-dev \
               python3-pip \
               strace \
+              iputils-ping \
              "
 
 ADD_INSTALL = "${@bb.utils.contains('IMAGE_FEATURES', 'develop', '${DEV_PACKAGES}', '', d)}"
