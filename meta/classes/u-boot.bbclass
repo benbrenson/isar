@@ -59,7 +59,7 @@ debianize_install() {
 	install -d debian/tmp
 
 	install -m 0644 ${PPS}/${BOOT_IMG} debian/${BPN}/boot/${BOOT_IMG}
-	#install -m 0644 ${PPS}/cmdline.txt debian/${BPN}/boot/cmdline.txt
+	[ -f ${PPS}/cmdline.txt ] && install -m 0644 ${PPS}/cmdline.txt debian/${BPN}/boot/cmdline.txt || echo "No cmdline.txt available...skipping."
 	install -m 0644 ${BOOTSCRIPT} debian/${BPN}/boot/${BOOTSCRIPT}
 	install -m 0644 tools/env/lib.a debian/tmp/libubootenv.a
 }
