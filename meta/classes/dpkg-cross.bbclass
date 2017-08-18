@@ -10,7 +10,7 @@ inherit fetch
 
 DEPENDS += "buildchroot cross-buildchroot"
 do_unpack[deptask] = "do_install"
-
+do_install[rdeptask] = "do_install"
 
 CHROOT_DIR = "${CROSS_BUILDCHROOT_DIR}"
 BUILDROOT = "${CHROOT_DIR}/${PP}"

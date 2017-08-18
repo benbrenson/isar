@@ -7,6 +7,7 @@ inherit fetch
 # Add dependency from buildchroot creation
 DEPENDS += "buildchroot"
 do_unpack[deptask] = "do_install"
+do_install[rdeptask] = "do_install"
 
 # Each package should have its own unique build folder, so use
 # recipe name as identifier
