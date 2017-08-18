@@ -1540,3 +1540,21 @@ def append_dep_pkg_suffix(suffix, s, d):
         new[i] += suffix
 
     return ' '.join(new)
+
+
+def rmDupString(s, separator=' '):
+    """ Convert string sperated by 'separator' to format which only contains uniq values. """
+    t = s.strip(' ').strip(separator)
+    clean_list = [ x.strip(' ')  for x in t.split(separator) ]
+    clean_set = set(clean_list)
+    uniq_list = list(clean_set)
+    t = separator.join(uniq_list)
+    return t
+
+
+def rmDupVar(d, s, separator=' '):
+    """ Extract the value from variable s and remove duplicate values
+        from it. Then return a string version not containing duplicate values.
+    """
+    t = d.getVar(s, True) or ""
+    return rmDupString(t)
