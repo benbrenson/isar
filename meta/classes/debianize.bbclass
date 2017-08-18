@@ -40,7 +40,8 @@ RDEPENDS_VARS = " DEB_RDEPENDS DEB_RDEPENDS_DEV RDEPENDS"
 BUILD_DEPENDS_VARS = " DEB_DEPENDS DEPENDS"
 DEPENDS_VARS = "${BUILD_DEPENDS_VARS} ${RDEPENDS_VARS} "
 
-# Skipp these variables since these are no debian package based dependencies
+# Skipp these variables when generating debian dependencies
+# since they are no debian package based dependencies
 SKIPP_DEPENDS = "buildchroot cross-buildchroot"
 
 # What we do here is to concentate the fixed DEP strings (e.g. DEPENDS="bar foo" -> DEPENDS_FIXED="bar, foo, ")
@@ -117,9 +118,8 @@ python do_deb_depends() {
     rdepends      = ''
 
     for var in vars.split():
-        depends = d.getVar(var, True) or ""
-        d_set = set(depends.split())
-        depends = list(d_set)
+        depends = bb.utils.rmDupVar(d, var)
+        depends = depends.split()
 
         # Try to clean depends from possible skipp value, since
         # these depends are no debian packages.
@@ -147,12 +147,19 @@ python do_deb_depends() {
                 depends[i] = depends[i].replace('-cross', ':' + distro_arch)
 
         # Now concentate fixed strings
+        # TODO:
+        # Each 'Depends' variable collects all rdepends based variables
+        # Need to distinguish between different package types, and
+        # distribute associated variables.
         if var in d.getVar('BUILD_DEPENDS_VARS', True):
             build_depends += ', '.join(depends)
             build_depends += ', '
         if var in d.getVar('RDEPENDS_VARS', True):
-            rdepends = ', '.join(depends)
+            rdepends += ', '.join(depends)
             rdepends += ', '
+
+    build_depends = bb.utils.rmDupString(build_depends, ',')
+    rdepends = bb.utils.rmDupString(rdepends, ',')
 
     # Now concentate DEPENDS and RDEPENDS and DEB_DEPENDS into DEPS_FIXED
     d.setVar('DEPS_FIXED', build_depends)

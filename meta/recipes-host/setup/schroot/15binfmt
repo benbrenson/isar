@@ -45,10 +45,10 @@ for emulator in $(update-binfmts --find "$shell"); do
         info "Missing emulator: $emulator; not enabling binfmt support"
     else
         [ -e "$dst" ] || touch "$dst"
-	mountpoint "$dst" || (mount --bind "$emulator" "$dst" ; mount -o remount,ro,bind "$dst")
+	mountpoint "$dst" > /dev/null 2>&1 || (mount --bind "$emulator" "$dst" ; mount -o remount,ro,bind "$dst")
 	#fi
 	#echo "Copy $emulator instead of binmount it."
 	#cp "$emulator" "$dst"
-	#chmod +x "$dst" 
+	#chmod +x "$dst"
     fi
 done

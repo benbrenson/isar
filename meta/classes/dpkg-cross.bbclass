@@ -33,7 +33,7 @@ do_build() {
     # Get list of dependencies manually. The package is not in apt, so no apt-get
     # build-dep. dpkg-checkbuilddeps output contains version information and isn't
     # directly suitable for apt-get install.
-    DEPS=`perl -ne 'next if /^#/; $p=(s/^Build-Depends:\s*/ / or (/^ / and $p)); s/,|\n|\([^)]+\)//mg; print if $p' < debian/control`
+    DEPS=`perl -ne 'next if /^#/; $p=(s/^Build-Depends:\s*/ / or (/^ / and $p)); s/\s*,\s*|\n|\([^)]+\)/ /mg; print if $p' < debian/control`
 
     (
         flock 200

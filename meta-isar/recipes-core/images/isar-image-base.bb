@@ -48,7 +48,7 @@ IMAGE_PREINSTALL += " \
                    ${ADD_INSTALL} \
                    "
 
-PACKAGE_TUNES_append = "openssh-server"
+PACKAGE_TUNES_append = " openssh-server "
 
 IMAGE_FEATURES ?= " systemd "
 IMAGE_INSTALL_append = " linux-image-cross u-boot-cross "

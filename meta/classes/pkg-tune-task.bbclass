@@ -21,8 +21,9 @@ python do_package_tunes() {
 
     for tune in pkg_tunes.split():
         if tune not in img_preinstall and tune not in img_install:
-            bb.warn('Skipping package tune for %s since it is not going to be installed. Please add %s to IMAGE_PREINSTALL or IMAGE_INSTALL' % (tune,tune))
-            tunes_skipp.append(tune)
+            bb.warn('Running package tune for %s wihout an affiliated entry in IMAGE_PREINSTALL or IMAGE_INSTALL.' % tune)
+            #bb.warn('Skipping package tune for %s since it is not going to be installed. Please add %s to IMAGE_PREINSTALL or IMAGE_INSTALL' % (tune,tune))
+            #tunes_skipp.append(tune)
 
 
     # Now parse files selected with PACKAGE_TUNES and run tasks of each file.
