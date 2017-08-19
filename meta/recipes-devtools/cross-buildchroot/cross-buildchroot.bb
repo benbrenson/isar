@@ -31,7 +31,8 @@ BUILDCHROOT_PREINSTALL ?= "gcc \
                            bison \
                            bc \
                            u-boot-tools \
-                           pkg-config"
+                           pkg-config \
+                           ca-certificates"
 
 
 # Some packages are only installable after late configurations for
