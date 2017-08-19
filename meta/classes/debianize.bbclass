@@ -151,10 +151,10 @@ python do_deb_depends() {
         # Each 'Depends' variable collects all rdepends based variables
         # Need to distinguish between different package types, and
         # distribute associated variables.
-        if var in d.getVar('BUILD_DEPENDS_VARS', True):
+        if var in d.getVar('BUILD_DEPENDS_VARS', True).split():
             build_depends += ', '.join(depends)
             build_depends += ', '
-        if var in d.getVar('RDEPENDS_VARS', True):
+        if var in d.getVar('RDEPENDS_VARS', True).split():
             rdepends += ', '.join(depends)
             rdepends += ', '
 
