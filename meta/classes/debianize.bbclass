@@ -216,4 +216,80 @@ addtask do_dh_make after do_generate_rules before do_build
 do_dh_make[stamp-extra-info] = "${DISTRO}"
 
 
+
+
+###                              ###
+### debianize makefile functions ###
+###                              ###
+debianize_build[target] = "build"
+debianize_build() {
+	@echo "Running build target."
+}
+
+
+debianize_clean[target] = "clean"
+debianize_clean() {
+	@echo "Running clean target."
+}
+
+
+debianize_build-arch[target] = "build-arch"
+debianize_build-arch() {
+	@echo "Running build-arch target."
+}
+
+
+debianize_build-indep[target] = "build-indep"
+debianize_build-indep() {
+	@echo "Running build-indep target."
+}
+
+
+debianize_install[target] = "install"
+debianize_install[tdeps] = "build"
+debianize_install() {
+	@echo "Running install target."
+	dh_testdir
+	dh_testroot
+	dh_clean  -k
+}
+
+
+
+debianize_binary-arch[target] = "binary-arch"
+debianize_binary-arch[tdeps] = "build install"
+debianize_binary-arch() {
+	@echo "Running binary-arch target."
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs
+	dh_installdocs
+	dh_installexamples
+	dh_install
+	dh_installman
+	dh_link
+	dh_strip
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_shlibdeps --dpkg-shlibdeps-params=--ignore-missing-info
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+}
+
+
+debianize_binary-indep[target] = "binary-indep"
+debianize_binary-indep[tdeps] = "build install"
+debianize_binary-indep() {
+	@echo "Running binary-indep target."
+}
+
+
+debianize_binary[target] = "binary"
+debianize_binary[tdeps] = "binary-arch binary-indep"
+debianize_binary() {
+	@echo "Running binary target."
+}
+
 #EXPORT_FUNCTIONS debianize_build debianize_clean debianize_build-arch debianize_build-indep debianize_install debianize_binary-arch debianize_binary-indep debianize_binary
