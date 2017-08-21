@@ -1,7 +1,7 @@
 # This software is a part of ISAR.
 # Copyright (C) 2017 Mixed-Mode GmbH
 
-inherit wic useradd pkg-tune-task
+inherit wic useradd pkg-tune-task shrinkfs
 
 DEPENDS += " ${IMAGE_INSTALL} "
 S       = "${ROOTFS_DIR}"
@@ -152,6 +152,12 @@ tmpfs       /run        tmpfs       defaults        0   0
 devtmpfs    /dev        devtmpfs    mode=0755,nosuid    0   0
 
 # End /etc/fstab
+EOF
+
+    # Don't install suggests and recommends
+    cat > /etc/apt/apt.conf.d/10nosuggests << "EOF"
+APT::Install-Recommends "0";
+APT::Install-Suggests "0";
 EOF
 
     # Enable tty
