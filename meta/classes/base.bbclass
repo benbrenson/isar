@@ -65,11 +65,11 @@ python do_cleanall() {
     for stamp in stamps:
     	if pf in stamp:
     		os.remove(stampdir + '/' + stamp)
-    
+
     # clean workdir
     if not os.path.isdir(extractdir):
         return
-    
+
     for entry in os.listdir(extractdir):
     	if 'temp' not in entry:
     		abspath = extractdir + '/' + entry
@@ -95,13 +95,14 @@ python do_clean() {
     # clean stamps
     stamps = os.listdir(stampdir)
     for stamp in stamps:
-    	if pf in stamp:
-    		os.remove(stampdir + '/' + stamp)
-    
+        if pf in stamp:
+            if 'do_fetch' not in stamp:
+                os.remove(stampdir + '/' + stamp)
+
     # clean workdir
     if not os.path.isdir(extractdir):
         return
-    
+
     for entry in os.listdir(extractdir):
     	if 'temp' not in entry:
     		abspath = extractdir + '/' + entry
