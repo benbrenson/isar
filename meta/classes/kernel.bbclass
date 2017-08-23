@@ -23,6 +23,7 @@ MAKE = " make ARCH=${TARGET_ARCH} "
 MAKE_append_class-cross = "CROSS_COMPILE=${TARGET_PREFIX}-"
 
 
+# Generate make command for dtbs and dtbos
 python() {
 	base_make = d.getVar('MAKE', True)
 	dtbos = d.getVar('DTBOS', True)
@@ -55,13 +56,6 @@ SECTION = "kernel"
 PRIORITY = "optional"
 LICENSE  = "gpl"
 
-do_unpack_post() {
-    mv ${EXTRACTDIR}/dts-${MACHINE} ${EXTRACTDIR}/dts
-    mv ${EXTRACTDIR}/${MACHINE}_defconfig ${EXTRACTDIR}/defconfig
-}
-do_unpack[postfuncs] += "do_unpack_post"
-
-
 do_patch() {
     cd ${S}
     patches=$(ls ../*.patch)
@@ -74,7 +68,7 @@ addtask do_patch after do_unpack before do_build
 
 do_copy_defconfig(){
     cd ${S}
-    cp ${EXTRACTDIR}/defconfig ${S}/.config
+    cp ${EXTRACTDIR}/${MACHINE}_defconfig ${S}/.config
     ${MAKE} olddefconfig
 
     touch .scmversion
