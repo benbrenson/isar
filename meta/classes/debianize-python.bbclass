@@ -9,6 +9,8 @@ DEB_RDEPENDS += "${python3:Depends}"
 PYTHON_VERSION ?= "3"
 DH_MAKE ?= "dh_make -n --copyright ${LICENSE} -y --createorig --python -t ${EXTRACTDIR}/debian/ -p ${DEB_PKG}"
 
+DEB_ARCH_CTRL="all"
+
 debianize_build[target] = "build"
 debianize_build() {
 	@echo "Running build target."

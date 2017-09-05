@@ -32,6 +32,7 @@ DEB_PKG      ?= "${BPN}_${PV}"
 DEB_VERSION  ?= "${PV}"
 MAINTAINER   ?= "${DEB_FULLNAME} ${DEB_EMAIL}"
 DEB_ARCH     ?= "${DISTRO_ARCH}"
+DEB_ARCH_CTRL ?= "${DEB_ARCH}"
 DEB_DEPENDS  ?= "debhelper:(>=9) "
 DEB_RDEPENDS ?= "${shlibs:Depends} ${misc:Depends} "
 DEB_RDEPENDS_DEV ?= "${shlibs:Depends} ${misc:Depends} "
@@ -175,7 +176,7 @@ do_generate_debcontrol() {
     sed -i -e 's/##SECTION##/${SECTION}/g'           ${CONTROL}
     sed -i -e 's/##PRIORITY##/${PRIORITY}/g'         ${CONTROL}
     sed -i -e 's|##URL##|${URL}|g'                   ${CONTROL}
-    sed -i -e 's/##DEB_ARCH##/${DEB_ARCH}/g'         ${CONTROL}
+    sed -i -e 's/##DEB_ARCH##/${DEB_ARCH_CTRL}/g'    ${CONTROL}
     sed -i -e 's/##DESCRIPTION##/${DESCRIPTION}/g'   ${CONTROL}
     sed -i -e 's/##MAINTAINER##/${MAINTAINER}/g'     ${CONTROL}
     sed -i -e 's/##DEPENDS##/${DEPS_FIXED}/g'        ${CONTROL}
