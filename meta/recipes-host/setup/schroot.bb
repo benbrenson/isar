@@ -11,6 +11,7 @@ SRC_URI = "file://01_isar.conf \
            file://15binfmt \
            file://copyfiles \
            file://11resolv \
+           file://10mount \
           "
 
 do_setup_schroot() {
@@ -37,6 +38,8 @@ do_setup_schroot() {
     sudo install -m 0644 ${WORKDIR}/nssdatabases /etc/schroot/default/nssdatabases
     sudo install -m 0755 ${WORKDIR}/15binfmt /etc/schroot/setup.d/15binfmt
     sudo install -m 0755 ${WORKDIR}/11resolv /etc/schroot/setup.d/11resolv
+    sudo install -m 0755 ${WORKDIR}/10mount /etc/schroot/setup.d/10mount
+
 }
 addtask do_setup_schroot after do_unpack before do_build
 do_setup_schroot[dirs] += "${DEPLOY_DIR_DEB}"
