@@ -62,17 +62,19 @@ do_mount()
 }
 
 
-# Try umount multiple times if not possible
-# and then force umount
+# Try umount multiple times. If not possible
+# then force umount
 do_try_umount() {
 
-    i=1 
+    i=1
     while true ; do
        i=$((i+1));
-       if [ $i -eq 5 ] ; then
-           umount -f "$1" 
+       if [ $i -gt 5 ] ; then
+           info "Force umount: $1"
+           umount -f "$1"
+           exit 0
        fi
-       
+
        umount "$1" && return 0
 
        sleep 2
@@ -109,7 +111,7 @@ do_umount_all()
             exit 1
         fi
 
-        ( flock 9
+        ( flock --timeout 60 9 || rm /var/lock/schroot/umount
             mounts="$("$LIBEXEC_DIR/schroot-listmounts" -m "$1")"
             if [ "x$mounts" != 'x' ]; then
                 echo "$mounts" |
