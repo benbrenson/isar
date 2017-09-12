@@ -156,22 +156,22 @@ en_US.UTF-8
 EOF
 
 
-debconf-set-selections <<END
+    debconf-set-selections <<END
 locales locales/locales_to_be_generated multiselect en_US.UTF-8 UTF-8
 locales locales/default_environment_locale select en_US.UTF-8
 END
 
-#set up non-interactive configuration
-export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
-export LC_ALL=C LANGUAGE=C LANG=C
+    #set up non-interactive configuration
+    export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
+    export LC_ALL=C LANGUAGE=C LANG=C
 
-#run pre installation script
-/var/lib/dpkg/info/dash.preinst install
+    #run pre installation script
+    /var/lib/dpkg/info/dash.preinst install
 
-#configuring packages
-dpkg --configure -a
-dpkg --configure -a
-apt-get update
+    #configuring packages
+    dpkg --configure -a
+    dpkg --configure -a
+    apt-get update
 }
 addtask do_configure_buildchroot before do_build
 do_configure_buildchroot[stamp-extra-info] = "${DISTRO}.chroot"
