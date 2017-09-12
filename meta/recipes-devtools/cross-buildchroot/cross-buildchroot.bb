@@ -32,7 +32,10 @@ BUILDCHROOT_PREINSTALL ?= "gcc \
                            bc \
                            u-boot-tools \
                            pkg-config \
-                           ca-certificates"
+                           ca-certificates \
+                           python \
+                           python3 \
+                           "
 
 
 # Some packages are only installable after late configurations for
