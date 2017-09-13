@@ -70,7 +70,8 @@ do_try_umount() {
     while true ; do
        i=$((i+1));
        if [ $i -gt 5 ] ; then
-           info "Force umount: $1"
+           warn "Force umount: $1"
+           umount -l "$1"
            umount -f "$1"
            exit 0
        fi

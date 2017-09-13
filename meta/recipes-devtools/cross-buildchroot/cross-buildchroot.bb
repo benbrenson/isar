@@ -60,8 +60,8 @@ do_buildchroot() {
     sed -i 's|##DISTRO_COMPONENTS##|${DISTRO_COMPONENTS}|' ${WORKDIR}/multistrap.conf
 
     # Install QEMU emulator to execute ARM binaries
-    #sudo mkdir -p ${CROSS_BUILDCHROOT_DIR}/usr/bin
-    #sudo cp /usr/bin/qemu-arm-static ${CROSS_BUILDCHROOT_DIR}/usr/bin
+    sudo mkdir -p ${CROSS_BUILDCHROOT_DIR}/usr/bin
+    sudo cp /usr/bin/qemu-arm-static ${CROSS_BUILDCHROOT_DIR}/usr/bin
 
     # Create root filesystem
     sudo multistrap -a ${DEB_HOST_ARCH} -d "${CROSS_BUILDCHROOT_DIR}" -f "${WORKDIR}/multistrap.conf" || true

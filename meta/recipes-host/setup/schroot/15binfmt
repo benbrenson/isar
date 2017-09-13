@@ -17,7 +17,7 @@
 #
 #####################################################################
 
-set -e
+#set -e
 
 . "$SETUP_DATA_DIR/common-data"
 . "$SETUP_DATA_DIR/common-functions"
@@ -44,11 +44,8 @@ for emulator in $(update-binfmts --find "$shell"); do
     if [ ! -e "$emulator" ]; then
         info "Missing emulator: $emulator; not enabling binfmt support"
     else
-        [ -e "$dst" ] || touch "$dst"
-	mountpoint "$dst" > /dev/null 2>&1 || (mount --bind "$emulator" "$dst" ; mount -o remount,ro,bind "$dst")
-	#fi
-	#echo "Copy $emulator instead of binmount it."
-	#cp "$emulator" "$dst"
-	#chmod +x "$dst"
-    fi
+        [ -e "$dst" ] && exit 0
+	    mountpoint "$dst" > /dev/null 2>&1 || (mount --bind "$emulator" "$dst" ; mount -o remount,ro,bind "$dst")
+	fi
+
 done
