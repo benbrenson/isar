@@ -35,6 +35,8 @@ BUILDCHROOT_PREINSTALL ?= "gcc \
                            ca-certificates \
                            python \
                            python3 \
+                           cmake \
+                           vim \
                            "
 
 

@@ -34,7 +34,10 @@ BUILDCHROOT_PREINSTALL ?= "gcc \
                            pkg-config \
                            ca-certificates \
                            python \
-                           python3"
+                           python3 \
+                           cmake \
+                           vim \
+                           "
 
 WORKDIR = "${TMPDIR}/work/${PF}/${DISTRO}"
 
