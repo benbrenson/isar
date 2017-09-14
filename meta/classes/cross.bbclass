@@ -6,7 +6,6 @@ inherit dpkg-cross
 FILESEXTRAPATHS_prepend := "${THISDIR}/${BPN}-${PV}:${THISDIR}/${BPN}-${PV}-${PR}:"
 CLASSOVERRIDE = "class-cross"
 
-CROSS_COMPILE="arm-linux-gnueabihf"
-TARGET_PREFIX="arm-linux-gnueabihf"
+CROSS_COMPILE="${TARGET_PREFIX}"
 CCARCH="${TARGET_ARCH}"
 ARCH="${TARGET_ARCH}"
