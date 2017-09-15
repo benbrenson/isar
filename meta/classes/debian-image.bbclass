@@ -1,7 +1,7 @@
 # This software is a part of ISAR.
 # Copyright (C) 2017 Mixed-Mode GmbH
 
-inherit wic useradd pkg-tune-task shrinkfs
+inherit wic useradd pkg-tune-task shrinkfs fetch
 
 DEPENDS += " ${IMAGE_INSTALL} "
 S       = "${ROOTFS_DIR}"

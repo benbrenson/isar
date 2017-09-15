@@ -1,0 +1,34 @@
+#!/usr/bin/env python3
+#
+# Copyright (C) 2017 Mixed Mode GmbH
+# Author: Benedikt Niedermayr  <Benedikt.Niedermayr@mixed-mode.de>
+#
+# Script for flashing sd card images.
+#
+#
+#
+#
+import os
+import command
+
+
+class flashHandlerMMC():
+
+
+    # 1. Umount all filesystems for given device
+
+
+    def __init__(self, device):
+
+        _mode = os.stat(device).st_mode
+        print(_mode)
+
+
+        self.device = device
+
+
+    def umount_filesystems(self):
+        pass
+
+
+mmc = flashHandlerMMC('/dev/mmcblk0')
