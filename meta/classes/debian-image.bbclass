@@ -132,11 +132,6 @@ END
     # Run pre installation script
     /var/lib/dpkg/info/dash.preinst install
 
-    # Configuring packages
-    # Note: Since qemu has problems running with multicore support, setting
-    # execution to a single core is required!
-    # Otherwise "uncaught target signal 11(Segmentation fault) - core dumped" message will appear
-    # and segfaults the current running task.
     echo "running dpkg -a"
     dpkg --configure -a
     echo "running dpkg -a"
@@ -186,11 +181,11 @@ do_configure_rootfs[id] = "${ROOTFS_ID}"
 IMAGE_INSTALL_DEBS="${@bb.utils.explode_dep_pkg_suffix(d.getVar('IMAGE_INSTALL', True), d)}"
 do_populate() {
     if [ -n "${IMAGE_INSTALL_DEBS}" ]; then
-       
+
         # Temporary add local sources for installing packages created by isar
         echo "deb [ trusted=yes ] file:${CHROOT_DEPLOY_DIR_DEB}/${DEB_HOST_ARCH}/ ./" > /etc/apt/sources.list.d/local.list
         echo "deb [ trusted=yes ] file:${CHROOT_DEPLOY_DIR_DEB}/${DISTRO_ARCH}/ ./" >> /etc/apt/sources.list.d/local.list
-        
+
         apt-get update
         apt-get install -y ${IMAGE_INSTALL_DEBS}
 
