@@ -6,7 +6,7 @@ inherit image_types
 WIC_DEBUG = "-D"
 WICVARS ?= "BUILDCHROOT_DIR BBLAYERS DEPLOY_DIR_IMAGE HDDDIR IMAGE_BASENAME IMAGE_BOOT_FILES IMAGE_LINK_NAME BOOT_IMG KIMAGE_TYPE ROOTFS_DIR INITRAMFS_FSTYPES INITRD ISODIR MACHINE_ARCH ROOTFS_SIZE STAGING_DATADIR STAGING_DIR_NATIVE STAGING_LIBDIR TARGET_SYS"
 WICVARS_DIR = "${TOPDIR}"
-IMAGE_PART_DESC_DIR ?= "${THISDIR}/files"
+
 
 python do_emit_wicvars() {
     """
@@ -23,6 +23,21 @@ python do_emit_wicvars() {
 addtask do_emit_wicvars after do_post_rootfs before do_image
 do_emit_wicvars[stamp-extra-info] = "${MACHINE}"
 
+ROOTFS_IMAGE_SIZE ?= ""
+
+do_generate_wks() {
+    set -x
+    ROOTFS_IMAGE_SIZE_OPTION=""
+    if [ ! -z "${ROOTFS_IMAGE_SIZE}" ]; then
+      ROOTFS_IMAGE_SIZE_OPTION="--fixed-size=${ROOTFS_IMAGE_SIZE}M"
+
+    fi
+    for image_type in `eval echo ${IMAGE_TYPES_CREATE}` ; do
+        echo "Generating ${EXTRACTDIR}/${image_type}.wks"
+        sed -i "s|##ROOTFS_SIZE_OPTION##|$ROOTFS_IMAGE_SIZE_OPTION|g" ${EXTRACTDIR}/${image_type}.wks
+    done
+}
+
 do_image(){
 
     for image_type in `eval echo ${IMAGE_TYPES_CREATE}` ; do
@@ -31,7 +46,7 @@ do_image(){
                -e ${PN} \
                ${WIC_DEBUG} \
                --rootfs-dir rootfs=${ROOTFS_DIR} \
-               "${IMAGE_PART_DESC_DIR}/${image_type}.wks" \
+               "${EXTRACTDIR}/${image_type}.wks" \
                -F "${PN}.${DATETIME}.${image_type}"
 
         # Create a link to the latest image
@@ -42,3 +57,4 @@ do_image(){
 }
 addtask do_image after do_emit_wicvars before do_build
 do_image[stamp-extra-info] = "${MACHINE}"
+do_image[prefuncs] += "do_generate_wks"

@@ -180,19 +180,24 @@ END
 
     rm -f /etc/dpkg/dpkg.cfg.d/multiarch
 
-    #configuring packages
-    dpkg --configure -a
-    dpkg --configure -a
-    apt-get update
-
-
     # Configure root filesystem for cross compiling
     # multistraps multiarch is not working
     dpkg --add-architecture ${DISTRO_ARCH}
     echo "Acquire::AllowInsecureRepositories \"true\";" > /etc/apt/apt.conf.d/10allowunauth
 
+    #configuring packages
+    dpkg --configure -a
+    dpkg --configure -a
+    apt-get update
+
     apt-get update
     apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" ${BUILDCHROOT_POSTINSTALL}
+
+    # Remove [arch=<host_arch>] from apt sources file
+    # This will enable multiarch
+    sed -i 's|\[.*\]||g' /etc/apt/sources.list.d/multistrap-${DISTRO}.list
+
+    apt-get update
 }
 addtask do_configure_buildchroot before do_build
 do_configure_buildchroot[stamp-extra-info] = "${DISTRO}.chroot"

@@ -4,4 +4,4 @@
 
 bootloader --source bootstream
 part /boot --source bootimg-partition --ondisk mmcblk --fstype=vfat --label boot --active --align 2048
-part / --source rootfs --rootfs-dir=rootfs --ondisk mmcblk --fstype=ext4 --label rootfs --align 2048
+part / --source rootfs --rootfs-dir=rootfs --ondisk mmcblk --fstype=ext4 --label rootfs --align 2048 ##ROOTFS_SIZE_OPTION##
