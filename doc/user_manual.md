@@ -89,8 +89,11 @@ git clone https://git.pixel-group.de/siemens-ct/Siemens_CT_REE_build-config.git 
 cd sources
 git clone https://git.pixel-group.de/siemens-ct/Siemens_CT_REE_isar.git sources/isar
 git clone https://git.pixel-group.de/siemens-ct/Siemens_CT_REE-meta-siemens.git sources/meta-siemens
-git clone https://@git.pixel-group.de/siemens-ct/Siemens_CT_REE-meta-sunxi.git sources/meta-sunxi
+git clone https://git.pixel-group.de/siemens-ct/Siemens_CT_REE-meta-sunxi.git sources/meta-sunxi
 git clone https://git.pixel-group.de/siemens-ct/Siemens_CT_REE_meta-swupdate.git
+git clone https://git.pixel-group.de/siemens-ct/meta-amazon.git
+git clone https://git.pixel-group.de/bennie/meta-unittest.git
+
 ```
 
 **Note: Since some repositories are reachable via https, you need to provide the required credentials via git-credentials:**
