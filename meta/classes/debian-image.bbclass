@@ -24,6 +24,11 @@ do_rootfs() {
     # Copy config file
     install -m 644 ${THISDIR}/files/multistrap.conf.in ${WORKDIR}/multistrap.conf
 
+     # For now allow insecure repositories
+    bbwarn "Allowing insecure repositories for rootfs during multistrap"
+    install -m 755 -d ${ROOTFS_DIR}/etc/apt/apt.conf.d/
+    echo 'Acquire::AllowInsecureRepositories "1";' > ${ROOTFS_DIR}/etc/apt/apt.conf.d/01unsecure
+
     # Adjust multistrap config
     sed -i 's|##IMAGE_PREINSTALL##|${IMAGE_PREINSTALL}|' ${WORKDIR}/multistrap.conf
     sed -i 's|##DISTRO##|${DISTRO}|' ${WORKDIR}/multistrap.conf
@@ -38,6 +43,8 @@ do_rootfs() {
 
     # Create root filesystem
     sudo multistrap -a ${DISTRO_ARCH} -d "${S}" -f "${WORKDIR}/multistrap.conf" || true
+
+    sudo rm ${ROOTFS_DIR}/etc/apt/apt.conf.d/01unsecure
 }
 addtask rootfs before do_setup_rootfs
 do_rootfs[stamp-extra-info] = "${MACHINE}"
