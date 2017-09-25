@@ -43,6 +43,7 @@ git
 mtools
 multistrap
 parted
+e2fsprogs
 python3
 qemu
 qemu-user-static (>= 2.8)
