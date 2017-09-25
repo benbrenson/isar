@@ -6,25 +6,28 @@ import subprocess
 class Command:
     """ Class representing a shell command, and possible actions on it."""
 
-    def __init__(self, cmd):
+    def __init__(self, cmd=''):
         self.orig_cmd = cmd
-
-        if isinstance(cmd, list):
-            self.cmd = cmd
-        else:
-            self.cmd = cmd.split()
-
 
     def set(self, cmd):
         self.orig_cmd = cmd
 
-        if isinstance(cmd, list):
-            self.cmd = cmd
-        else:
-            self.cmd = cmd.split()
+    def run(self, check=False, debug=False, shell=False):
 
-    def run(self, check=False, debug=False):
-        process = subprocess.Popen(self.cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if isinstance(self.orig_cmd, list):
+            _shell = False
+            self.cmd = self.orig_cmd
+
+        elif isinstance(self.orig_cmd, str) and shell == True:
+            _shell=True
+            self.cmd = self.orig_cmd
+
+        elif isinstance(self.orig_cmd, str) and shell == False:
+            _shell=False
+            self.cmd = self.orig_cmd.split()
+
+
+        process = subprocess.Popen(self.cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=_shell)
         self.stdout, self.stderr = process.communicate()
         self.stdout = self.stdout.decode().strip()
         self.stderr = self.stderr.decode().strip()
@@ -36,8 +39,6 @@ class Command:
 
         if self.errcode != 0:
             print(self.stderr)
-            print(self.stdout)
-
             if check == True:
                 raise Exception('Shell command failed with errorcode {0}! Command: {1}'.format(self.errcode, self.orig_cmd))
             self.output = self.stderr
@@ -46,6 +47,7 @@ class Command:
             self.output = self.stdout
 
         if debug == True:
+            print(self.output)
             print('Command returned %s' % (self.errcode))
 
         return self.errcode

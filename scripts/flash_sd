@@ -1,34 +1,36 @@
 #!/usr/bin/env python3
 #
+# Script for flashing mmc images.
+#
 # Copyright (C) 2017 Mixed Mode GmbH
-# Author: Benedikt Niedermayr  <Benedikt.Niedermayr@mixed-mode.de>
-#
-# Script for flashing sd card images.
-#
-#
-#
-#
-import os
-import command
+# Author: Benedikt Niedermayr <Benedikt.Niedermayr@mixed-mode.de>
+
+import argparse
+import sys
+from flashlib import blkDevHandler
+
+parser = argparse.ArgumentParser(description="Deploy SD-Card images.",
+                                 formatter_class=argparse.RawTextHelpFormatter,
+                                 epilog="""
+Examples:
+
+Write a complete mmc image and resizing partition 2 and 3:
+cat <sd-card image> | sudo ./flash_sd -d /dev/mmcblk0 -r 2:1500MB,3:1500MB
+
+Write a single partition image:
+cat <partition image>.ext4 | sudo ./flash_sd -d /dev/mmcblk0p2
+
+""")
 
 
-class flashHandlerMMC():
+
+if __name__ == "__main__":
+    parser.add_argument("-d", "--device", required=True, help="Device for deploying images.")
+    parser.add_argument("-r", "--resize", help="Resize options.")
 
 
-    # 1. Umount all filesystems for given device
+    args = parser.parse_args()
 
-
-    def __init__(self, device):
-
-        _mode = os.stat(device).st_mode
-        print(_mode)
-
-
-        self.device = device
-
-
-    def umount_filesystems(self):
-        pass
-
-
-mmc = flashHandlerMMC('/dev/mmcblk0')
+    mmc = blkDevHandler.BlockDevHandler(sys.stdin.buffer, args.device, args.resize)
+    mmc.umount()
+    mmc.flashDevice()
