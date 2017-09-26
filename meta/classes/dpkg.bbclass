@@ -2,11 +2,11 @@
 # Copyright (C) 2015-2016 ilbers GmbH
 # Copyright (C) 2017 Mixed Mode GmbH
 
-inherit fetch
+inherit fetch patch
 
 # Add dependency from buildchroot creation
 DEPENDS += "buildchroot"
-do_unpack[deptask] = "do_install"
+do_patch[deptask] = "do_install"
 do_install[rdeptask] = "do_install"
 
 # Each package should have its own unique build folder, so use

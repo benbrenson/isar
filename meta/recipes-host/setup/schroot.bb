@@ -41,5 +41,5 @@ do_setup_schroot() {
     sudo install -m 0755 ${WORKDIR}/10mount /etc/schroot/setup.d/10mount
 
 }
-addtask do_setup_schroot after do_unpack before do_build
+addtask do_setup_schroot after do_patch before do_build
 do_setup_schroot[dirs] += "${DEPLOY_DIR_DEB}"

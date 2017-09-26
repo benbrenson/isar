@@ -73,7 +73,7 @@ def replace_absolute_symlinks(basedir, d):
 
 def format_display(path, metadata):
     """ Prepare a path for display to the user. """
-    rel = relative(metadata.getVar("TOPDIR"), path)
+    rel = relative(metadata.getVar("TOPDIR",True), path)
     if len(rel) > len(path):
         return path
     else:
@@ -81,7 +81,7 @@ def format_display(path, metadata):
 
 def copytree(src, dst):
     # We could use something like shutil.copytree here but it turns out to
-    # to be slow. It takes twice as long copying to an empty directory. 
+    # to be slow. It takes twice as long copying to an empty directory.
     # If dst already has contents performance can be 15 time slower
     # This way we also preserve hardlinks between files in the tree.
 
@@ -96,7 +96,7 @@ def copyhardlinktree(src, dst):
         return
 
     if (os.stat(src).st_dev ==  os.stat(dst).st_dev):
-        # Need to copy directories only with tar first since cp will error if two 
+        # Need to copy directories only with tar first since cp will error if two
         # writers try and create a directory at the same time
         cmd = "cd %s; find . -type d -print | tar --xattrs --xattrs-include='*' -cf - -C %s -p --no-recursion --files-from - | tar --xattrs --xattrs-include='*' -xf - -C %s" % (src, src, dst)
         subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)

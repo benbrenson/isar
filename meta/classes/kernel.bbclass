@@ -56,15 +56,15 @@ SECTION = "kernel"
 PRIORITY = "optional"
 LICENSE  = "gpl"
 
-do_patch() {
-    cd ${S}
-    patches=$(ls ../*.patch)
-
-    for patch in ${patches}; do
-        patch -p1 < ${patch}
-    done
-}
-addtask do_patch after do_unpack before do_build
+#do_patch() {
+#    cd ${S}
+#    patches=$(ls ../*.patch)
+#
+#    for patch in ${patches}; do
+#        patch -p1 < ${patch}
+#    done
+#}
+#addtask do_patch after do_unpack before do_build
 
 do_copy_defconfig(){
     cd ${S}

@@ -104,7 +104,7 @@ python do_test_vars () {
     test_var(d, 'DEB_EMAIL')
     test_var(d, 'DEB_FULLNAME')
 }
-addtask do_test_vars after do_unpack before do_generate_debcontrol
+addtask do_test_vars after do_patch before do_generate_debcontrol
 do_test_vars[stamp-extra-info] = "${DISTRO}"
 
 
