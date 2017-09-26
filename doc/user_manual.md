@@ -55,6 +55,7 @@ dh-make
 u-boot-tools
 bc
 device-tree-compiler
+quilt
 ```
 Notes:
 * BitBake requires Python 3.4+.
