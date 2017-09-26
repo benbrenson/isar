@@ -2,15 +2,14 @@
 # Copyright (C) 2015-2016 ilbers GmbH
 
 [General]
-noauth=true
+noauth=false
 unpack=true
 bootstrap=##DISTRO##
 aptsources=##DISTRO##
-configscript=##CONFIG_SCRIPT##
-setupscript=##SETUP_SCRIPT##
 
 [##DISTRO##]
 source=##DISTRO_APT_SOURCE##
 suite=##DISTRO_SUITE##
 components=##DISTRO_COMPONENTS##
 packages=##IMAGE_PREINSTALL##
+keyring=##DISTRO_KEYRINGS##

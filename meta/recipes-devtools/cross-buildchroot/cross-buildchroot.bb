@@ -54,17 +54,13 @@ do_buildchroot() {
     # Copy config files
     install -m 644 ${THISDIR}/files/multistrap.conf.in ${WORKDIR}/multistrap.conf
 
-    # For now allow insecure repositories
-    bbwarn "Allowing insecure repositories for cross-buildchroot during multistrap"
-    install -m 755 -d ${CROSS_BUILDCHROOT_DIR}/etc/apt/apt.conf.d/
-    echo 'Acquire::AllowInsecureRepositories "1";' > ${CROSS_BUILDCHROOT_DIR}/etc/apt/apt.conf.d/01unsecure
-
     # Adjust multistrap config
     sed -i 's|##BUILDCHROOT_PREINSTALL##|${BUILDCHROOT_PREINSTALL}|' ${WORKDIR}/multistrap.conf
     sed -i 's|##DISTRO##|${DISTRO}|' ${WORKDIR}/multistrap.conf
     sed -i 's|##DISTRO_APT_SOURCE##|${DISTRO_APT_SOURCE}|' ${WORKDIR}/multistrap.conf
     sed -i 's|##DISTRO_SUITE##|${DISTRO_SUITE}|' ${WORKDIR}/multistrap.conf
     sed -i 's|##DISTRO_COMPONENTS##|${DISTRO_COMPONENTS}|' ${WORKDIR}/multistrap.conf
+    sed -i 's|##DISTRO_KEYRINGS##|${DISTRO_KEYRINGS}|' ${WORKDIR}/multistrap.conf
 
     # Install QEMU emulator to execute ARM binaries
     sudo mkdir -p ${CROSS_BUILDCHROOT_DIR}/usr/bin
@@ -73,7 +69,6 @@ do_buildchroot() {
     # Create root filesystem
     sudo multistrap -a ${DEB_HOST_ARCH} -d "${CROSS_BUILDCHROOT_DIR}" -f "${WORKDIR}/multistrap.conf" || true
 
-    sudo rm ${CROSS_BUILDCHROOT_DIR}/etc/apt/apt.conf.d/01unsecure
 }
 addtask do_buildchroot before do_setup_buildchroot
 do_buildchroot[stamp-extra-info] = "${DISTRO}"

@@ -2,7 +2,7 @@
 # Copyright (C) 2015-2016 ilbers GmbH
 
 [General]
-noauth=true
+noauth=false
 unpack=true
 bootstrap=##DISTRO##
 aptsources=##DISTRO##
@@ -12,5 +12,6 @@ source=##DISTRO_APT_SOURCE##
 suite=##DISTRO_SUITE##
 components=##DISTRO_COMPONENTS##
 packages=##BUILDCHROOT_PREINSTALL##
+keyring=##DISTRO_KEYRINGS##
 
 
