@@ -8,7 +8,7 @@
 
 inherit fetch patch
 
-DEPENDS += "buildchroot cross-buildchroot"
+DEPENDS += "cross-buildchroot"
 do_patch[deptask] = "do_install"
 do_install[rdeptask] = "do_install"
 
