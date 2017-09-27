@@ -89,12 +89,12 @@ mkdir $BUILDDIR
 git clone https://git.pixel-group.de/siemens-ct/Siemens_CT_REE_build-config.git $BUILDDIR
 
 cd sources
-git clone https://git.pixel-group.de/siemens-ct/Siemens_CT_REE_isar.git sources/isar
-git clone https://git.pixel-group.de/siemens-ct/Siemens_CT_REE-meta-siemens.git sources/meta-siemens
-git clone https://git.pixel-group.de/siemens-ct/Siemens_CT_REE-meta-sunxi.git sources/meta-sunxi
-git clone https://git.pixel-group.de/siemens-ct/Siemens_CT_REE_meta-swupdate.git
-git clone https://git.pixel-group.de/siemens-ct/meta-amazon.git
-git clone https://git.pixel-group.de/bennie/meta-unittest.git
+git clone https://git.pixel-group.de/siemens-ct/Siemens_CT_REE_isar.git isar
+git clone https://git.pixel-group.de/siemens-ct/Siemens_CT_REE-meta-siemens.git meta-siemens
+git clone https://git.pixel-group.de/siemens-ct/Siemens_CT_REE-meta-sunxi.git meta-sunxi
+git clone https://git.pixel-group.de/siemens-ct/Siemens_CT_REE_meta-swupdate.git meta-swupdate
+git clone https://git.pixel-group.de/siemens-ct/meta-amazon.git meta-amazon
+git clone https://git.pixel-group.de/bennie/meta-unittest.git meta-unittest
 
 ```
 
