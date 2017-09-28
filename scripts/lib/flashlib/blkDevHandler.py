@@ -3,6 +3,7 @@ import os.path
 import sys
 import parted
 import re
+import time
 
 from flashlib import rs_obj
 from flashlib import utils
@@ -213,7 +214,9 @@ class BlockDevHandler():
             self._copyPartition(part, _part_new)
             os.sync()
             self.disk.commit()
-
+            cmd = Cmd('partprobe')
+            cmd.run(debug=True)
+            time.sleep(10)
 
             # Resize partition
             if not _skipp_resize:
