@@ -9,7 +9,7 @@
 inherit fetch patch
 
 DEPENDS += "cross-buildchroot"
-do_patch[deptask] = "do_install"
+do_unpack[deptask] = "do_install"
 do_install[rdeptask] = "do_install"
 
 CHROOT_DIR = "${CROSS_BUILDCHROOT_DIR}"

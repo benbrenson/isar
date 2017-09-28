@@ -6,7 +6,7 @@ inherit fetch patch
 
 # Add dependency from buildchroot creation
 DEPENDS += "buildchroot"
-do_patch[deptask] = "do_install"
+do_unpack[deptask] = "do_install"
 do_install[rdeptask] = "do_install"
 
 # Each package should have its own unique build folder, so use
