@@ -12,5 +12,4 @@ source=##DISTRO_APT_SOURCE##
 suite=##DISTRO_SUITE##
 components=##DISTRO_COMPONENTS##
 packages=##BUILDCHROOT_PREINSTALL##
-keyring=##DISTRO_KEYRINGS##
 

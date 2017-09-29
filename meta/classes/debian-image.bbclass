@@ -18,6 +18,22 @@ IMAGE_INSTALL ?= ""
 # Change to / inside chroot.
 PP="/"
 
+do_install_keyrings() {
+    if [ -z "${DISTRO_KEYRINGS}" ]; then
+        return
+    fi
+
+    for keyring in `eval echo ${DISTRO_KEYRINGS}`
+    do
+        cd ${ROOTFS_DIR}/tmp
+        apt-get download -y ${keyring}
+        deb=`ls ${keyring}_*.deb`
+        dpkg -X $deb ${ROOTFS_DIR}/tmp/keyrings
+        cp -r ${ROOTFS_DIR}/tmp/keyrings/usr/share/keyrings/* ${ROOTFS_DIR}/etc/apt/trusted.gpg.d
+        rm -r $deb ${ROOTFS_DIR}/tmp/keyrings
+    done
+}
+do_install_keyrings[dirs] += "${ROOTFS_DIR}/etc/apt/trusted.gpg.d ${ROOTFS_DIR}/tmp/keyrings"
 
 # Multistrap based creation of rootfs
 do_rootfs() {
@@ -30,7 +46,6 @@ do_rootfs() {
     sed -i 's|##DISTRO_APT_SOURCE##|${DISTRO_APT_SOURCE}|' ${WORKDIR}/multistrap.conf
     sed -i 's|##DISTRO_SUITE##|${DISTRO_SUITE}|' ${WORKDIR}/multistrap.conf
     sed -i 's|##DISTRO_COMPONENTS##|${DISTRO_COMPONENTS}|' ${WORKDIR}/multistrap.conf
-    sed -i 's|##DISTRO_KEYRINGS##|${DISTRO_KEYRINGS}|' ${WORKDIR}/multistrap.conf
 
     # Install QEMU emulator to execute ARM binaries
     sudo mkdir -p ${ROOTFS_DIR}/usr/bin
@@ -43,6 +58,7 @@ do_rootfs() {
 addtask rootfs before do_setup_rootfs
 do_rootfs[stamp-extra-info] = "${MACHINE}"
 do_rootfs[depends] = "schroot:do_setup_schroot"
+do_rootfs[prefuncs] += "do_install_keyrings"
 
 
 # First rootfs setup steps

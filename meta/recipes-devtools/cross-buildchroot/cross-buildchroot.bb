@@ -50,6 +50,24 @@ WORKDIR = "${TMPDIR}/work/${PF}/${DISTRO}"
 APT_SRC_DIR = "${CROSS_BUILDCHROOT_DIR}/etc/apt/sources.list.d/"
 APT_SRC_FILE = "${APT_SRC_DIR}/local.list"
 
+do_install_keyrings() {
+
+    if [ -z "${DISTRO_KEYRINGS}" ]; then
+        return
+    fi
+
+    for keyring in `eval echo ${DISTRO_KEYRINGS}`
+    do
+        cd ${CROSS_BUILDCHROOT_DIR}/tmp
+        apt-get download -y ${keyring}
+        deb=`ls ${keyring}_*.deb`
+        dpkg -X $deb ${CROSS_BUILDCHROOT_DIR}/tmp/keyrings
+        cp -r ${CROSS_BUILDCHROOT_DIR}/tmp/keyrings/usr/share/keyrings/* ${CROSS_BUILDCHROOT_DIR}/etc/apt/trusted.gpg.d
+        rm -r $deb ${CROSS_BUILDCHROOT_DIR}/tmp/keyrings
+    done
+}
+do_install_keyrings[dirs] += "${CROSS_BUILDCHROOT_DIR}/etc/apt/trusted.gpg.d ${CROSS_BUILDCHROOT_DIR}/tmp/keyrings"
+
 do_buildchroot() {
     # Copy config files
     install -m 644 ${THISDIR}/files/multistrap.conf.in ${WORKDIR}/multistrap.conf
@@ -60,7 +78,6 @@ do_buildchroot() {
     sed -i 's|##DISTRO_APT_SOURCE##|${DISTRO_APT_SOURCE}|' ${WORKDIR}/multistrap.conf
     sed -i 's|##DISTRO_SUITE##|${DISTRO_SUITE}|' ${WORKDIR}/multistrap.conf
     sed -i 's|##DISTRO_COMPONENTS##|${DISTRO_COMPONENTS}|' ${WORKDIR}/multistrap.conf
-    sed -i 's|##DISTRO_KEYRINGS##|${DISTRO_KEYRINGS}|' ${WORKDIR}/multistrap.conf
 
     # Install QEMU emulator to execute ARM binaries
     sudo mkdir -p ${CROSS_BUILDCHROOT_DIR}/usr/bin
@@ -72,6 +89,7 @@ do_buildchroot() {
 }
 addtask do_buildchroot before do_setup_buildchroot
 do_buildchroot[stamp-extra-info] = "${DISTRO}"
+do_buildchroot[prefuncs] += "do_install_keyrings"
 do_buildchroot[dirs] += "${SYSROOT}"
 
 
