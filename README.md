@@ -1,40 +1,42 @@
-# isar - Integration System for Automated Root filesystem generation
-
+# ISAR (next generation)
 Isar is a set of scripts for building software packages and repeatable
 generation of Debian-based root filesystems with customizations.
 
-** Note: This repository was forked from https://github.com/ilbers/isar/ **
+``Note: This repository was forked from https://github.com/ilbers/isar and implements extended features.``
 
 # Build
-
 See doc/user_manual.md.
 
-# Try
-
-To test the QEMU image, run the following command:
-
-        $ start_armhf_vm
-
-The default root password is 'root'.
-
-To test the RPi board, flash the image to an SD card using the insctructions from the official site,
-section "WRITING AN IMAGE TO THE SD CARD":
-
-    https://www.raspberrypi.org/documentation/installation/installing-images/README.md
-
 # Support
+The project itself was basically introduced for extending the original ISAR buildsystem, but was first in a non-open-source state during development until
+the customer gave the permissions for releasing this project on github.
 
-This version of isar has no support yet, because for now it is under heavy development.
+As a main goal this repository was and is beeing developed in hope of getting a lot of features upstream to the main repository, after this release...
+So let's hope the best and luckily the most or all changes will be merged into the mainline repository.
 
+Therefore it would be a better way, depending on the mainling progress,  when contributing to the main repository.
+
+Mailing lists:
+
+* Using Isar: https://groups.google.com/d/forum/isar-users
+  * Subscribe: isar-users+subscribe@googlegroups.com
+  * Unsubscribe: isar-users+unsubscribe@googlegroups.com
+
+* Collaboration: https://lists.debian.org/debian-embedded/
+  * Subscribe: debian-embedded-request@lists.debian.org, Subject: subscribe
+  * Unsubscribe: debian-embedded-request@lists.debian.org, Subject: unsubscribe
+
+
+# Supported Hardware
+* NanoPi Neo
+* NanoPi Neo Air
 
 # Release Information
-
 Built on:
-* Linux Mint 18.1
-* Debian 8.2
 
-Tested on:
-* No target board tests, yet.
+* Linux Mint 18.1
+* Debian 8 (jessie)
+* Debian 9 (stretch)
 
 **Note:** qemu-user-static has irregular problems while running multithreaded tasks.
 These problems did not appear with qemu-user-static (=2.8).
