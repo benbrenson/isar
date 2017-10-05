@@ -46,15 +46,31 @@ DEV_PACKAGES=" \
               iputils-ping \
              "
 
-ADD_INSTALL = "${@bb.utils.contains('IMAGE_FEATURES', 'develop', '${DEV_PACKAGES}', '', d)}"
+TEST_PACKAGES="\
+               unittest \
+               spi-tests \
+              "
+
+UPDATE_PACKAGES="\
+                 swupdate \
+                 update-service \
+                "
+
+ADD_PRE_INSTALL += "${@bb.utils.contains('IMAGE_FEATURES', 'develop', '${DEV_PACKAGES}', '', d)}"
+ADD_INSTALL += "${@bb.utils.contains('IMAGE_FEATURES', 'test', '${TEST_PACKAGES}', '', d)}"
+ADD_INSTALL += "${@bb.utils.contains('IMAGE_FEATURES', 'update', '${UPDATE_PACKAGES}', '', d)}"
 
 IMAGE_PREINSTALL += " \
                    ${BASE_PACKAGES} \
                    ${ADMIN_PACKAGES} \
-                   ${ADD_INSTALL} \
+                   ${ADD_PRE_INSTALL} \
                    "
 
 PACKAGE_TUNES_append = " openssh-server "
 
 IMAGE_FEATURES ?= " systemd "
-IMAGE_INSTALL_append = " linux-image-cross u-boot-cross "
+IMAGE_INSTALL_append = " \
+                        linux-image-cross \
+                        u-boot-cross \
+                        ${ADD_INSTALL} \
+                       "
