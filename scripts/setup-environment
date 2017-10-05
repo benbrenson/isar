@@ -1,0 +1,41 @@
+#!/bin/sh
+# -*- mode: shell-script; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+#
+# Copyright (c) 2017 Mixed Mode GmbH
+# Authored-by:  Benedikt Niedermayr <Benedikt.Niedermayr@mixed-mode.de>
+#
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+if [ -n "$BASH_SOURCE" ]; then
+    THIS_SCRIPT=$BASH_SOURCE
+elif [ -n "$ZSH_NAME" ]; then
+    THIS_SCRIPT=$0
+else
+    THIS_SCRIPT="$(pwd)/isar-init-build-env"
+fi
+
+if [ -z "$ZSH_NAME" ] && [ "$0" = "$THIS_SCRIPT" ]; then
+    echo "Error: This script needs to be sourced. Please run as '. $THIS_SCRIPT'"
+    exit 1
+fi
+
+if [ -z "$ROOTDIR" ]; then
+    ROOTDIR=$(dirname "$THIS_SCRIPT")
+    ROOTDIR=$(readlink -f "$ROOTDIR")
+fi
+
+echo "sourcing sources/isar/isar-init-build-env ${ROOTDIR}/${1}"
+source sources/isar/isar-init-build-env ${ROOTDIR}/${1}
+
+
