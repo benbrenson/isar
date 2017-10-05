@@ -3,12 +3,17 @@
 LCONF_VERSION = "6"
 
 BBPATH = "${TOPDIR}"
+BSPDIR := "${@os.path.abspath(os.path.dirname(d.getVar('FILE', True)) + '/../..')}"
+
 BBFILES ?= ""
 
 BBLAYERS ?= " \
-  ##ISARROOT##/meta \
-  ##ISARROOT##/meta-isar \
+  ${BSPDIR}/sources/isar/meta \
+  ${BSPDIR}/sources/isar/meta-isar \
+  ${BSPDIR}/sources/meta-sunxi \
+  ${BSPDIR}/sources/meta-swupdate \
+  ${BSPDIR}/sources/meta-unittest \
   "
 BBLAYERS_NON_REMOVABLE ?= " \
-  ##ISARROOT##/meta \
+  ${BSPDIR}/sources/isar/meta \
   "
