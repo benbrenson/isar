@@ -116,6 +116,11 @@ EOM
     unset SHOWYPDOC
 fi
 
+# Copy docker dir to builddir
+if [ ! -d  "$BUILDDIR/docker" ]; then
+    cp -r $ISARROOT/scripts/docker   $BUILDDIR
+fi
+
 cat <<EOM
 ### Shell environment set up for builds. ###
 

@@ -1,0 +1,18 @@
+version: '2'
+services:
+  create:
+    image: isar_image:nanopi
+
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+  isar_build:
+    image: isar_image:nanopi
+    privileged: true
+    ports:
+      - "2222:22"
+    volumes:
+      - ${PWD}/../../:/home/build/isar_build
+
+    entrypoint: bash -c "cd /home/build/isar_build ; source setup-environment build-release ; bitbake multiconfig:cactuspot:isar-image-base"
