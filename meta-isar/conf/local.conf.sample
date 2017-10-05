@@ -17,8 +17,10 @@
 # You need to select a specific machine to target the build with. There are a selection
 # of emulated machines available which can boot and run in the QEMU emulator:
 #
-# This sets the default machine to be qemuarm if no other machine is selected:
-MACHINE ??= "qemuarm"
+# This sets the default machine if no other machine is selected.
+# This variable should be set to the machine which is getting build, since wic will
+# use this machine for running bitbake commands.
+MACHINE ??= "nanopi-neo"
 
 #
 # Multistrap Configuration Selection
@@ -27,8 +29,21 @@ MACHINE ??= "qemuarm"
 # generation of buildchroot environment and target root filesystem.
 #
 # This sets the default multistrap configuration:
-DISTRO ??= "debian-wheezy"
+DISTRO ??= "debian-stretch"
 
+
+#
+# Image features selection.
+# Select different standart customization for the image.
+# develop: Add a bunch of development tools (gcc, gdb, strace...) to the image.
+#          This will increase the rootfs size significantly.
+# systemd: Use systemd as init system
+# sysvinit: Use sysvinit as init system
+# test: Add unittest framework for testing purposes
+# update: Add linux-image update service
+IMAGE_FEATURES += "systemd"
+
+#
 #
 # Multiple Configuration Selection
 #
@@ -36,7 +51,7 @@ DISTRO ??= "debian-wheezy"
 # following option.
 #
 # This sets the default multiple configurations used:
-BBMULTICONFIG = "qemuarm rpi"
+BBMULTICONFIG = "qemuarm rpi nanopi nanopi-air"
 
 #
 # Where to place downloads
@@ -49,7 +64,7 @@ BBMULTICONFIG = "qemuarm rpi"
 #
 # The default is a downloads directory under TOPDIR which is the build directory.
 #
-#DL_DIR ?= "${TOPDIR}/downloads"
+DL_DIR = "${BSPDIR}/downloads"
 
 #
 # Where to place shared-state files
@@ -143,8 +158,33 @@ CONF_VERSION = "1"
 
 #
 # The default list of extra packages to be installed.
-IMAGE_INSTALL = "hello"
+#IMAGE_INSTALL = "hello"
+
+#
+# Add debian package installed into the image at multistrap stage.
+#IMAGE_PREINSTALL += "vim"
 
 #
 # Default parallel jobs for bitbake:
-BB_NUMBER_THREADS = "4"
+BB_NUMBER_THREADS ?= "${@bb.utils.cpu_count()}"
+
+#
+# How many processes make should run in parallel
+PARALLEL_MAKE ?= "${@bb.utils.cpu_count()}"
+
+
+DEB_EMAIL="default@email.com"
+DEB_FULLNAME="Default Name"
+DEB_HOST_ARCH="amd64"
+
+
+# This is required in case of running the swupdate software on the target.
+# If not, you can use it for your own purposes.
+IMAGE_REVISION = "0.1"
+
+# This required in case of running the update_service script, which in turn
+# wrapps the swupdate software.
+BROKER_IP ?= "192.168.8.1"
+BROKER_PORT ?= "4242"
+#Topic under which the update notification will be received.
+UPDATE_TOPIC ?= "dev/0a24871b-6eb0-47a3-a66b-a3ebca77e376-598b4e4460e570ea/device"
