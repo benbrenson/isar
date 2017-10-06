@@ -62,7 +62,8 @@ do_install_keyrings() {
         apt-get download -y ${keyring}
         deb=`ls ${keyring}_*.deb`
         dpkg -X $deb ${CROSS_BUILDCHROOT_DIR}/tmp/keyrings
-        cp -r ${CROSS_BUILDCHROOT_DIR}/tmp/keyrings/usr/share/keyrings/* ${CROSS_BUILDCHROOT_DIR}/etc/apt/trusted.gpg.d
+        cp -r ${CROSS_BUILDCHROOT_DIR}/tmp/keyrings/usr/share/keyrings/*    ${CROSS_BUILDCHROOT_DIR}/etc/apt/trusted.gpg.d || true
+        cp -r ${CROSS_BUILDCHROOT_DIR}/tmp/keyrings/etc/apt/trusted.gpg.d/* ${CROSS_BUILDCHROOT_DIR}/etc/apt/trusted.gpg.d || true
         rm -r $deb ${CROSS_BUILDCHROOT_DIR}/tmp/keyrings
     done
 }

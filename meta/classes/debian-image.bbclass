@@ -29,7 +29,8 @@ do_install_keyrings() {
         apt-get download -y ${keyring}
         deb=`ls ${keyring}_*.deb`
         dpkg -X $deb ${ROOTFS_DIR}/tmp/keyrings
-        cp -r ${ROOTFS_DIR}/tmp/keyrings/usr/share/keyrings/* ${ROOTFS_DIR}/etc/apt/trusted.gpg.d
+        cp -r ${ROOTFS_DIR}/tmp/keyrings/usr/share/keyrings/*    ${ROOTFS_DIR}/etc/apt/trusted.gpg.d || true
+        cp -r ${ROOTFS_DIR}/tmp/keyrings/etc/apt/trusted.gpg.d/* ${ROOTFS_DIR}/etc/apt/trusted.gpg.d || true
         rm -r $deb ${ROOTFS_DIR}/tmp/keyrings
     done
 }
