@@ -115,6 +115,7 @@ This section describes how to fetch and prepare the build environment by your ow
     $ git clone https://github.com/benbrenson/meta-unittest.git meta-unittest
 
     ```
+**Note: Layer meta-unittest will fetch sources, which are not open-source, yet.**
 
 **Note: If some repositories are only reachable via https, you need to provide the required credentials via git-credentials:**
 
