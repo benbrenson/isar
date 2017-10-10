@@ -26,8 +26,8 @@ MAKE_append_class-cross = "CROSS_COMPILE=${TARGET_PREFIX}-"
 # Generate make command for dtbs and dtbos
 python() {
 	base_make = d.getVar('MAKE', True)
-	dtbos = d.getVar('DTBOS', True)
-	dtbs  = d.getVar('DTBS', True)
+	dtbos = d.getVar('DTBOS', True) or ""
+	dtbs  = d.getVar('DTBS', True) or ""
 
 	if len(dtbos) != 0:
 		make = base_make + ' ' + dtbos
