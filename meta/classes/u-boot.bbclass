@@ -23,6 +23,7 @@ debianize_build() {
 	cp ${PP}/defconfig .config
 	${MAKE} olddefconfig
 	${MAKE} -j${PARALLEL_MAKE} all
+	${MAKE} env
 	./tools/mkimage -C none -A arm -T script -d ${PP}/${BOOTSCRIPT_SRC} ${BOOTSCRIPT}
 }
 
