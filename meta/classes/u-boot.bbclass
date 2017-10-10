@@ -16,12 +16,18 @@ ${@bb.utils.contains('CROSS_COMPILE_ENABLED', \
 d)} \
 "
 
+do_copy_defconfig(){
+	set -x
+	cd ${S}
+    cp ${EXTRACTDIR}/defconfig ${S}/.config
+    ${MAKE} olddefconfig
+}
+addtask do_copy_defconfig after do_patch before do_build
+
 
 debianize_build[target] = "build"
 debianize_build() {
 	@echo "Running build target."
-	cp ${PP}/defconfig .config
-	${MAKE} olddefconfig
 	${MAKE} -j${PARALLEL_MAKE} all
 	${MAKE} env
 	./tools/mkimage -C none -A arm -T script -d ${PP}/${BOOTSCRIPT_SRC} ${BOOTSCRIPT}
@@ -31,7 +37,6 @@ debianize_build() {
 debianize_clean[target] = "clean"
 debianize_clean() {
 	@echo "Running clean target."
-	${MAKE} mrproper
 	rm -rf debian/${BPN}
 }
 
