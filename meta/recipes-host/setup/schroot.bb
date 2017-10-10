@@ -3,7 +3,7 @@
 
 DESCRIPTION="Recipe for setting up schroot and required configs on the host build machine."
 
-inherit fetch
+inherit fetch patch
 
 SRC_URI = "file://01_isar.conf \
            file://fstab \
