@@ -493,8 +493,6 @@ The package tunes mechanism is basically a standart for customizing packages, wh
 The main meaning lies in adding a bunch of package customizations, which where only appended/completed, when the associated package is actually included and skipped otherwise.
 For now all package tunes will be handled, but a warning message is displayed in case of not finding an affiliated entry in `IMAGE_INSTALL` or `IMAGE_PREINSTALL`.
 
-**Note: At the moment there is a bug when running with multiconfig. If a different `MACHINE` is selected in multiconfig, the `MACHINE` defined in local.conf is handled prior. To workaround this issue, set the MACHINE in local.conf to the same value as specified in multiconfig.**
-
 
 ---
 

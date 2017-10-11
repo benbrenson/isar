@@ -21,7 +21,7 @@ python do_package_tunes() {
 
     for tune in pkg_tunes.split():
         if tune not in img_preinstall and tune not in img_install:
-            bb.warn('Running package tune for %s wihout an affiliated entry in IMAGE_PREINSTALL or IMAGE_INSTALL.' % tune)
+            bb.warn('Running package tune for %s without an affiliated entry in IMAGE_PREINSTALL or IMAGE_INSTALL.' % tune)
             #bb.warn('Skipping package tune for %s since it is not going to be installed. Please add %s to IMAGE_PREINSTALL or IMAGE_INSTALL' % (tune,tune))
             #tunes_skipp.append(tune)
 
@@ -69,6 +69,12 @@ python do_package_tunes() {
             if tune in bbfile:
                 bb.note('Loading data from {}'.format(bbfile))
                 data = parser.loadDataFull(bbfile, appendfiles)
+
+                # Fixup MACHINE and DISTRO.
+                # These won't get extracted from the multiconfig
+                # supported datastore.
+                data.setVar('MACHINE', d.getVar('MACHINE', True))
+                data.setVar('DISTRO', d.getVar('DISTRO', True))
 
                 if data.getVar('do_configure_tune', False) != None:
                     bb.build.exec_func('do_configure_tune', data)
