@@ -1,0 +1,2 @@
+debian/tmp/lib/* usr/lib
+debian/tmp/libexec/gstreamer-1.0/gst-plugin-scanner usr/lib
