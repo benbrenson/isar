@@ -247,7 +247,6 @@ debianize_build-indep() {
 
 
 debianize_install[target] = "install"
-debianize_install[tdeps] = "build"
 debianize_install() {
 	@echo "Running install target."
 	dh_testdir
@@ -258,7 +257,7 @@ debianize_install() {
 
 
 debianize_binary-arch[target] = "binary-arch"
-debianize_binary-arch[tdeps] = "build install"
+debianize_binary-arch[tdeps] = "install"
 debianize_binary-arch() {
 	@echo "Running binary-arch target."
 	dh_testdir
@@ -281,7 +280,7 @@ debianize_binary-arch() {
 
 
 debianize_binary-indep[target] = "binary-indep"
-debianize_binary-indep[tdeps] = "build install"
+debianize_binary-indep[tdeps] = "install"
 debianize_binary-indep() {
 	@echo "Running binary-indep target."
 }
