@@ -166,11 +166,11 @@ CONF_VERSION = "1"
 
 #
 # Default parallel jobs for bitbake:
-BB_NUMBER_THREADS ?= "${@bb.utils.cpu_count()}"
+BB_NUMBER_THREADS = "${@bb.utils.cpu_count()}"
 
 #
 # How many processes make should run in parallel
-PARALLEL_MAKE ?= "${@bb.utils.cpu_count()}"
+PARALLEL_MAKE = "${@bb.utils.cpu_count()}"
 
 
 DEB_EMAIL="default@email.com"
