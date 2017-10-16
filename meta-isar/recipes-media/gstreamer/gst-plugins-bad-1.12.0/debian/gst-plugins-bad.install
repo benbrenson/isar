@@ -1,0 +1,4 @@
+debian/tmp/usr/lib/*.so usr/lib
+debian/tmp/usr/lib/*.0  usr/lib
+debian/tmp/usr/lib/*.la usr/lib
+debian/tmp/usr/lib/gstreamer-1.0/* usr/lib/gstreamer-1.0

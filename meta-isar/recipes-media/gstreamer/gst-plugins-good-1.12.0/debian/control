@@ -11,14 +11,3 @@ Package: ##PACKAGE##
 Architecture: ##DEB_ARCH##
 Description: ##DESCRIPTION##
 Depends: ##RDEPENDS##
-
-Package: ##PACKAGE##-tools
-Architecture: ##DEB_ARCH##
-Description: ##DESCRIPTION_TOOLS##
-Depends: ##RDEPENDS##
-
-Package: ##PACKAGE##-dev
-Architecture: ##DEB_ARCH##
-Description: ##DESCRIPTION_DEV##
-Depends: ##RDEPENDS##
-
