@@ -6,7 +6,7 @@ inherit debianize
 DEB_DEPENDS += "python${PYTHON_VERSION}-setuptools"
 DEB_RDEPENDS += "${python3:Depends}"
 
-PYTHON_VERSION ?= "3"
+PYTHON_VERSION ?= ""
 DH_MAKE ?= "dh_make -n --copyright ${LICENSE} -y --createorig --python -t ${EXTRACTDIR}/debian/ -p ${DEB_PKG}"
 
 DEB_ARCH_CTRL="all"
@@ -14,7 +14,7 @@ DEB_ARCH_CTRL="all"
 debianize_build[target] = "build"
 debianize_build() {
 	@echo "Running build target."
-	python${PYTHON_VERSION} setup.py build -j${PARALLEL_MAKE}
+	python${PYTHON_VERSION} setup.py build
 }
 
 
