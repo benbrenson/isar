@@ -1,0 +1,48 @@
+From c2bcddca2b930d449f391db8e044182752fe97dd Mon Sep 17 00:00:00 2001
+From: Benedikt Niedermayr <Benedikt.Niedermayr@mixed-mode.de>
+Date: Tue, 17 Oct 2017 09:10:27 +0200
+Subject: [PATCH] gstv4l2videoenc: Fixed EBUSY when setting format.
+
+The order in gst_v4l2_video_enc_set_format() is not correctly set.
+Most encoders don't allow to set the format after the stream has started.
+So set the format with gst_v4l2_object_set_format() before calling the
+gst_video_encoder_set_output_state().
+
+This bug appeared on i.MX6 Platforms.
+
+Signed-off-by: Benedikt Niedermayr <Benedikt.Niedermayr@mixed-mode.de>
+---
+ sys/v4l2/gstv4l2videoenc.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/sys/v4l2/gstv4l2videoenc.c b/sys/v4l2/gstv4l2videoenc.c
+index f1d3087..e7b8b50 100644
+--- a/sys/v4l2/gstv4l2videoenc.c
++++ b/sys/v4l2/gstv4l2videoenc.c
+@@ -330,6 +330,11 @@ gst_v4l2_video_enc_set_format (GstVideoEncoder * encoder,
+     self->input_state = NULL;
+   }
+ 
++  if (!gst_v4l2_object_set_format (self->v4l2output, state->caps, &error)) {
++    gst_v4l2_error (self, &error);
++    return FALSE;
++  }
++
+   outcaps = gst_pad_get_pad_template_caps (encoder->srcpad);
+   outcaps = gst_caps_make_writable (outcaps);
+   output = gst_video_encoder_set_output_state (encoder, outcaps, state);
+@@ -338,11 +343,6 @@ gst_v4l2_video_enc_set_format (GstVideoEncoder * encoder,
+   if (!gst_video_encoder_negotiate (encoder))
+     return FALSE;
+ 
+-  if (!gst_v4l2_object_set_format (self->v4l2output, state->caps, &error)) {
+-    gst_v4l2_error (self, &error);
+-    return FALSE;
+-  }
+-
+   self->input_state = gst_video_codec_state_ref (state);
+ 
+   GST_DEBUG_OBJECT (self, "output caps: %" GST_PTR_FORMAT, state->caps);
+-- 
+2.7.4
+

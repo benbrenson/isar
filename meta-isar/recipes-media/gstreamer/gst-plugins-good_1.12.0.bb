@@ -22,6 +22,8 @@ URL = "git://github.com/GStreamer/gst-plugins-good.git"
 SRCREV = "09af01a08852265c76bd1b0b9d8fe42ed2a1c919"
 BRANCH = "master"
 
+SRC_URI += "file://0001-gstv4l2videoenc-Fixed-EBUSY-when-setting-format.patch"
+
 EXTRA_CONF ?= "--with-libv4l2 --enable-v4l2-probe"
 
 BBCLASSEXTEND = "cross"
