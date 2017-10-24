@@ -49,11 +49,11 @@ do_rootfs() {
     sed -i 's|##DISTRO_COMPONENTS##|${DISTRO_COMPONENTS}|' ${WORKDIR}/multistrap.conf
 
     # Install QEMU emulator to execute ARM binaries
-    sudo mkdir -p ${ROOTFS_DIR}/usr/bin
-    sudo cp /usr/bin/qemu-arm-static ${ROOTFS_DIR}/usr/bin
+    mkdir -p ${ROOTFS_DIR}/usr/bin
+    cp /usr/bin/qemu-arm-static ${ROOTFS_DIR}/usr/bin
 
     # Create root filesystem
-    sudo multistrap -a ${DISTRO_ARCH} -d "${S}" -f "${WORKDIR}/multistrap.conf" || true
+    PROOT_NO_SECCOMP=1 proot -0 multistrap -a ${DISTRO_ARCH} -d "${S}" -f "${WORKDIR}/multistrap.conf" || true
 
 }
 addtask rootfs before do_setup_rootfs
@@ -68,48 +68,48 @@ do_setup_rootfs() {
       echo "initctl: Trying to prevent daemons from starting in ${ROOTFS_DIR}"
 
       # Disable start-stop-daemon
-      sudo mv ${ROOTFS_DIR}/sbin/start-stop-daemon ${ROOTFS_DIR}/sbin/start-stop-daemon.REAL
-      sudo tee ${ROOTFS_DIR}/sbin/start-stop-daemon > /dev/null  << EOF
+      ${SUDO} mv ${ROOTFS_DIR}/sbin/start-stop-daemon ${ROOTFS_DIR}/sbin/start-stop-daemon.REAL
+      ${SUDO} tee ${ROOTFS_DIR}/sbin/start-stop-daemon > /dev/null  << EOF
 #!/bin/sh
 echo
 echo Warning: Fake start-stop-daemon called, doing nothing
 EOF
-      sudo chmod 755 ${ROOTFS_DIR}/sbin/start-stop-daemon
+      ${SUDO} chmod 755 ${ROOTFS_DIR}/sbin/start-stop-daemon
   fi
 
   if [ -x "${ROOTFS_DIR}/sbin/initctl" ]; then
       echo "start-stop-daemon: Trying to prevent daemons from starting in ${ROOTFS_DIR}"
 
       # Disable initctl
-      sudo mv "${ROOTFS_DIR}/sbin/initctl" "${ROOTFS_DIR}/sbin/initctl.REAL"
-      sudo tee ${ROOTFS_DIR}/sbin/initctl > /dev/null << EOF
+      ${SUDO} mv "${ROOTFS_DIR}/sbin/initctl" "${ROOTFS_DIR}/sbin/initctl.REAL"
+      ${SUDO} tee ${ROOTFS_DIR}/sbin/initctl > /dev/null << EOF
 #!/bin/sh
 echo
 echo "Warning: Fake initctl called, doing nothing"
 EOF
-      sudo chmod 755 ${ROOTFS_DIR}/sbin/initctl
+      ${SUDO} chmod 755 ${ROOTFS_DIR}/sbin/initctl
   fi
 
   # Define sysvinit policy 101 to prevent daemons from starting in buildchroot
   if [ -x "${ROOTFS_DIR}/sbin/init" -a ! -f "${ROOTFS_DIR}/usr/sbin/policy-rc.d" ]; then
     echo "sysvinit: Using policy-rc.d to prevent daemons from starting in ${ROOTFS_DIR}"
 
-    sudo tee ${ROOTFS_DIR}/usr/sbin/policy-rc.d > /dev/null << EOF
+    ${SUDO} tee ${ROOTFS_DIR}/usr/sbin/policy-rc.d > /dev/null << EOF
 #!/bin/sh
 echo "sysvinit: All runlevel operations denied by policy" >&2
 exit 101
 EOF
-    sudo chmod a+x ${ROOTFS_DIR}/usr/sbin/policy-rc.d
+    ${SUDO} chmod a+x ${ROOTFS_DIR}/usr/sbin/policy-rc.d
   fi
 
   # Set hostname
-  sudo sh -c 'echo "isar" > ${ROOTFS_DIR}/etc/hostname'
+  ${SUDO} sh -c 'echo "isar" > ${ROOTFS_DIR}/etc/hostname'
 
   # Create packages build folder
-  sudo install -m 0777 -d ${ROOTFS_DIR}/home/builder
+  ${SUDO} install -m 0777 -d ${ROOTFS_DIR}/home/builder
 
   # Install host networking settings
-  sudo cp /etc/resolv.conf ${ROOTFS_DIR}/etc
+  ${SUDO} cp /etc/resolv.conf ${ROOTFS_DIR}/etc
 }
 addtask do_setup_rootfs after do_rootfs before do_configure_rootfs
 do_setup_rootfs[stamp-extra-info] = "${MACHINE}"
@@ -259,7 +259,7 @@ do_clean_append() {
     if err == True:
         bb.fatal('Cleaning ROOTFS_DIR not possible. Still busy.')
 
-    shell.call(['sudo', 'rm', '-rf', rootfs_dir])
+    shell.call(['rm', '-rf', rootfs_dir])
 }
 
 do_cleanall_append() {
@@ -281,5 +281,5 @@ do_cleanall_append() {
     if err == True:
         bb.fatal('Cleaning ROOTFS_DIR not possible. Still busy.')
 
-    shell.call(['sudo', 'rm', '-rf', rootfs_dir])
+    shell.call(['rm', '-rf', rootfs_dir])
 }
