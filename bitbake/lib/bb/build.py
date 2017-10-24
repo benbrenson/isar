@@ -347,11 +347,10 @@ def exec_func_shell(func, d, runfile, cwd=None):
     # Don't let the emitted shell script override PWD
     d.delVarFlag('PWD', 'export')
 
-    flags  = d.getVarFlags(func, expand=['id'])
+    flags  = d.getVarFlags(func, expand=['chrootdir'])
     chroot = flags.get('chroot')
-    buildchroot_id = d.getVar('BUILDCHROOT_ID', True) or ""
-    cross_buildchroot_id = d.getVar('CROSS_BUILDCHROOT_ID', True) or ""
-    rootfs_id = d.getVar('ROOTFS_ID', True) or ""
+    chrootdir = flags.get('chrootdir')
+    target_arch = d.getVar('TARGET_ARCH', True)
 
     with open(runfile, 'w') as script:
         script.write(shell_trap_code())
@@ -363,23 +362,15 @@ def exec_func_shell(func, d, runfile, cwd=None):
         if cwd:
             script.write("cd '%s'\n" % cwd)
 
-        if chroot:
-            schroot_id = flags.get('id')
-
-            if schroot_id == buildchroot_id:
-                chrootdir = d.getVar('BUILDCHROOT_DIR', True)
-            elif schroot_id == cross_buildchroot_id:
-                chrootdir = d.getVar('CROSS_BUILDCHROOT_DIR', True)
-            elif schroot_id == rootfs_id:
-                chrootdir = d.getVar('ROOTFS_DIR', True)
-            else:
-                bb.fatal('No valid id (\'%s\') set' % schroot_id)
-
-            d.setVar('SCHROOT_ID', schroot_id)
-
+        if chroot and chrootdir:
+            d.setVar('CHROOT_DIR', chrootdir)
             chroot_cmd = d.getVar('CHROOT', True)
+
             if not chroot_cmd:
-                bb.fatal('\n Try to run chroot function, but no CHROOT set.')
+                bb.fatal('Try to run chroot function, but CHROOT is not set.')
+
+            if os.path.isfile(os.path.join(chrootdir,'usr/bin/qemu-%s-static' % target_arch)):
+                chroot_cmd += ' -q qemu-%s' % target_arch
 
             script.write('{0} /bin/bash -c "{1}"\n'.format(chroot_cmd, func))
         else:
@@ -399,13 +390,6 @@ exit $ret
         fakerootcmd = d.getVar('FAKEROOT', True)
         if fakerootcmd:
             cmd = [fakerootcmd, runfile]
-
-    if chroot:
-        sudocmd = d.getVar('SUDO', True)
-        if sudocmd:
-            cmd = sudocmd.split()
-            cmd.append(runfile)
-            bb.warn(' '.join(cmd))
 
     if bb.msg.loggerDefaultVerbose:
         logfile = LogTee(logger, sys.stdout)
@@ -471,8 +455,6 @@ exit $ret
         tempdir = d.getVar('T', True)
 
     fifopath = os.path.join(tempdir, 'fifo.%s' % os.getpid())
-    #bb.process.run(['sudo', 'rm', '-f', '{}'.format(fifopath)], shell=False, log=logfile)
-    #bb.process.run(['sudo', 'mkfifo', '-m', '0777', '{}'.format(fifopath)], shell=False, log=logfile)
 
     bb.process.run(['rm', '-f', '{}'.format(fifopath)], shell=False, log=logfile)
     bb.process.run(['mkfifo', '-m', '0777', '{}'.format(fifopath)], shell=False, log=logfile)
@@ -488,7 +470,7 @@ exit $ret
                 logfn = d.getVar('BB_LOGFILE', True)
                 raise FuncFailed(func, logfn)
         finally:
-            bb.process.run(['sudo', 'rm', '-f', '{}'.format(fifopath)], shell=False, log=logfile)
+            bb.process.run(['rm', '-f', '{}'.format(fifopath)], shell=False, log=logfile)
 
     bb.debug(2, "Shell function %s finished" % func)
 

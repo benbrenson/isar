@@ -168,9 +168,6 @@ def run(cmd, input=None, log=None, extrafiles=None, **options):
         if stderr:
             stderr = stderr.decode("utf-8")
 
-
-    bb.warn(stdout)
-    bb.warn(stderr)
     if pipe.returncode != 0:
         raise ExecutionError(cmd, pipe.returncode, stdout, stderr)
     return stdout, stderr
