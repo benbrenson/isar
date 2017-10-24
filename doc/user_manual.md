@@ -842,11 +842,11 @@ do_mytask() {
 addtask do_mytask
 do_mytask[chroot] = "1"
 do_mytask[stamp-extra-info] = "${MACHINE}.chroot
-do_mytask[id] = "${BUILDCHROOT_ID}"
+do_mytask[chrootdir] = "${BUILDCHROOT_DIR}"
 ```
 
 So basically the following variables have to be set:
-- `do_mytask[id]` - This will set the location of target chroot environment. One target (`ROOTFS_ID`) specifies the final rootfs location , which points to `ROOTFS_DIR`. And the other target (`BUILDCHROOT_ID`) specifies the buildchroot directory `BUILDCHROOT_DIR`. A third target(`CROSS_BUILDCHROOT_ID`) is setting the chroot destination to `CROSS_BUILDCHROOT_DIR`.
+- `do_mytask[chrootdir]` - This will set the location of target chroot environment.
 - `do_mytask[chroot]` - Enables the chroot if `1` is set.
 - `do_mytask[stamp-extra-info]` - This function flag is not mandatory, but may be helpfull in case of detecting chrooted tasks at the recipes temp folder.
 

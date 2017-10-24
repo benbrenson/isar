@@ -99,11 +99,6 @@ Where distro may be "debian" and distro_suite may be "jessie".
  - `PPB` - The recipes build directory within the chroot, pointing to `${PP}/${BUILD_DIR}`.
  - `CHROOT` - The chroot command used when running chroot tasks.
 
- - `BUILDCHROOT_ID` - Chroot identifier for the buildchroot.
- - `CROSS_BUILDCHROOT_ID` - Chroot identifier for the cross-buildchroot.
- - `ROOTFS_ID` - Chroot identifier for the final target rootfs.
-
- - `SCHROOT_ID` - Current chroot identifier. Setting this will set the chroot identifier for the chroot task defined.
  - `DEB_SIGN` - Commandline options specific for signing, when runnig `dpkg-builpackage`.
  - `DEB_COMPRESSION` - Compression type for generating the original source file when running `dpkg-buildpackage`.
  - `DEB_HOST_ARCH` - The standart value for the host architecture (default="amd64").
