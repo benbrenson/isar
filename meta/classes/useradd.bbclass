@@ -24,7 +24,7 @@ do_useradd() {
 addtask do_useradd
 do_useradd[stamp-extra-info] = "${MACHINE}.chroot"
 do_useradd[chroot] = "1"
-do_useradd[id] = "${ROOTFS_ID}"
+do_useradd[chrootdir] = "${ROOTFS_DIR}"
 
 
 do_set_root_password() {
@@ -33,4 +33,4 @@ do_set_root_password() {
 addtask do_set_root_password
 do_set_root_password[stamp-extra-info] = "${MACHINE}.chroot"
 do_set_root_password[chroot] = "1"
-do_set_root_password[id] = "${ROOTFS_ID}"
+do_set_root_password[chrootdir] = "${ROOTFS_DIR}"

@@ -14,8 +14,8 @@ DEB_ARCH = "${DEB_HOST_ARCH}"
 
 
 # Set chroot environment for do build and do_install task
-do_build[id] = "${CROSS_BUILDCHROOT_ID}"
-do_install[id] = "${CROSS_BUILDCHROOT_ID}"
+do_build[chrootdir] = "${CROSS_BUILDCHROOT_DIR}"
+do_install[chrootdir] = "${CROSS_BUILDCHROOT_DIR}"
 
 
 

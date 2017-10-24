@@ -42,7 +42,7 @@ do_prepare_initramfs() {
 addtask do_prepare_initramfs after do_populate before do_generate_initramfs
 do_prepare_initramfs[stamp-extra-info] = "${DISTRO}.chroot"
 do_prepare_initramfs[chroot] = "1"
-do_prepare_initramfs[id] = "${ROOTFS_ID}"
+do_prepare_initramfs[chrootdir] = "${ROOTFS_DIR}"
 
 
 do_generate_initramfs() {
@@ -58,4 +58,4 @@ do_generate_initramfs() {
 addtask do_generate_initramfs after do_prepare_initramfs before do_post_rootfs
 do_generate_initramfs[stamp-extra-info] = "${DISTRO}.chroot"
 do_generate_initramfs[chroot] = "1"
-do_generate_initramfs[id] = "${ROOTFS_ID}"
+do_generate_initramfs[chrootdir] = "${ROOTFS_DIR}"

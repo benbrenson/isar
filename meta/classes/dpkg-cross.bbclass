@@ -47,7 +47,7 @@ do_build() {
 }
 do_build[stamp-extra-info] = "${MACHINE}.chroot"
 do_build[chroot] = "1"
-do_build[id] = "${CROSS_BUILDCHROOT_ID}"
+do_build[chrootdir] = "${CROSS_BUILDCHROOT_DIR}"
 
 
 
@@ -75,4 +75,4 @@ addtask do_install after do_build
 do_install[prefuncs] = "do_pre_install"
 do_install[stamp-extra-info] = "${DISTRO}"
 do_install[chroot] = "1"
-do_install[id] = "${CROSS_BUILDCHROOT_ID}"
+do_install[chrootdir] = "${CROSS_BUILDCHROOT_DIR}"

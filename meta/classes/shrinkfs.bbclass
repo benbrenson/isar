@@ -12,4 +12,4 @@ do_shrinkfs() {
 addtask do_shrinkfs
 do_shrinkfs[stamp-extra-info] = "${MACHINE}.chroot"
 do_shrinkfs[chroot] = "1"
-do_shrinkfs[id] = "${ROOTFS_ID}"
+do_shrinkfs[chrootdir] = "${ROOTFS_DIR}"

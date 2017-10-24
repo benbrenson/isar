@@ -50,7 +50,7 @@ do_build() {
 }
 do_build[stamp-extra-info] = "${MACHINE}.chroot"
 do_build[chroot] = "1"
-do_build[id] = "${BUILDCHROOT_ID}"
+do_build[chrootdir] = "${BUILDCHROOT_DIR}"
 
 
 # Install package to dedicated deploy directory
@@ -76,4 +76,4 @@ do_install() {
 addtask do_install after do_pre_install before do_post_install
 do_install[stamp-extra-info] = "${DISTRO}.chroot"
 do_install[chroot] = "1"
-do_install[id] = "${BUILDCHROOT_ID}"
+do_install[chrootdir] = "${BUILDCHROOT_DIR}"
