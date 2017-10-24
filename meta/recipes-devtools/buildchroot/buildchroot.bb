@@ -5,7 +5,6 @@
 
 DESCRIPTION = "Multistrap development filesystem"
 
-DEPENDS += "schroot"
 do_build[deptask]="do_build"
 
 LICENSE = "gpl-2.0"

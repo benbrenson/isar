@@ -5,7 +5,6 @@
 
 DESCRIPTION = "Multistrap development filesystem"
 
-DEPENDS += "schroot"
 do_build[deptask]="do_build"
 
 LICENSE = "gpl-2.0"
@@ -38,7 +37,7 @@ BUILDCHROOT_PREINSTALL ?= "gcc \
                            cmake \
                            vim \
                            "
-BUILDCHROOT_PREINSTALL = "vim apt dpkg"
+
 
 # Some packages are only installable after late configurations for
 # apt
@@ -159,8 +158,6 @@ do_setup_buildchroot[stamp-extra-info] = "${DISTRO}"
 
 
 do_configure_buildchroot() {
-    bbwarn "YES"
-    return
     # Configure root filesystem
     echo "LANG=en_US.UTF-8"     >> /etc/default/locale
     echo "LANGUAGE=en_US.UTF-8" >> /etc/default/locale

@@ -58,7 +58,6 @@ do_rootfs() {
 }
 addtask rootfs before do_setup_rootfs
 do_rootfs[stamp-extra-info] = "${MACHINE}"
-do_rootfs[depends] = "schroot:do_setup_schroot"
 do_rootfs[prefuncs] += "do_install_keyrings"
 
 
