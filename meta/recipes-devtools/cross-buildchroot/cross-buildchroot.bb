@@ -38,7 +38,7 @@ BUILDCHROOT_PREINSTALL ?= "gcc \
                            cmake \
                            vim \
                            "
-
+BUILDCHROOT_PREINSTALL = "vim apt dpkg"
 
 # Some packages are only installable after late configurations for
 # apt
@@ -80,13 +80,9 @@ do_buildchroot() {
     sed -i 's|##DISTRO_SUITE##|${DISTRO_SUITE}|' ${WORKDIR}/multistrap.conf
     sed -i 's|##DISTRO_COMPONENTS##|${DISTRO_COMPONENTS}|' ${WORKDIR}/multistrap.conf
 
-    # Install QEMU emulator to execute ARM binaries
-    sudo mkdir -p ${CROSS_BUILDCHROOT_DIR}/usr/bin
-    sudo cp /usr/bin/qemu-arm-static ${CROSS_BUILDCHROOT_DIR}/usr/bin
-
     # Create root filesystem
-    sudo multistrap -a ${DEB_HOST_ARCH} -d "${CROSS_BUILDCHROOT_DIR}" -f "${WORKDIR}/multistrap.conf" || true
-
+    #sudo multistrap -a ${DEB_HOST_ARCH} -d "${CROSS_BUILDCHROOT_DIR}" -f "${WORKDIR}/multistrap.conf" || true
+    PROOT_NO_SECCOMP=1 proot -0 multistrap -a ${DEB_HOST_ARCH} -d "${CROSS_BUILDCHROOT_DIR}" -f "${WORKDIR}/multistrap.conf" || true
 }
 addtask do_buildchroot before do_setup_buildchroot
 do_buildchroot[stamp-extra-info] = "${DISTRO}"
@@ -101,60 +97,60 @@ do_setup_buildchroot() {
       echo "initctl: Trying to prevent daemons from starting in ${CROSS_BUILDCHROOT_DIR}"
 
       # Disable start-stop-daemon
-      sudo mv ${CROSS_BUILDCHROOT_DIR}/sbin/start-stop-daemon ${CROSS_BUILDCHROOT_DIR}/sbin/start-stop-daemon.REAL
-      sudo tee ${CROSS_BUILDCHROOT_DIR}/sbin/start-stop-daemon > /dev/null  << EOF
+      ${SUDO} mv ${CROSS_BUILDCHROOT_DIR}/sbin/start-stop-daemon ${CROSS_BUILDCHROOT_DIR}/sbin/start-stop-daemon.REAL
+      ${SUDO} tee ${CROSS_BUILDCHROOT_DIR}/sbin/start-stop-daemon > /dev/null  << EOF
 #!/bin/sh
 echo
 echo Warning: Fake start-stop-daemon called, doing nothing
 EOF
-      sudo chmod 755 ${CROSS_BUILDCHROOT_DIR}/sbin/start-stop-daemon
+      ${SUDO} chmod 755 ${CROSS_BUILDCHROOT_DIR}/sbin/start-stop-daemon
   fi
 
   if [ -x "${CROSS_BUILDCHROOT_DIR}/sbin/initctl" ]; then
       echo "start-stop-daemon: Trying to prevent daemons from starting in ${CROSS_BUILDCHROOT_DIR}"
 
       # Disable initctl
-      sudo mv "${CROSS_BUILDCHROOT_DIR}/sbin/initctl" "${CROSS_BUILDCHROOT_DIR}/sbin/initctl.REAL"
-      sudo tee ${CROSS_BUILDCHROOT_DIR}/sbin/initctl > /dev/null << EOF
+      ${SUDO} mv "${CROSS_BUILDCHROOT_DIR}/sbin/initctl" "${CROSS_BUILDCHROOT_DIR}/sbin/initctl.REAL"
+      ${SUDO} tee ${CROSS_BUILDCHROOT_DIR}/sbin/initctl > /dev/null << EOF
 #!/bin/sh
 echo
 echo "Warning: Fake initctl called, doing nothing"
 EOF
-      sudo chmod 755 ${CROSS_BUILDCHROOT_DIR}/sbin/initctl
+      ${SUDO} chmod 755 ${CROSS_BUILDCHROOT_DIR}/sbin/initctl
   fi
 
   # Define sysvinit policy 101 to prevent daemons from starting in buildchroot
   if [ -x "${CROSS_BUILDCHROOT_DIR}/sbin/init" -a ! -f "${CROSS_BUILDCHROOT_DIR}/usr/sbin/policy-rc.d" ]; then
     echo "sysvinit: Using policy-rc.d to prevent daemons from starting in ${CROSS_BUILDCHROOT_DIR}"
 
-    sudo tee ${CROSS_BUILDCHROOT_DIR}/usr/sbin/policy-rc.d > /dev/null << EOF
+    ${SUDO} tee ${CROSS_BUILDCHROOT_DIR}/usr/sbin/policy-rc.d > /dev/null << EOF
 #!/bin/sh
 echo "sysvinit: All runlevel operations denied by policy" >&2
 exit 101
 EOF
-    sudo chmod a+x ${CROSS_BUILDCHROOT_DIR}/usr/sbin/policy-rc.d
+    ${SUDO} chmod a+x ${CROSS_BUILDCHROOT_DIR}/usr/sbin/policy-rc.d
   fi
 
   # Set hostname
-  sudo sh -c 'echo "isar" > ${CROSS_BUILDCHROOT_DIR}/etc/hostname'
+  ${SUDO} sh -c 'echo "isar" > ${CROSS_BUILDCHROOT_DIR}/etc/hostname'
 
   # Create packages build folder
-  sudo install -m 0777 -d ${CROSS_BUILDCHROOT_DIR}/home/builder
+  ${SUDO} install -m 0777 -d ${CROSS_BUILDCHROOT_DIR}/home/builder
 
   # Create deb folder for installing potential dependencies
-  sudo install -m 0777 -d ${CROSS_BUILDCHROOT_DIR}${CHROOT_DEPLOY_DIR_DEB}
+  ${SUDO} install -m 0777 -d ${CROSS_BUILDCHROOT_DIR}${CHROOT_DEPLOY_DIR_DEB}
 
   # Add local apt repository for auto install dependencies
-  sudo install -m 0755 -d ${APT_SRC_DIR}
+  ${SUDO} install -m 0755 -d ${APT_SRC_DIR}
   install -m 0755 -d ${DEPLOY_DIR_DEB}/${DISTRO_ARCH}
   install -m 0755 -d ${DEPLOY_DIR_DEB}/${DEB_HOST_ARCH}
-  sudo sh -c 'echo "deb [ trusted=yes ] file:${CHROOT_DEPLOY_DIR_DEB}/${DEB_HOST_ARCH}/ ./" > ${APT_SRC_FILE}'
-  sudo sh -c 'echo "deb [ trusted=yes ] file:${CHROOT_DEPLOY_DIR_DEB}/${DISTRO_ARCH}/ ./" >> ${APT_SRC_FILE}'
+  ${SUDO} sh -c 'echo "deb [ trusted=yes ] file:${CHROOT_DEPLOY_DIR_DEB}/${DEB_HOST_ARCH}/ ./" > ${APT_SRC_FILE}'
+  ${SUDO} sh -c 'echo "deb [ trusted=yes ] file:${CHROOT_DEPLOY_DIR_DEB}/${DISTRO_ARCH}/ ./" >> ${APT_SRC_FILE}'
   touch ${DEPLOY_DIR_DEB}/${DEB_HOST_ARCH}/Packages
   touch ${DEPLOY_DIR_DEB}/${DISTRO_ARCH}/Packages
 
   # Install host networking settings
-  sudo cp /etc/resolv.conf ${CROSS_BUILDCHROOT_DIR}/etc
+  ${SUDO} cp /etc/resolv.conf ${CROSS_BUILDCHROOT_DIR}/etc
 
 }
 addtask do_setup_buildchroot before do_configure_buildchroot
@@ -163,6 +159,8 @@ do_setup_buildchroot[stamp-extra-info] = "${DISTRO}"
 
 
 do_configure_buildchroot() {
+    bbwarn "YES"
+    return
     # Configure root filesystem
     echo "LANG=en_US.UTF-8"     >> /etc/default/locale
     echo "LANGUAGE=en_US.UTF-8" >> /etc/default/locale
@@ -222,7 +220,7 @@ END
 addtask do_configure_buildchroot before do_build
 do_configure_buildchroot[stamp-extra-info] = "${DISTRO}.chroot"
 do_configure_buildchroot[chroot] = "1"
-do_configure_buildchroot[id] = "${CROSS_BUILDCHROOT_ID}"
+do_configure_buildchroot[chrootdir] = "${CROSS_BUILDCHROOT_DIR}"
 
 
 do_install() {

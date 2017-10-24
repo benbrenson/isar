@@ -129,7 +129,7 @@ def _logged_communicate(pipe, log, input, extrafiles):
 
             readextras(r)
 
-    finally:    
+    finally:
         log.flush()
 
     readextras([fobj for fobj, _ in extrafiles])
@@ -164,9 +164,13 @@ def run(cmd, input=None, log=None, extrafiles=None, **options):
         stdout, stderr = pipe.communicate(input)
         if stdout:
             stdout = stdout.decode("utf-8")
+
         if stderr:
             stderr = stderr.decode("utf-8")
 
+
+    bb.warn(stdout)
+    bb.warn(stderr)
     if pipe.returncode != 0:
         raise ExecutionError(cmd, pipe.returncode, stdout, stderr)
     return stdout, stderr

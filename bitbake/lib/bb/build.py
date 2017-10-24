@@ -381,7 +381,7 @@ def exec_func_shell(func, d, runfile, cwd=None):
             if not chroot_cmd:
                 bb.fatal('\n Try to run chroot function, but no CHROOT set.')
 
-            script.write('{0} -- /bin/bash -c "{1}"\n'.format(chroot_cmd, func))
+            script.write('{0} /bin/bash -c "{1}"\n'.format(chroot_cmd, func))
         else:
             script.write("%s\n" % func)
 
@@ -405,6 +405,7 @@ exit $ret
         if sudocmd:
             cmd = sudocmd.split()
             cmd.append(runfile)
+            bb.warn(' '.join(cmd))
 
     if bb.msg.loggerDefaultVerbose:
         logfile = LogTee(logger, sys.stdout)
@@ -470,8 +471,11 @@ exit $ret
         tempdir = d.getVar('T', True)
 
     fifopath = os.path.join(tempdir, 'fifo.%s' % os.getpid())
-    bb.process.run(['sudo', 'rm', '-f', '{}'.format(fifopath)], shell=False, log=logfile)
-    bb.process.run(['sudo', 'mkfifo', '-m', '0777', '{}'.format(fifopath)], shell=False, log=logfile)
+    #bb.process.run(['sudo', 'rm', '-f', '{}'.format(fifopath)], shell=False, log=logfile)
+    #bb.process.run(['sudo', 'mkfifo', '-m', '0777', '{}'.format(fifopath)], shell=False, log=logfile)
+
+    bb.process.run(['rm', '-f', '{}'.format(fifopath)], shell=False, log=logfile)
+    bb.process.run(['mkfifo', '-m', '0777', '{}'.format(fifopath)], shell=False, log=logfile)
 
     with open(fifopath, 'r+b', buffering=0) as fifo:
         try:
