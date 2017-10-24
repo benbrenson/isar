@@ -76,11 +76,11 @@ do_buildchroot() {
     sed -i 's|##DISTRO_COMPONENTS##|${DISTRO_COMPONENTS}|' ${WORKDIR}/multistrap.conf
 
     # Install QEMU emulator to execute ARM binaries
-    sudo mkdir -p ${BUILDCHROOT_DIR}/usr/bin
-    sudo cp /usr/bin/qemu-arm-static ${BUILDCHROOT_DIR}/usr/bin
+    mkdir -p ${BUILDCHROOT_DIR}/usr/bin
+    cp /usr/bin/qemu-arm-static ${BUILDCHROOT_DIR}/usr/bin
 
     # Create root filesystem
-    sudo multistrap -a ${DISTRO_ARCH} -d "${BUILDCHROOT_DIR}" -f "${WORKDIR}/multistrap.conf" || true
+    PROOT_NO_SECCOMP=1 proot -0 multistrap -a ${DISTRO_ARCH} -d "${BUILDCHROOT_DIR}" -f "${WORKDIR}/multistrap.conf" || true
 
 }
 addtask do_buildchroot before do_setup_buildchroot
@@ -95,61 +95,61 @@ do_setup_buildchroot() {
       echo "initctl: Trying to prevent daemons from starting in ${BUILDCHROOT_DIR}"
 
       # Disable start-stop-daemon
-      sudo mv ${BUILDCHROOT_DIR}/sbin/start-stop-daemon ${BUILDCHROOT_DIR}/sbin/start-stop-daemon.REAL
-      sudo tee ${BUILDCHROOT_DIR}/sbin/start-stop-daemon > /dev/null  << EOF
+      ${SUDO} mv ${BUILDCHROOT_DIR}/sbin/start-stop-daemon ${BUILDCHROOT_DIR}/sbin/start-stop-daemon.REAL
+      ${SUDO} tee ${BUILDCHROOT_DIR}/sbin/start-stop-daemon > /dev/null  << EOF
 #!/bin/sh
 echo
 echo Warning: Fake start-stop-daemon called, doing nothing
 EOF
-      sudo chmod 755 ${BUILDCHROOT_DIR}/sbin/start-stop-daemon
+      ${SUDO} chmod 755 ${BUILDCHROOT_DIR}/sbin/start-stop-daemon
   fi
 
   if [ -x "${BUILDCHROOT_DIR}/sbin/initctl" ]; then
       echo "start-stop-daemon: Trying to prevent daemons from starting in ${BUILDCHROOT_DIR}"
 
       # Disable initctl
-      sudo mv "${BUILDCHROOT_DIR}/sbin/initctl" "${BUILDCHROOT_DIR}/sbin/initctl.REAL"
-      sudo tee ${BUILDCHROOT_DIR}/sbin/initctl > /dev/null << EOF
+      ${SUDO} mv "${BUILDCHROOT_DIR}/sbin/initctl" "${BUILDCHROOT_DIR}/sbin/initctl.REAL"
+      ${SUDO} tee ${BUILDCHROOT_DIR}/sbin/initctl > /dev/null << EOF
 #!/bin/sh
 echo
 echo "Warning: Fake initctl called, doing nothing"
 EOF
-      sudo chmod 755 ${BUILDCHROOT_DIR}/sbin/initctl
+      ${SUDO} chmod 755 ${BUILDCHROOT_DIR}/sbin/initctl
   fi
 
   # Define sysvinit policy 101 to prevent daemons from starting in buildchroot
   if [ -x "${BUILDCHROOT_DIR}/sbin/init" -a ! -f "${BUILDCHROOT_DIR}/usr/sbin/policy-rc.d" ]; then
     echo "sysvinit: Using policy-rc.d to prevent daemons from starting in ${BUILDCHROOT_DIR}"
 
-    sudo tee ${BUILDCHROOT_DIR}/usr/sbin/policy-rc.d > /dev/null << EOF
+    ${SUDO} tee ${BUILDCHROOT_DIR}/usr/sbin/policy-rc.d > /dev/null << EOF
 #!/bin/sh
 echo "sysvinit: All runlevel operations denied by policy" >&2
 exit 101
 EOF
-    sudo chmod a+x ${BUILDCHROOT_DIR}/usr/sbin/policy-rc.d
+    ${SUDO} chmod a+x ${BUILDCHROOT_DIR}/usr/sbin/policy-rc.d
   fi
 
   # Set hostname
-  sudo sh -c 'echo "isar" > ${BUILDCHROOT_DIR}/etc/hostname'
+  ${SUDO} sh -c 'echo "isar" > ${BUILDCHROOT_DIR}/etc/hostname'
 
   # Create packages build folder
-  sudo install -m 0777 -d ${BUILDCHROOT_DIR}/home/builder
+  ${SUDO} install -m 0777 -d ${BUILDCHROOT_DIR}/home/builder
 
   # Create deb folder for installing potential dependencies
-  sudo install -m 0777 -d ${BUILDCHROOT_DIR}${CHROOT_DEPLOY_DIR_DEB}
+  ${SUDO} install -m 0777 -d ${BUILDCHROOT_DIR}${CHROOT_DEPLOY_DIR_DEB}
 
   # Add local apt repository for auto install dependencies
-  sudo install -m 0755 -d ${APT_SRC_DIR}
+  ${SUDO} install -m 0755 -d ${APT_SRC_DIR}
   install -m 0755 -d ${DEPLOY_DIR_DEB}/${DISTRO_ARCH}
   install -m 0755 -d ${DEPLOY_DIR_DEB}/${DEB_HOST_ARCH}
-  sudo sh -c 'echo "deb [ trusted=yes ] file:${CHROOT_DEPLOY_DIR_DEB}/${DEB_HOST_ARCH}/ ./" > ${APT_SRC_FILE}'
-  sudo sh -c 'echo "deb [ trusted=yes ] file:${CHROOT_DEPLOY_DIR_DEB}/${DISTRO_ARCH}/ ./" >> ${APT_SRC_FILE}'
+  ${SUDO} sh -c 'echo "deb [ trusted=yes ] file:${CHROOT_DEPLOY_DIR_DEB}/${DEB_HOST_ARCH}/ ./" > ${APT_SRC_FILE}'
+  ${SUDO} sh -c 'echo "deb [ trusted=yes ] file:${CHROOT_DEPLOY_DIR_DEB}/${DISTRO_ARCH}/ ./" >> ${APT_SRC_FILE}'
   touch ${DEPLOY_DIR_DEB}/${DEB_HOST_ARCH}/Packages
   touch ${DEPLOY_DIR_DEB}/${DISTRO_ARCH}/Packages
 
 
   # Install host networking settings
-  sudo cp /etc/resolv.conf ${BUILDCHROOT_DIR}/etc
+  ${SUDO} cp /etc/resolv.conf ${BUILDCHROOT_DIR}/etc
 
 }
 addtask do_setup_buildchroot before do_configure_buildchroot
@@ -202,7 +202,7 @@ END
 addtask do_configure_buildchroot before do_build
 do_configure_buildchroot[stamp-extra-info] = "${DISTRO}.chroot"
 do_configure_buildchroot[chroot] = "1"
-do_configure_buildchroot[id] = "${BUILDCHROOT_ID}"
+do_configure_buildchroot[chrootdir] = "${BUILDCHROOT_DIR}"
 
 
 do_install() {
