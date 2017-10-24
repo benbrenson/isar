@@ -73,7 +73,7 @@ python do_cleanall() {
     for entry in os.listdir(extractdir):
     	if 'temp' not in entry:
     		abspath = extractdir + '/' + entry
-    		shell.call(['sudo', 'rm', '-rf', abspath])
+    		shell.call(['rm', '-rf', abspath])
     # clean downloads
     if len(src_uri) == 0:
     	return
@@ -106,7 +106,7 @@ python do_clean() {
     for entry in os.listdir(extractdir):
     	if 'temp' not in entry:
     		abspath = extractdir + '/' + entry
-    		shell.call(['sudo', 'rm', '-rf', abspath])
+    		shell.call(['rm', '-rf', abspath])
 }
 do_clean[nostamp] = "1"
 
