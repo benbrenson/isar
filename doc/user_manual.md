@@ -59,8 +59,9 @@ e2fsprogs
 python3
 qemu
 qemu-user-static (>= 2.8)
+qemu-user
 sudo
-schroot
+proot
 mtd-utils
 util-linux
 dh-make
