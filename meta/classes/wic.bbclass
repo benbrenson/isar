@@ -41,7 +41,7 @@ do_generate_wks() {
 do_image(){
 
     for image_type in `eval echo ${IMAGE_TYPES_CREATE}` ; do
-        ${SUDO} -- wic create -o ${DEPLOY_DIR_IMAGE} \
+               sudo -s -E PYTHONPATH=$PYTHONPATH PATH=$PATH wic create -o ${DEPLOY_DIR_IMAGE} \
                -v ${WICVARS_DIR} \
                -e ${PN} \
                ${WIC_DEBUG} \

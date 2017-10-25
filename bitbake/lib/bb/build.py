@@ -370,7 +370,7 @@ def exec_func_shell(func, d, runfile, cwd=None):
                 bb.fatal('Try to run chroot function, but CHROOT is not set.')
 
             if os.path.isfile(os.path.join(chrootdir,'usr/bin/qemu-%s-static' % target_arch)):
-                chroot_cmd += ' -q qemu-%s' % target_arch
+                chroot_cmd += ' -q qemu-%s-static' % target_arch
 
             script.write('{0} /bin/bash -c "{1}"\n'.format(chroot_cmd, func))
         else:

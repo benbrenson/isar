@@ -28,6 +28,7 @@ do_useradd[chrootdir] = "${ROOTFS_DIR}"
 
 
 do_set_root_password() {
+    return
     echo "root:${DEFAULT_ROOT_PASSWORD}" | chpasswd
 }
 addtask do_set_root_password
