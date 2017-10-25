@@ -94,61 +94,61 @@ do_setup_buildchroot() {
       echo "initctl: Trying to prevent daemons from starting in ${BUILDCHROOT_DIR}"
 
       # Disable start-stop-daemon
-      ${SUDO} mv ${BUILDCHROOT_DIR}/sbin/start-stop-daemon ${BUILDCHROOT_DIR}/sbin/start-stop-daemon.REAL
-      ${SUDO} tee ${BUILDCHROOT_DIR}/sbin/start-stop-daemon > /dev/null  << EOF
+      mv ${BUILDCHROOT_DIR}/sbin/start-stop-daemon ${BUILDCHROOT_DIR}/sbin/start-stop-daemon.REAL
+      tee ${BUILDCHROOT_DIR}/sbin/start-stop-daemon > /dev/null  << EOF
 #!/bin/sh
 echo
 echo Warning: Fake start-stop-daemon called, doing nothing
 EOF
-      ${SUDO} chmod 755 ${BUILDCHROOT_DIR}/sbin/start-stop-daemon
+      chmod 755 ${BUILDCHROOT_DIR}/sbin/start-stop-daemon
   fi
 
   if [ -x "${BUILDCHROOT_DIR}/sbin/initctl" ]; then
       echo "start-stop-daemon: Trying to prevent daemons from starting in ${BUILDCHROOT_DIR}"
 
       # Disable initctl
-      ${SUDO} mv "${BUILDCHROOT_DIR}/sbin/initctl" "${BUILDCHROOT_DIR}/sbin/initctl.REAL"
-      ${SUDO} tee ${BUILDCHROOT_DIR}/sbin/initctl > /dev/null << EOF
+      mv "${BUILDCHROOT_DIR}/sbin/initctl" "${BUILDCHROOT_DIR}/sbin/initctl.REAL"
+      tee ${BUILDCHROOT_DIR}/sbin/initctl > /dev/null << EOF
 #!/bin/sh
 echo
 echo "Warning: Fake initctl called, doing nothing"
 EOF
-      ${SUDO} chmod 755 ${BUILDCHROOT_DIR}/sbin/initctl
+      chmod 755 ${BUILDCHROOT_DIR}/sbin/initctl
   fi
 
   # Define sysvinit policy 101 to prevent daemons from starting in buildchroot
   if [ -x "${BUILDCHROOT_DIR}/sbin/init" -a ! -f "${BUILDCHROOT_DIR}/usr/sbin/policy-rc.d" ]; then
     echo "sysvinit: Using policy-rc.d to prevent daemons from starting in ${BUILDCHROOT_DIR}"
 
-    ${SUDO} tee ${BUILDCHROOT_DIR}/usr/sbin/policy-rc.d > /dev/null << EOF
+    tee ${BUILDCHROOT_DIR}/usr/sbin/policy-rc.d > /dev/null << EOF
 #!/bin/sh
 echo "sysvinit: All runlevel operations denied by policy" >&2
 exit 101
 EOF
-    ${SUDO} chmod a+x ${BUILDCHROOT_DIR}/usr/sbin/policy-rc.d
+    chmod a+x ${BUILDCHROOT_DIR}/usr/sbin/policy-rc.d
   fi
 
   # Set hostname
-  ${SUDO} sh -c 'echo "isar" > ${BUILDCHROOT_DIR}/etc/hostname'
+  sh -c 'echo "isar" > ${BUILDCHROOT_DIR}/etc/hostname'
 
   # Create packages build folder
-  ${SUDO} install -m 0777 -d ${BUILDCHROOT_DIR}/home/builder
+  install -m 0777 -d ${BUILDCHROOT_DIR}/home/builder
 
   # Create deb folder for installing potential dependencies
-  ${SUDO} install -m 0777 -d ${BUILDCHROOT_DIR}${CHROOT_DEPLOY_DIR_DEB}
+  install -m 0777 -d ${BUILDCHROOT_DIR}${CHROOT_DEPLOY_DIR_DEB}
 
   # Add local apt repository for auto install dependencies
-  ${SUDO} install -m 0755 -d ${APT_SRC_DIR}
+  install -m 0755 -d ${APT_SRC_DIR}
   install -m 0755 -d ${DEPLOY_DIR_DEB}/${DISTRO_ARCH}
   install -m 0755 -d ${DEPLOY_DIR_DEB}/${DEB_HOST_ARCH}
-  ${SUDO} sh -c 'echo "deb [ trusted=yes ] file:${CHROOT_DEPLOY_DIR_DEB}/${DEB_HOST_ARCH}/ ./" > ${APT_SRC_FILE}'
-  ${SUDO} sh -c 'echo "deb [ trusted=yes ] file:${CHROOT_DEPLOY_DIR_DEB}/${DISTRO_ARCH}/ ./" >> ${APT_SRC_FILE}'
+  sh -c 'echo "deb [ trusted=yes ] file:${CHROOT_DEPLOY_DIR_DEB}/${DEB_HOST_ARCH}/ ./" > ${APT_SRC_FILE}'
+  sh -c 'echo "deb [ trusted=yes ] file:${CHROOT_DEPLOY_DIR_DEB}/${DISTRO_ARCH}/ ./" >> ${APT_SRC_FILE}'
   touch ${DEPLOY_DIR_DEB}/${DEB_HOST_ARCH}/Packages
   touch ${DEPLOY_DIR_DEB}/${DISTRO_ARCH}/Packages
 
 
   # Install host networking settings
-  ${SUDO} cp /etc/resolv.conf ${BUILDCHROOT_DIR}/etc
+  cp /etc/resolv.conf ${BUILDCHROOT_DIR}/etc
 
 }
 addtask do_setup_buildchroot before do_configure_buildchroot

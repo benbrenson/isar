@@ -80,7 +80,6 @@ do_buildchroot() {
     sed -i 's|##DISTRO_COMPONENTS##|${DISTRO_COMPONENTS}|' ${WORKDIR}/multistrap.conf
 
     # Create root filesystem
-    #sudo multistrap -a ${DEB_HOST_ARCH} -d "${CROSS_BUILDCHROOT_DIR}" -f "${WORKDIR}/multistrap.conf" || true
     PROOT_NO_SECCOMP=1 proot -0 multistrap -a ${DEB_HOST_ARCH} -d "${CROSS_BUILDCHROOT_DIR}" -f "${WORKDIR}/multistrap.conf" || true
 }
 addtask do_buildchroot before do_setup_buildchroot
@@ -96,60 +95,60 @@ do_setup_buildchroot() {
       echo "initctl: Trying to prevent daemons from starting in ${CROSS_BUILDCHROOT_DIR}"
 
       # Disable start-stop-daemon
-      ${SUDO} mv ${CROSS_BUILDCHROOT_DIR}/sbin/start-stop-daemon ${CROSS_BUILDCHROOT_DIR}/sbin/start-stop-daemon.REAL
-      ${SUDO} tee ${CROSS_BUILDCHROOT_DIR}/sbin/start-stop-daemon > /dev/null  << EOF
+      mv ${CROSS_BUILDCHROOT_DIR}/sbin/start-stop-daemon ${CROSS_BUILDCHROOT_DIR}/sbin/start-stop-daemon.REAL
+      tee ${CROSS_BUILDCHROOT_DIR}/sbin/start-stop-daemon > /dev/null  << EOF
 #!/bin/sh
 echo
 echo Warning: Fake start-stop-daemon called, doing nothing
 EOF
-      ${SUDO} chmod 755 ${CROSS_BUILDCHROOT_DIR}/sbin/start-stop-daemon
+      chmod 755 ${CROSS_BUILDCHROOT_DIR}/sbin/start-stop-daemon
   fi
 
   if [ -x "${CROSS_BUILDCHROOT_DIR}/sbin/initctl" ]; then
       echo "start-stop-daemon: Trying to prevent daemons from starting in ${CROSS_BUILDCHROOT_DIR}"
 
       # Disable initctl
-      ${SUDO} mv "${CROSS_BUILDCHROOT_DIR}/sbin/initctl" "${CROSS_BUILDCHROOT_DIR}/sbin/initctl.REAL"
-      ${SUDO} tee ${CROSS_BUILDCHROOT_DIR}/sbin/initctl > /dev/null << EOF
+      mv "${CROSS_BUILDCHROOT_DIR}/sbin/initctl" "${CROSS_BUILDCHROOT_DIR}/sbin/initctl.REAL"
+      tee ${CROSS_BUILDCHROOT_DIR}/sbin/initctl > /dev/null << EOF
 #!/bin/sh
 echo
 echo "Warning: Fake initctl called, doing nothing"
 EOF
-      ${SUDO} chmod 755 ${CROSS_BUILDCHROOT_DIR}/sbin/initctl
+      chmod 755 ${CROSS_BUILDCHROOT_DIR}/sbin/initctl
   fi
 
   # Define sysvinit policy 101 to prevent daemons from starting in buildchroot
   if [ -x "${CROSS_BUILDCHROOT_DIR}/sbin/init" -a ! -f "${CROSS_BUILDCHROOT_DIR}/usr/sbin/policy-rc.d" ]; then
     echo "sysvinit: Using policy-rc.d to prevent daemons from starting in ${CROSS_BUILDCHROOT_DIR}"
 
-    ${SUDO} tee ${CROSS_BUILDCHROOT_DIR}/usr/sbin/policy-rc.d > /dev/null << EOF
+    tee ${CROSS_BUILDCHROOT_DIR}/usr/sbin/policy-rc.d > /dev/null << EOF
 #!/bin/sh
 echo "sysvinit: All runlevel operations denied by policy" >&2
 exit 101
 EOF
-    ${SUDO} chmod a+x ${CROSS_BUILDCHROOT_DIR}/usr/sbin/policy-rc.d
+    chmod a+x ${CROSS_BUILDCHROOT_DIR}/usr/sbin/policy-rc.d
   fi
 
   # Set hostname
-  ${SUDO} sh -c 'echo "isar" > ${CROSS_BUILDCHROOT_DIR}/etc/hostname'
+  sh -c 'echo "isar" > ${CROSS_BUILDCHROOT_DIR}/etc/hostname'
 
   # Create packages build folder
-  ${SUDO} install -m 0777 -d ${CROSS_BUILDCHROOT_DIR}/home/builder
+  install -m 0777 -d ${CROSS_BUILDCHROOT_DIR}/home/builder
 
   # Create deb folder for installing potential dependencies
-  ${SUDO} install -m 0777 -d ${CROSS_BUILDCHROOT_DIR}${CHROOT_DEPLOY_DIR_DEB}
+  install -m 0777 -d ${CROSS_BUILDCHROOT_DIR}${CHROOT_DEPLOY_DIR_DEB}
 
   # Add local apt repository for auto install dependencies
-  ${SUDO} install -m 0755 -d ${APT_SRC_DIR}
+  install -m 0755 -d ${APT_SRC_DIR}
   install -m 0755 -d ${DEPLOY_DIR_DEB}/${DISTRO_ARCH}
   install -m 0755 -d ${DEPLOY_DIR_DEB}/${DEB_HOST_ARCH}
-  ${SUDO} sh -c 'echo "deb [ trusted=yes ] file:${CHROOT_DEPLOY_DIR_DEB}/${DEB_HOST_ARCH}/ ./" > ${APT_SRC_FILE}'
-  ${SUDO} sh -c 'echo "deb [ trusted=yes ] file:${CHROOT_DEPLOY_DIR_DEB}/${DISTRO_ARCH}/ ./" >> ${APT_SRC_FILE}'
+  sh -c 'echo "deb [ trusted=yes ] file:${CHROOT_DEPLOY_DIR_DEB}/${DEB_HOST_ARCH}/ ./" > ${APT_SRC_FILE}'
+  sh -c 'echo "deb [ trusted=yes ] file:${CHROOT_DEPLOY_DIR_DEB}/${DISTRO_ARCH}/ ./" >> ${APT_SRC_FILE}'
   touch ${DEPLOY_DIR_DEB}/${DEB_HOST_ARCH}/Packages
   touch ${DEPLOY_DIR_DEB}/${DISTRO_ARCH}/Packages
 
   # Install host networking settings
-  ${SUDO} cp /etc/resolv.conf ${CROSS_BUILDCHROOT_DIR}/etc
+  cp /etc/resolv.conf ${CROSS_BUILDCHROOT_DIR}/etc
 
 }
 addtask do_setup_buildchroot before do_configure_buildchroot

@@ -34,6 +34,7 @@ Isar provides:
 
 
 ### Isar fork additional features:
+ - **No root privileges required anymore!**
  - Cross compilation of resource intensive source packages (e.g. QT, linux-kernel etc.)
  - Debianizing of non Debian compatible source code repositories.
  - Defining bitbake shell tasks, which are running in chrooted environments. This abstracts a lot of complexity related to chrooted tasks and will
@@ -60,7 +61,6 @@ python3
 qemu
 qemu-user-static (>= 2.8)
 qemu-user
-sudo
 proot
 mtd-utils
 util-linux
@@ -82,21 +82,6 @@ docker
 * The python3 package is required for the correct `alternatives` setting.
 * qemu-user-static should be higher or equal than 2.8, because this version supports propper threading support.
   * Otherwise the build will fail arbitrarily at rootfs creation time with qemu `core dumped` errors.
-
-### Setup non interactive Sudo
-Isar requires `sudo` rights without password to work with `chroot` and `multistrap`. To add them, use the following steps:
-
-    ```
-    $ visudo
-    ```
-
-In the editor, allow the current user to run sudo without a password, e.g.:
-
-    ```
-    <user>  ALL=NOPASSWD: ALL
-    ```
-
-Replace `<user>` with your user name. Use the tab character between the user name and parameters.
 
 ### Check out Isar and required meta-layers
 This section describes how to fetch and prepare the build environment by your own.
