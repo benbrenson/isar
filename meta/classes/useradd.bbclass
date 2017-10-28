@@ -28,10 +28,12 @@ do_useradd[chrootdir] = "${ROOTFS_DIR}"
 
 
 do_set_root_password() {
-    return
-    echo "root:${DEFAULT_ROOT_PASSWORD}" | chpasswd
+    PASS=$(openssl passwd -1 -salt xyz ${DEFAULT_ROOT_PASSWORD})
+
+    if [ -e ${ROOTFS_DIR}/etc/shadow ]; then
+        sed -i "s%^root:\*:%root:$PASS:%" ${ROOTFS_DIR}/etc/shadow
+        fi
 }
 addtask do_set_root_password
-do_set_root_password[stamp-extra-info] = "${MACHINE}.chroot"
-do_set_root_password[chroot] = "1"
-do_set_root_password[chrootdir] = "${ROOTFS_DIR}"
+do_set_root_password[stamp-extra-info] = "${MACHINE}"
+
