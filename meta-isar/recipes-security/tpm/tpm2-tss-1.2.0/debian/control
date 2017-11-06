@@ -1,0 +1,18 @@
+Source: ##PACKAGE_BASE##
+Version: ##VERSION##
+Section: ##SECTION##
+Priority: ##PRIORITY##
+Maintainer: ##MAINTAINER##
+Build-Depends: ##DEPENDS##
+Standards-Version: 3.9.6
+Homepage: ##URL##
+
+Package: ##PACKAGE##
+Architecture: ##DEB_ARCH##
+Description: ##DESCRIPTION##
+Depends: ##RDEPENDS##
+
+Package: ##PACKAGE##-dev
+Architecture: ##DEB_ARCH##
+Description: ##DESCRIPTION_DEV##
+Depends: ##RDEPENDS##
