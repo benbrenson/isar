@@ -4,8 +4,6 @@
 
 IMAGE_PREINSTALL_append = " initramfs-tools "
 
-INITRAMFS_BASE_NAME = "initrd"
-
 # initramfs.conf settings
 CFG_FILE ?= "/etc/initramfs-tools/initramfs.conf"
 CFG_MODULES ?= "most"
@@ -49,7 +47,7 @@ do_generate_initramfs() {
 
     LINUX_VERSION=$(dpkg-query --showformat='${Version}' --show linux-image || true)
     if [ -n "${LINUX_VERSION}" ]; then
-        rm -rf /boot/initrd.img-${LINUX_VERSION}
+        rm -rf /boot/${INITRD_IMAGE}-${LINUX_VERSION}
         update-initramfs -k ${LINUX_VERSION} -c
     else
         bbwarn "No linux version detected... skipping update-initramfs."
