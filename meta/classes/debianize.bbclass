@@ -208,7 +208,7 @@ do_dh_make(){
 
     rm -f ${BUILDROOT}/${DEB_PKG}${DEB_ORIG_SUFFIX}
     rm -f ${BUILDROOT}/${DEB_PKG}${DEB_DEBIANIZED_SUFFIX}
-    rm -rf ${S}/debian
+    sudo rm -rf ${S}/debian
     rm -f ${BUILDROOT}/${DEB_PKG}-*.dsc
 
     ${DH_MAKE}
