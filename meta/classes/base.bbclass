@@ -111,4 +111,23 @@ python do_clean() {
 do_clean[nostamp] = "1"
 
 
+def checkmount(dir):
+    import subprocess as shell
+    err = False
+
+    if shell.call(['mountpoint', dir + '/dev']) == 0:
+        err = True
+    elif shell.call(['mountpoint', dir + '/dev/pts']) == 0:
+        err = True
+    elif shell.call(['mountpoint', dir + '/proc']) == 0:
+        err = True
+    elif shell.call(['mountpoint', dir + '/dev/pts']) == 0:
+        err = True
+    elif shell.call(['mountpoint', dir + '/etc/resolv.conf']) == 0:
+        err = True
+
+    if err == True:
+        bb.fatal('Cleaning ROOTFS_DIR not possible. Still busy.')
+
+
 EXPORT_FUNCTIONS do_clean do_mrproper do_build
