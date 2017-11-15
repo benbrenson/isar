@@ -6,7 +6,7 @@ CROSS_COMPILE ?= ""
 
 MAKE ?= "make ARCH=${TARGET_ARCH}"
 MAKE_class-cross = "make ARCH=${TARGET_ARCH} CROSS_COMPILE=${TARGET_PREFIX}-"
-
+GENERATE_BOOTSCRIPT ?= ""
 
 DH_SHLIBDEPS="\
 ${@bb.utils.contains('CROSS_COMPILE_ENABLED', \
@@ -16,8 +16,35 @@ ${@bb.utils.contains('CROSS_COMPILE_ENABLED', \
 d)} \
 "
 
+BOOT="${EXTRACTDIR}/${BOOTSCRIPT_SRC}"
+BOOT_DEVICE_NAME ?= ""
+BOOT_DEVICE_NAME_mmc = "mmc"
+CMDLINE_ROOTDEV_PRIM_mmc = "${base_devdir}/${BOOT_DEVICE_LINUX}${ROOTP_PRIM_NUM}"
+CMDLINE_ROOTDEV_SEC_mmc  = "${base_devdir}/${BOOT_DEVICE_LINUX}${ROOTP_SEC_NUM}"
+
+BOOT_DEVICE_NAME_nand = ""
+CMDLINE_ROOTDEV_PRIM_nand = ""
+CMDLINE_ROOTDEV_SEC_nand  = ""
+
+
+do_generate_bootscript() {
+	[ -z ${GENERATE_BOOTSCRIPT} ] && return
+    [ -z ${KERNEL_CMDLINE} ] && bbfatal "No Kernel cmdline specified. Please set KERNEL_CMDLINE variable."
+
+    sed -i -e 's|##BOOT_DEVICE_NUM##|${BOOT_DEVICE_NUM}|g'   ${BOOT}
+    sed -i -e 's|##BOOT_DEVICE_NAME##|${BOOT_DEVICE_NAME}|g' ${BOOT}
+    sed -i -e 's|##BOOTP_PRIM_NUM##|${BOOTP_PRIM_NUM}|g'     ${BOOT}
+    sed -i -e 's|##BOOTP_SEC_NUM##|${BOOTP_SEC_NUM}|g'       ${BOOT}
+    sed -i -e 's|##ROOTDEV_PRIM##|${CMDLINE_ROOTDEV_PRIM}|g' ${BOOT}
+    sed -i -e 's|##ROOTDEV_SEC##|${CMDLINE_ROOTDEV_SEC}|g'   ${BOOT}
+    sed -i -e 's|##KERNEL_CMDLINE##|${KERNEL_CMDLINE}|g'     ${BOOT}
+    sed -i -e 's|##DTBS##|${DTBS}|g'                         ${BOOT}
+
+}
+addtask do_generate_bootscript after do_patch before do_build
+
+
 do_copy_defconfig(){
-	set -x
 	cd ${S}
     cp ${EXTRACTDIR}/defconfig ${S}/.config
     ${MAKE} olddefconfig
