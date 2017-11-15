@@ -32,7 +32,7 @@ do_generate_wks() {
       ROOTFS_IMAGE_SIZE_OPTION="--fixed-size=${ROOTFS_IMAGE_SIZE}M"
 
     fi
-    for image_type in `eval echo ${IMAGE_TYPES_CREATE}` ; do
+    for image_type in `eval echo ${IMAGE_FSTYPES}` ; do
         echo "Generating ${EXTRACTDIR}/${image_type}.wks"
         sed -i "s|##ROOTFS_SIZE_OPTION##|$ROOTFS_IMAGE_SIZE_OPTION|g" ${EXTRACTDIR}/${image_type}.wks
     done
@@ -40,7 +40,7 @@ do_generate_wks() {
 
 do_image(){
 
-    for image_type in `eval echo ${IMAGE_TYPES_CREATE}` ; do
+    for image_type in `eval echo ${IMAGE_FSTYPES}` ; do
         ${SUDO} -- wic create -o ${DEPLOY_DIR_IMAGE} \
                -v ${WICVARS_DIR} \
                -e ${PN} \

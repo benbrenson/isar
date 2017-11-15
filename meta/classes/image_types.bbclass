@@ -1,6 +1,9 @@
 IMAGE_FSTYPES ?= "sdcard"
 SUPPORTED_FSTYPES = "sdcard sdcard-redundant ext4"
 
+# For these fstypes, swupdate image files can be generated
+UPDATEABLE_FSTYPES = "ext2 ext3 ext4"
+
 
 python() {
     images_types_var = d.getVar('IMAGE_FSTYPES', True)
@@ -13,9 +16,4 @@ python() {
     for image in images_types_var.split():
         if image not in supported_types:
             bb.fatal('Image type %s not supported. Please add fstype to SUPPORTED_FSTYPES. Supported types: %s' % (image, supported_types))
-
-        types.append(image)
-
-    types = ' '.join(types)
-    d.setVar('IMAGE_TYPES_CREATE', types)
 }
