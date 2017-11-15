@@ -56,16 +56,6 @@ SECTION = "kernel"
 PRIORITY = "optional"
 LICENSE  = "gpl"
 
-#do_patch() {
-#    cd ${S}
-#    patches=$(ls ../*.patch)
-#
-#    for patch in ${patches}; do
-#        patch -p1 < ${patch}
-#    done
-#}
-#addtask do_patch after do_unpack before do_build
-
 do_copy_defconfig(){
     cd ${S}
     cp ${EXTRACTDIR}/${MACHINE}_defconfig ${S}/.config
@@ -76,6 +66,20 @@ do_copy_defconfig(){
 }
 addtask do_copy_defconfig after do_patch before do_build
 
+FIX_KVERSION ?= ""
+do_generate_postinst() {
+    if [ -z ${FIX_KVERSION} ]; then
+        cd ${S}
+        main_kversion="$(make kernelversion)"
+        local_kversion="$(sed -n -e 's|CONFIG_LOCALVERSION="\(.*\)"|\1|p' ${S}/.config)"
+        kversion="$main_kversion$local_kversion"
+    else
+        kversion="${FIX_KVERSION}"
+    fi
+
+    sed -i -e "s|##KVERSION##|$kversion|g" ${EXTRACTDIR}/debian/postinst
+}
+addtask do_generate_postinst after do_copy_defconfig before do_generate_debcontrol
 
 do_pre_install_append(){
     install -m 0644 ${S}/arch/${TARGET_ARCH}/boot/${KIMAGE_TYPE} ${DEPLOY_DIR_IMAGE}
