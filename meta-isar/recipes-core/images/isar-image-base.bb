@@ -14,6 +14,7 @@ SRC_URI += "file://ext4.wks \
 
 
 IMAGE_NAME = "${PN}-${PV}-${MACHINE}-${DISTRO_ARCH}"
+
 BASE_PACKAGES = " \
                 python3 \
                 python3-serial \
@@ -67,10 +68,11 @@ IMAGE_PREINSTALL += " \
                    "
 
 PACKAGE_TUNES_append = " openssh-server "
-
 IMAGE_FEATURES ?= " systemd "
+
 IMAGE_INSTALL_append = " \
-                        linux-image-cross \
-                        u-boot-cross \
+                         \
                         ${ADD_INSTALL} \
+                        ${BOOTLOADER_IMAGE} \
+                        ${KERNEL_IMAGE} \
                        "
