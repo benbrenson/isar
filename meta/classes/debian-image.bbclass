@@ -4,16 +4,16 @@
 inherit wic useradd pkg-tune-task shrinkfs fetch
 
 DEPENDS += " ${IMAGE_INSTALL} "
-S       = "${ROOTFS_DIR}"
-
-KERNEL_IMAGE ?= ""
-INITRD_IMAGE ?= ""
+S = "${ROOTFS_DIR}"
 
 INIT = "${@bb.utils.contains('IMAGE_FEATURES', 'systemd', 'systemd systemd-sysv', 'sysvinit-core sysvinit-utils', d)}"
 IMAGE_PREINSTALL += " ${INIT} "
 IMAGE_INSTALL ?= ""
 
-
+# Install self-compiled packages
+BOOTLOADER_IMAGE ?= "u-boot-cross"
+KERNEL_IMAGE ?= "linux-image-cross"
+INITRD_IMAGE ?= "initrd.img"
 
 # Change to / inside chroot.
 PP="/"
@@ -239,48 +239,47 @@ python do_post_rootfs(){
 addtask do_post_rootfs after do_populate before do_package_tunes
 
 
+python do_image_swupdate() {
+    import subprocess as shell
 
-# cleaning of ROOTFS_DIR
+    generate_image = bb.utils.contains('IMAGE_FEATURES', 'update' ,'true', 'false', d)
+    updateable_fstypes = d.getVar('UPDATEABLE_FSTYPES', True)
+    pn = d.getVar('PN', True)
+    datetime = d.getVar('DATETIME', True)
+    image_fstypes = d.getVar('IMAGE_FSTYPES', True)
+    cwd = os.getcwd()
+
+    os.chdir(d.getVar('DEPLOY_DIR_IMAGE', True))
+
+    if generate_image == "true":
+        for fstype in image_fstypes.split():
+            if fstype in updateable_fstypes:
+                files='sw-description %s.%s' % (pn, fstype)
+
+                shell.call('bash -c "for i in %s;do echo \$i;done | cpio -ovL -H crc >  %s.%s.%s.swu"' % (files, pn, fstype, datetime), shell=True)
+                try:
+                    os.unlink('%s.%s.swu' % (pn, fstype))
+                except FileNotFoundError:
+                    pass
+
+                os.link('%s.%s.%s.swu' % (pn, fstype, datetime), '%s.%s.swu' % (pn, fstype))
+    else:
+        bb.warn('Skipping creation of %s.%s.swu.' % (pn, datetime))
+
+    os.chdir(cwd)
+
+}
+addtask do_image_swupdate after do_image before do_build
+
+
 do_clean_append() {
-
     rootfs_dir = d.getVar('ROOTFS_DIR', True)
-    err = False
-
-    if shell.call(['mountpoint', rootfs_dir + '/dev']) == 0:
-        err = True
-    elif shell.call(['mountpoint', rootfs_dir + '/dev/pts']) == 0:
-        err = True
-    elif shell.call(['mountpoint', rootfs_dir + '/proc']) == 0:
-        err = True
-    elif shell.call(['mountpoint', rootfs_dir + '/dev/pts']) == 0:
-        err = True
-    elif shell.call(['mountpoint', rootfs_dir + '/etc/resolv.conf']) == 0:
-        err = True
-
-    if err == True:
-        bb.fatal('Cleaning ROOTFS_DIR not possible. Still busy.')
-
+    checkmount(rootfs_dir)
     shell.call(['sudo', 'rm', '-rf', rootfs_dir])
 }
 
 do_cleanall_append() {
-
     rootfs_dir = d.getVar('ROOTFS_DIR', True)
-    err = False
-
-    if shell.call(['mountpoint', rootfs_dir + '/dev']) == 0:
-        err = True
-    elif shell.call(['mountpoint', rootfs_dir + '/dev/pts']) == 0:
-        err = True
-    elif shell.call(['mountpoint', rootfs_dir + '/proc']) == 0:
-        err = True
-    elif shell.call(['mountpoint', rootfs_dir + '/dev/pts']) == 0:
-        err = True
-    elif shell.call(['mountpoint', rootfs_dir + '/etc/resolv.conf']) == 0:
-        err = True
-
-    if err == True:
-        bb.fatal('Cleaning ROOTFS_DIR not possible. Still busy.')
-
+    checkmount(rootfs_dir)
     shell.call(['sudo', 'rm', '-rf', rootfs_dir])
 }
