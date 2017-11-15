@@ -229,3 +229,16 @@ do_install() {
   :
 }
 addtask do_install after do_build
+
+
+do_clean_append() {
+    cross_buildchroot_dir = d.getVar('CROSS_BUILDCHROOT_DIR', True)
+    checkmount(cross_buildchroot_dir)
+    shell.call(['sudo', 'rm', '-rf', cross_buildchroot_dir])
+}
+
+do_cleanall_append() {
+    cross_buildchroot_dir = d.getVar('CROSS_BUILDCHROOT_DIR', True)
+    checkmount(cross_buildchroot_dir)
+    shell.call(['sudo', 'rm', '-rf', cross_buildchroot_dir])
+}

@@ -209,3 +209,16 @@ do_install() {
   :
 }
 addtask do_install after do_build
+
+
+do_clean_append() {
+    buildchroot_dir = d.getVar('BUILDCHROOT_DIR', True)
+    checkmount(buildchroot_dir)
+    shell.call(['sudo', 'rm', '-rf', buildchroot_dir])
+}
+
+do_cleanall_append() {
+    buildchroot_dir = d.getVar('BUILDCHROOT_DIR', True)
+    checkmount(buildchroot_dir)
+    shell.call(['sudo', 'rm', '-rf', buildchroot_dir])
+}
