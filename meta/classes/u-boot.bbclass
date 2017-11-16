@@ -35,8 +35,8 @@ do_generate_bootscript() {
     sed -i -e 's|##BOOT_DEVICE_NAME##|${BOOT_DEVICE_NAME}|g' ${BOOT}
     sed -i -e 's|##BOOTP_PRIM_NUM##|${BOOTP_PRIM_NUM}|g'     ${BOOT}
     sed -i -e 's|##BOOTP_SEC_NUM##|${BOOTP_SEC_NUM}|g'       ${BOOT}
-    sed -i -e 's|##ROOTDEV_PRIM##|${CMDLINE_ROOTDEV_PRIM}|g' ${BOOT}
-    sed -i -e 's|##ROOTDEV_SEC##|${CMDLINE_ROOTDEV_SEC}|g'   ${BOOT}
+    sed -i -e 's|##CMDLINE_ROOTDEV_PRIM##|${CMDLINE_ROOTDEV_PRIM}|g' ${BOOT}
+    sed -i -e 's|##CMDLINE_ROOTDEV_SEC##|${CMDLINE_ROOTDEV_SEC}|g'   ${BOOT}
     sed -i -e 's|##KERNEL_CMDLINE##|${KERNEL_CMDLINE}|g'     ${BOOT}
     sed -i -e 's|##DTBS##|${DTBS}|g'                         ${BOOT}
 
