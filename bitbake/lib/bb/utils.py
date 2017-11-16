@@ -55,7 +55,7 @@ def clean_context():
 
 def get_context():
     return _context
-    
+
 
 def set_context(ctx):
     _context = ctx
@@ -212,8 +212,8 @@ def explode_dep_versions2(s):
             inversion = True
             # This list is based on behavior and supported comparisons from deb, opkg and rpm.
             #
-            # Even though =<, <<, ==, !=, =>, and >> may not be supported, 
-            # we list each possibly valid item. 
+            # Even though =<, <<, ==, !=, =>, and >> may not be supported,
+            # we list each possibly valid item.
             # The build system is responsible for validation of what it supports.
             if i.startswith(('<=', '=<', '<<', '==', '!=', '>=', '=>', '>>')):
                 lastcmp = i[0:2]
@@ -337,7 +337,7 @@ def _print_exception(t, value, tb, realfile, text, context):
         exception = traceback.format_exception_only(t, value)
         error.append('Error executing a python function in %s:\n' % realfile)
 
-        # Strip 'us' from the stack (better_exec call) unless that was where the 
+        # Strip 'us' from the stack (better_exec call) unless that was where the
         # error came from
         if tb.tb_next is not None:
             tb = tb.tb_next
@@ -1002,7 +1002,7 @@ def process_profilelog(fn, pout = None):
     if not pout:
         pout = fn + '.processed'
     pout = open(pout, 'w')
-   
+
     import pstats
     if isinstance(fn, list):
         p = pstats.Stats(*fn, stream=pout)
@@ -1015,7 +1015,7 @@ def process_profilelog(fn, pout = None):
     p.print_stats()
 
     pout.flush()
-    pout.close()  
+    pout.close()
 
 #
 # Was present to work around multiprocessing pool bugs in python < 2.7.3
@@ -1558,3 +1558,14 @@ def rmDupVar(d, s, separator=' '):
     """
     t = d.getVar(s, True) or ""
     return rmDupString(t)
+
+
+def convertSpaces(d, s, to=':'):
+    """ Convert strings separated by spaces into other separators. """
+    t = d.getVar(s, True)
+    clean = t.strip()
+    new = clean.split()
+    for i in range(len(new)):
+        new[i] = new[i].strip(to)
+    new = to.join(new)
+    return new
