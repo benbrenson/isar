@@ -79,7 +79,7 @@ docker
 **Notes:**
 * BitBake requires Python 3.4+.
 * The python3 package is required for the correct `alternatives` setting.
-* qemu-user-static should be higher or equal than 2.8, because this version supports propper threading support.
+* qemu-user-static should be higher or equal than 2.8, because this version supports propper multithreading support.
   * Otherwise the build will fail arbitrarily at rootfs creation time with qemu `core dumped` errors.
 
 ### Setup non interactive Sudo
@@ -335,7 +335,7 @@ To add new distro, user should perform the following steps:
 ## Add a New Machine
 Every machine is described in its configuration file. The file defines the following variables:
 
- - `FIX_KVERSION` - Complete kernel version. This can be extracted from the kernel makefile. Required for running **depmod** within the rootfs, since kernel recipe doesn't contain complete version (-rc5 is missing).
+ - `FIX_KVERSION` - Complete kernel version. This can be extracted from the kernel makefile. Required for running **depmod** within the rootfs, since kernel recipe doesn't contain complete version (e.g. -rc5 is missing). The current version of Isar automatically extracts kernel version from the makefile, so setting this variable is not mandatory anymore.
  - `KERNEL_CMDLINE` - Kernel commandline substituted within uboots bootscript.
  - `TARGET_ARCH` - Some buildsystems (e.g. Kconfig) need architecture specific settings for this type of machine.
  - `TARGET_PREFIX` - Sets the cross compiler prefix for this machine.
@@ -344,25 +344,38 @@ Every machine is described in its configuration file. The file defines the follo
  - `MACHINE_SERIAL` - The name of serial device that will be used for console output.
  - `IMAGE_FSTYPES` - The type of images to be generated for this machine (e.g. sdcard).
  - `DTBS` - The primary device tree file. Isar will install this device tree to the location specified with ${DTB_INSTALL_DIR}.
- - `DTBOS` - Device tree overlay files. The kernel has to be capable of compiling device tree overlays.
+ - `DTBOS` - Device tree overlay files. The kernel has to be capable of compiling device tree overlays, when adding device tree overlays to this variable.
  - `BOOT_IMG` - The name of the uboot image. Isar will also build a complete debian package for uboot.
  - `UIMAGE_LOADADDR` - The uImage loadaddress. Only required if ${KIMAGE_TYPE} is uImage.
  - `TARGET_ARCH` - The target architecture required by different buildsystems (e.g. Kconfig). Please do not set a debian specific architecture type here.
- - `BOOT_DEVICE_NAME` - Name of the boot device, interpreted by uboot commands.
+ - `BOOT_DEVICE` - Name of the boot device (e.g. mmc). This version of Isar only supports mmc devices, yet.
+ - `BOOT_DEVICE_LINUX` - The Linux device where the system boots from.
+ - `ROOT_DEVICE_LINUX` - The Linux device where the system has its root partition on.
  - `BOOT_DEVICE_NUM` - Number or interface identifier, interpreted by uboot commands.
  - `BOOTP_PRIM_NUM` - Number of the primary boot partition. This will set the primary boot partition on the first boot by uboot.
  - `BOOTP_SEC_NUM` - Number of the secondary boot partition. This will set the secondary boot partition on the first boot by uboot.
- - `ROOTDEV_PRIM` - Interface for the primary rootfs partition, interpreted by the linux kernel on the kernel cmdline. This variable is also used to detect the partition which should be updated.
- - `ROOTDEV_SEC` - Interface for the secondary rootfs partition, interpreted by the linux kernel on the kernel cmdline. This variable is also used to detect the partition which should be updated.
+ - `ROOTP_PRIM_NUM` - Interface for the primary rootfs partition, interpreted by the linux kernel on the kernel cmdline. This variable is also used to detect the partition which should be updated. So when for example the /dev/mmcblk0p1 device is used, `ROOTP_PRIM_NUM` has to be set to 1.
+ - `ROOTP_SEC_NUM` - Interface for the secondary rootfs partition, interpreted by the linux kernel on the kernel cmdline. This variable is also used to detect the partition which should be updated. So when for example the /dev/mmcblk0p1 device is used, `ROOTP_PRIM_NUM` has to be set to 1.
 
 
 Below is an example of machine configuration file for `NanoPi-Neo` board:
 ```
-FIX_KVERSION="4.13.0-rc5"
 KIMAGE_TYPE="uImage"
 KERNEL_CMDLINE="console=${MACHINE_SERIAL},115200 console=tty1 rw rootwait panic=10"
 
 UIMAGE_LOADADDR="0x40008000"
+DTBS="sun8i-h3-nanopi-neo.dtb"
+DTBOS="sun8i-h3-i2c0.dtbo \
+          sun8i-h3-i2c1.dtbo \
+          sun8i-h3-i2c2.dtbo \
+          sun8i-h3-spi-mcp2515.dtbo \
+          sun8i-h3-sc16is760.dtbo \
+          sun8i-h3-spi-w5500.dtbo \
+          sun8i-h3-spi-spidev.dtbo \
+         "
+
+DTBOS_LOAD = "${DTBOS}"
+DTBOS_LOAD_remove = "sun8i-h3-spi-spidev.dtbo sun8i-h3-i2c2.dtbo"
 
 BOOT_IMG = "u-boot-sunxi-with-spl.bin"
 
@@ -377,16 +390,23 @@ TARGET_PREFIX="arm-linux-gnueabihf"
 # Using for interface compatibility
 DEB_ARCH="${DISTRO_ARCH}"
 
+# Device from which to boot from
+BOOT_DEVICE = "mmc"
+BOOT_DEVICE_LINUX = "mmcblk0p"
+ROOT_DEVICE_LINUX = "${BOOT_DEVICE_LINUX}"
+BOOTDEVICE_FSTYPE = "vfat"
 
-# Boot device required by u-boot
-BOOT_DEVICE_NAME = "mmc"
+# Boot device identifiers required by u-boot
+# Number of the boot device
 BOOT_DEVICE_NUM="0"
 
+# Partition number of boot partitions
 BOOTP_PRIM_NUM = "1"
 BOOTP_SEC_NUM = "2"
 
-ROOTDEV_PRIM = "/dev/mmcblk0p2"
-ROOTDEV_SEC  = "/dev/mmcblk0p3"
+# Partition number of rootfs partitions
+ROOTP_PRIM_NUM = "2"
+ROOTP_SEC_NUM = "3"
 
 ```
 
@@ -410,8 +430,6 @@ Image in Isar contains the following artifacts:
 
 In image recipe, the following variable defines the list of packages that will be included to target image: `IMAGE_PREINSTALL`. These packages will be taken from `apt` source.
 
-The user may use `meta-isar/recipes-core` as a template for new image recipes creation.
-
 
 ### General Information
 The image recipe in Isar creates a folder with the target root filesystem. The default location is:
@@ -432,9 +450,10 @@ Currently supported filesystem types are:
 * sdcard-redundant(same as sdcard but containing two equal rootfs partitions)
 * ext4(ext4 partition image)
 
+**Note: No flash filesystems are supported (e.g. ubifs or jffs), yet.**
 
 
-### Create Custom Image
+### Create a new Custom Image
 new_image.bb:
 ```
 inherit debian-image
@@ -473,6 +492,22 @@ part /rescue --source rootfs --rootfs-dir=rootfs2 --ondisk mmcblk --fstype=ext4 
 
 **Note: No flash filesystems are supported (e.g. ubifs or jffs), yet.**
 
+### Create a new image based on isar-image-base (prevered way)
+The `isar-image-base` recipe provides a basic image, from which a new custom image can inherit.
+When you want to reuse functionalities of the `ìsar-image-base` image, you can also inherit the base image and extend it with your needs:
+The base image can be inherited like follows:
+
+new_image.bb:
+```
+require ${BSPDIR}/sources/isar/meta-isar/recipes-core/images/isar-image-base.bb
+.
+.
+.
+custom stuff (adding packages, do stuff after rootfs generation etc.)
+.
+.
+.
+```
 
 ### Last steps (rootfs customizations at the end)
 As already mentioned, Isar uses `bitbake`to accomplish the work. The whole build process is a sequence of tasks. This sequence is generated using task dependencies, so the next task in chain requires completion of previous ones.
@@ -649,6 +684,30 @@ Package: ##PACKAGE##
 Architecture: ##DEB_ARCH##
 Description: ##DESCRIPTION##
 Depends: ##RDEPENDS##
+```
+
+It is also possible to create different binary packages for one source package. For example when a package provides both binaries and runtime libraries or header files. In this case the debian way tells us to create also *-dev packages. Then a control file template should look as follows:
+
+```
+Source: ##PACKAGE_BASE##
+Section: ##SECTION##
+Priority: ##PRIORITY##
+Maintainer: ##MAINTAINER##
+Build-Depends: ##DEPENDS##
+Standards-Version: 3.9.6
+Homepage: ##URL##
+
+Package: ##PACKAGE##-dev
+Architecture: ##DEB_ARCH##
+Description: ##DESCRIPTION_DEV##
+Depends: ##RDEPENDS##
+```
+
+Don't forget to add substitutions for the *-dev package into the recipe:
+```
+do_generate_debcontrol_append() {
+    sed -i -e 's/##DESCRIPTION_DEV##/${DESCRIPTION_DEV}/g' ${CONTROL}
+}
 ```
 
 For more information about debian background or how to create debian packages, see [here](https://www.debian.org/doc/manuals/maint-guide).
