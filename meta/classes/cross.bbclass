@@ -4,7 +4,7 @@
 inherit dpkg-cross
 
 FILESPATH_prepend := "${THISDIR}/${BPN}-${PV}:${THISDIR}/${BPN}-${PV}-${PR}:"
-CLASSOVERRIDE = "class-cross"
+OVERRIDES .= ":class-cross"
 
 CROSS_COMPILE="${TARGET_PREFIX}"
 CCARCH="${TARGET_ARCH}"

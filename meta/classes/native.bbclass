@@ -3,7 +3,7 @@
 
 DEPENDS += "cross-buildchroot"
 
-CLASSOVERRIDE = "class-native"
+OVERRIDES .= ":class-native"
 
 CHROOT_DIR = "${CROSS_BUILDCHROOT_DIR}"
 BUILDROOT = "${CHROOT_DIR}/${PP}"
