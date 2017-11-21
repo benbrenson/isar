@@ -346,6 +346,8 @@ Every machine is described in its configuration file. The file defines the follo
  - `DTBS` - The primary device tree file. Isar will install this device tree to the location specified with ${DTB_INSTALL_DIR}.
  - `DTBOS` - Device tree overlay files. The kernel has to be capable of compiling device tree overlays, when adding device tree overlays to this variable.
  - `BOOT_IMG` - The name of the uboot image. Isar will also build a complete debian package for uboot.
+ - `IMAGE_BOOT_FILES` - When setting this variable, only the specified files will be copied into the boot partition. When not set, the whole content of
+ the /boot folder will be copied. The semicolon separates files and has following meaning: **source;destination**.
  - `UIMAGE_LOADADDR` - The uImage loadaddress. Only required if ${KIMAGE_TYPE} is uImage.
  - `TARGET_ARCH` - The target architecture required by different buildsystems (e.g. Kconfig). Please do not set a debian specific architecture type here.
  - `BOOT_DEVICE` - Name of the boot device (e.g. mmc). This version of Isar only supports mmc devices, yet.
@@ -356,6 +358,7 @@ Every machine is described in its configuration file. The file defines the follo
  - `BOOTP_SEC_NUM` - Number of the secondary boot partition. This will set the secondary boot partition on the first boot by uboot.
  - `ROOTP_PRIM_NUM` - Interface for the primary rootfs partition, interpreted by the linux kernel on the kernel cmdline. This variable is also used to detect the partition which should be updated. So when for example the /dev/mmcblk0p1 device is used, `ROOTP_PRIM_NUM` has to be set to 1.
  - `ROOTP_SEC_NUM` - Interface for the secondary rootfs partition, interpreted by the linux kernel on the kernel cmdline. This variable is also used to detect the partition which should be updated. So when for example the /dev/mmcblk0p1 device is used, `ROOTP_PRIM_NUM` has to be set to 1.
+ - `RECOVERY_BOOTPART_NUM` - Set the partition where the recovery files reside.
 
 
 Below is an example of machine configuration file for `NanoPi-Neo` board:
@@ -377,7 +380,10 @@ DTBOS="sun8i-h3-i2c0.dtbo \
 DTBOS_LOAD = "${DTBOS}"
 DTBOS_LOAD_remove = "sun8i-h3-spi-spidev.dtbo sun8i-h3-i2c2.dtbo"
 
+
 BOOT_IMG = "u-boot-sunxi-with-spl.bin"
+BOOTSCRIPT = "boot.scr"
+IMAGE_BOOT_FILES = "${BOOTSCRIPT} ${KIMAGE_TYPE} dts/${DTBS};${DTBS}"
 
 MACHINE_SERIAL = "ttyS0"
 
