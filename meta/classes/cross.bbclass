@@ -3,7 +3,7 @@
 
 inherit dpkg-cross
 
-FILESPATH_prepend := "${THISDIR}/${BPN}-${PV}:${THISDIR}/${BPN}-${PV}-${PR}:"
+FILESPATH_prepend := "${THISDIR}/${BPN}:${THISDIR}/${BPN}-${PV}:${THISDIR}/${BPN}-${PV}-${PR}:"
 OVERRIDES .= ":class-cross"
 
 CROSS_COMPILE="${TARGET_PREFIX}"
