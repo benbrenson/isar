@@ -53,7 +53,7 @@ TEST_PACKAGES="\
               "
 
 UPDATE_PACKAGES="\
-                 swupdate \
+                 swupdate-cross \
                  update-service \
                 "
 
