@@ -1,3 +1,5 @@
+import bb.early_utils
+
 try:
     # Python 2
     import commands as cmdstatus
@@ -271,3 +273,59 @@ class ThreadedPool:
         self.tasks.join()
         for worker in self.workers:
             worker.join()
+
+
+
+def prune_suffix(var, suffixes, d):
+    # See if var ends with any of the suffixes listed and
+    # remove it if found
+    bb.early_utils(var,suffixes, d)
+
+
+def explode_dep_pkg_suffix(s, d):
+    # Take a RDEPENDS like string and unbind
+    # all pkg suffixes
+    suffixes = d.getVar('SPECIAL_PKGSUFFIX', True).split()
+    s = s.split()
+    for i in range(len(s)):
+        for suffix in suffixes:
+            if s[i].endswith(suffix):
+                s[i] = s[i].replace(suffix, '')
+
+    return ' '.join(s)
+
+
+def append_dep_pkg_suffix(suffix, s, d):
+    # Append pkg suffixes to an RDEPENDS like
+    # string
+    new = explode_dep_pkg_sufix(s,d)
+
+    new = old.split()
+
+    for i in range(len(new)):
+        new[i] += suffix
+
+    return ' '.join(new)
+
+
+def rmDupString(s, separator=' '):
+    """ Convert string sperated by 'separator' to format which only contains uniq values. """
+    t = s.strip(' ').strip(separator)
+    clean_list = [ x.strip(' ')  for x in t.split(separator) ]
+    clean_set = set(clean_list)
+    uniq_list = list(clean_set)
+    t = separator.join(uniq_list)
+    return t
+
+
+def rmDupVar(d, s, separator=' '):
+    """ Extract the value from variable s and remove duplicate values
+        from it. Then return a string version not containing duplicate values.
+    """
+    t = d.getVar(s, True) or ""
+    return rmDupString(t)
+
+
+def convertSpaces(d, s, to=':'):
+    """ Convert strings separated by spaces into other separators. """
+    bb.early_utils.convertSpaces(d, s, to)

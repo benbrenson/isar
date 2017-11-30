@@ -119,7 +119,7 @@ python do_deb_depends() {
     rdepends      = ''
 
     for var in vars.split():
-        depends = bb.utils.rmDupVar(d, var)
+        depends = oe.utils.rmDupVar(d, var)
         depends = depends.split()
 
         # Try to clean depends from possible skipp value, since
@@ -159,8 +159,8 @@ python do_deb_depends() {
             rdepends += ', '.join(depends)
             rdepends += ', '
 
-    build_depends = bb.utils.rmDupString(build_depends, ',')
-    rdepends = bb.utils.rmDupString(rdepends, ',')
+    build_depends = oe.utils.rmDupString(build_depends, ',')
+    rdepends = oe.utils.rmDupString(rdepends, ',')
 
     # Now concentate DEPENDS and RDEPENDS and DEB_DEPENDS into DEPS_FIXED
     d.setVar('DEPS_FIXED', build_depends)

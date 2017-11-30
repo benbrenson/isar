@@ -196,7 +196,7 @@ do_configure_rootfs[id] = "${ROOTFS_ID}"
 
 
 # Install Debian packages, that were built from sources
-IMAGE_INSTALL_DEBS="${@bb.utils.explode_dep_pkg_suffix(d.getVar('IMAGE_INSTALL', True), d)}"
+IMAGE_INSTALL_DEBS="${@oe.utils.explode_dep_pkg_suffix(d.getVar('IMAGE_INSTALL', True), d)}"
 do_populate() {
     if [ -n "${IMAGE_INSTALL_DEBS}" ]; then
 

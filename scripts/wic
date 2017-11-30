@@ -154,6 +154,14 @@ def wic_create_subcommand(options, usage_str):
         kernel_dir  = os.path.join(rootfs_dir, 'boot')
         bootimg_dir = os.path.join(rootfs_dir, 'boot')
         native_sysroot = get_bitbake_var("BUILDCHROOT_DIR", options.image_name)
+
+        # Inject path to oe lib modules
+        bbpath = get_bitbake_var('BBPATH', options.image_name).split(':')
+        for path in bbpath:
+          print("PATH:%s" % path)
+          lib_path = os.path.join(path, 'lib')
+          sys.path.insert(0, lib_path)
+
     else:
         if options.build_rootfs:
             raise WicError("Image name is not specified, exiting. "

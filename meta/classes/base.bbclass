@@ -22,6 +22,30 @@
 inherit logging
 
 THISDIR = "${@os.path.dirname(d.getVar('FILE', True))}"
+OE_IMPORTS += "os sys time oe.path oe.utils"
+
+def oe_import(d):
+    import sys
+
+    bbpath = d.getVar("BBPATH", True).split(":")
+    sys.path[0:0] = [os.path.join(dir, "lib") for dir in bbpath]
+
+    def inject(name, value):
+        """Make a python object accessible from the metadata"""
+        if hasattr(bb.utils, "_context"):
+            bb.utils._context[name] = value
+        else:
+            __builtins__[name] = value
+
+    for toimport in d.getVar('OE_IMPORTS', True).split():
+        imported = __import__(toimport)
+        inject(toimport.split(".", 1)[0], imported)
+
+    return ""
+
+# Add the oe module name space early
+DO_IMPORT := "${@oe_import(d)}"
+
 
 
 addtask showdata

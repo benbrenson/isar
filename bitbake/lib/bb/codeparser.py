@@ -5,7 +5,7 @@ import logging
 import pickle
 import bb.pysh as pysh
 import os.path
-import bb.utils, bb.data
+import bb.utils, bb.data, bb.early_utils
 import hashlib
 from itertools import chain
 from bb.pysh import pyshyacc, pyshlex, sherrors
@@ -36,7 +36,7 @@ def check_indent(codestr):
     return codestr
 
 
-# Basically pickle, in python 2.7.3 at least, does badly with data duplication 
+# Basically pickle, in python 2.7.3 at least, does badly with data duplication
 # upon pickling and unpickling. Combine this with duplicate objects and things
 # are a mess.
 #
@@ -64,7 +64,7 @@ class SetCache(object):
         self.setcache = {}
 
     def internSet(self, items):
-        
+
         new = []
         for i in items:
             new.append(sys.intern(i))
@@ -97,7 +97,7 @@ class pythonCacheLine(object):
             l = l + (c, hash(self.contains[c]))
         return hash(l)
     def __repr__(self):
-        return " ".join([str(self.refs), str(self.execs), str(self.contains)]) 
+        return " ".join([str(self.refs), str(self.execs), str(self.contains)])
 
 
 class shellCacheLine(object):
