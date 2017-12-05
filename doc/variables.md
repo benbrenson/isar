@@ -106,7 +106,7 @@ Where distro may be "debian" and distro_suite may be "jessie".
  - `SCHROOT_ID` - Current chroot identifier. Setting this will set the chroot identifier for the chroot task defined.
  - `DEB_SIGN` - Commandline options specific for signing, when runnig `dpkg-builpackage`.
  - `DEB_COMPRESSION` - Compression type for generating the original source file when running `dpkg-buildpackage`.
- - `DEB_HOST_ARCH` - The standart value for the host architecture (default="amd64").
+ - `DEB_HOST_ARCH` - The build host architecture. This version of Isar autodetects the host arch, but you can overwrite it.
  - `APT_EXTRA_OPTS` - Extra options when running apt command in Isar.
 
  - `ROOTFS_IMAGE_SIZE` - Size of the rootfs partitions. Multipliers k, M ang G can be used.

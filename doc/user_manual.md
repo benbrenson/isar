@@ -157,7 +157,6 @@ Before running any bitbake task, please check the `local.conf` file under `BUILD
     MACHINE ??= "nanopi-neo"          # or "nanopi-neo-air"
     DEB_EMAIL="your.email@email.com"
     DEB_FULLNAME="Your Name"
-    DEB_HOST_ARCH="amd64"
     ```
 
 
@@ -247,7 +246,7 @@ This file contains variables that will be exported to `bitbake` environment and 
  - `PARALLEL_MAKE` - Number of parallel makefile instances. Make should be called with -j${PARALLEL_MAKE}
  - `DEB_EMAIL` - The eMail address used by dpkg-buildpackage.
  - `DEB_FULLNAME` - The name used by dpkg-buildpackage.
- - `DEB_HOST_ARCH` - The build host architecture (later this should be autodetected).
+ - `DEB_HOST_ARCH` - The build host architecture. This version of Isar autodetects the host arch, but you can overwrite it.
  - `IMAGE_REVISION` - Only required when swupdate is also integrated as linux update mechanism. This variable is needed by swupdate for detecting the board it will run on.
  - `BROKER_IP` - Only required when running swupdate with the python update service, which in turn is required to receive MQTT messages from a update server/broker.
  - `BROKER_PORT` - See `BROKER_IP`.

@@ -28,3 +28,16 @@ def convertSpaces(d, s, to=':'):
         new[i] = new[i].strip(to)
     new = to.join(new)
     return new
+
+def deb_hostarch():
+    import os
+    import re
+
+    posix_arch = os.uname()[4]
+
+    if re.match(r"x86[_-]64|i\d86[_-]64$", posix_arch):
+        return "amd64"
+    elif re.match(r"i\d86$", posix_arch):
+        return "i386"
+    elif re.match(r"armv", posix_arch):
+        return "armhf"
