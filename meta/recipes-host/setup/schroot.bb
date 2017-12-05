@@ -33,7 +33,7 @@ do_setup_schroot() {
 
     [ -d "/etc/schroot/chroot.d" ] || bbfatal "Config directory /etc/schroot/chroot.d not available."
 
-    sudo install -m 0644 ${WORKDIR}/01_isar.conf /etc/schroot/chroot.d/01_isar.conf
+    sudo install -m 0644 ${WORKDIR}/01_isar.conf /etc/schroot/chroot.d/isar-${TOPDIRNAME}.conf
     sudo install -m 0644 ${WORKDIR}/fstab /etc/schroot/default/fstab
     sudo install -m 0644 ${WORKDIR}/copyfiles /etc/schroot/default/copyfiles
     sudo install -m 0644 ${WORKDIR}/nssdatabases /etc/schroot/default/nssdatabases
