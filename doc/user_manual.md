@@ -9,6 +9,7 @@
  - [Isar Distro Configuration](https://github.com/benbrenson/isar/blob/master/doc/user_manual.md#isar-distro-configuration)
  - [Custom Package Compilation](https://github.com/benbrenson/isar/blob/master/doc/user_manual.md#custom-package-compilation)
  - [Image Type Selection](https://github.com/benbrenson/isar/blob/master/doc/user_manual.md#image-type-selection)
+ - [Add a New Layer](https://github.com/benbrenson/isar/blob/master/doc/user_manual.md#add-a-new-layer)
  - [Add a New Distro](https://github.com/benbrenson/isar/blob/master/doc/user_manual.md#add-a-new-distro)
  - [Add a New Machine](https://github.com/benbrenson/isar/blob/master/doc/user_manual.md#add-a-new-machine)
  - [Add a New Image](https://github.com/benbrenson/isar/blob/master/doc/user_manual.md#add-a-new-image)
@@ -294,6 +295,20 @@ The image recipe has to inherit the ```debian-image``` bbclass, in order to run 
 
 ---
 
+## Add a New Layer
+When adding a new layer first of all you have to think about what your layer will support and what it will be used for.
+The open-embedded community offers a [guideline](https://www.yoctoproject.org/docs/1.8/dev-manual/dev-manual.html#understanding-and-creating-layers), which describes all possible layers and for what purpose each layer exists.
+**Isar should follow the same convention as yocto does!**
+For information please refer to the yocto dev-manual.
+
+Layers allow you to isolate different types of customizations from each other. You might find it tempting to keep everything in one layer when working on a single project. However, the more modular your Metadata, the easier it is to cope with future changes.
+
+To illustrate how layers are used to keep things modular, consider machine customizations. These types of customizations typically reside in a special layer, rather than a general layer, called a Board Support Package (BSP) Layer. Furthermore, the machine customizations should be isolated from recipes and Metadata that support a new GUI environment, for example. This situation gives you a couple of layers: one for the machine configurations, and one for the GUI environment. It is important to understand, however, that the BSP layer can still make machine-specific additions to recipes within the GUI environment layer without polluting the GUI layer itself with those machine-specific changes. You can accomplish this through a recipe that is a BitBake append (.bbappend) file, which is described later in this section.
+
+
+
+---
+
 ## Add a New Distro
 The distro is defined by the set of the following variables:
 
@@ -332,6 +347,7 @@ To add new distro, user should perform the following steps:
 ---
 
 ## Add a New Machine
+Adding a new machine is usually done by creating a new BSP layer. If a new machine is added to a persistent BSP layer, only a new `<MACHINE>`.config has to be added.
 Every machine is described in its configuration file. The file defines the following variables:
 
  - `FIX_KVERSION` - Complete kernel version. This can be extracted from the kernel makefile. Required for running **depmod** within the rootfs, since kernel recipe doesn't contain complete version (e.g. -rc5 is missing). The current version of Isar automatically extracts kernel version from the kernel makefile, so setting this variable is not mandatory anymore.
