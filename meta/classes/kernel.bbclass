@@ -16,6 +16,12 @@ DTB_DEST_DIR ?= "boot/dts"
 KIMAGE_TYPE ?= "zImage"
 UIMAGE_LOADADDR ?= ""
 
+DTBO_SRC_DIR  ?= "arch/${TARGET_ARCH}/boot/dts/overlays"
+DTBOS         ?= ""
+DTBOS_LOAD    ?= ""
+DTBO_DEST_DIR ?= "boot/dts/overlays"
+
+
 CROSS_COMPILE ?= ""
 UIMAGE_LOADADDR ?= ""
 
