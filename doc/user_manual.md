@@ -334,7 +334,7 @@ To add new distro, user should perform the following steps:
 ## Add a New Machine
 Every machine is described in its configuration file. The file defines the following variables:
 
- - `FIX_KVERSION` - Complete kernel version. This can be extracted from the kernel makefile. Required for running **depmod** within the rootfs, since kernel recipe doesn't contain complete version (e.g. -rc5 is missing). The current version of Isar automatically extracts kernel version from the makefile, so setting this variable is not mandatory anymore.
+ - `FIX_KVERSION` - Complete kernel version. This can be extracted from the kernel makefile. Required for running **depmod** within the rootfs, since kernel recipe doesn't contain complete version (e.g. -rc5 is missing). The current version of Isar automatically extracts kernel version from the kernel makefile, so setting this variable is not mandatory anymore.
  - `KERNEL_CMDLINE` - Kernel commandline substituted within uboots bootscript.
  - `TARGET_ARCH` - Some buildsystems (e.g. Kconfig) need architecture specific settings for this type of machine.
  - `TARGET_PREFIX` - Sets the cross compiler prefix for this machine.
@@ -824,8 +824,6 @@ the Makefile representation will look like this:
 install: build
     echo "foo"
 ```
-
-**Note: The current version of Isar requires using tabulator as identation when defining makefile tasks in recipes.**
 
 
 #### Generate the rules file for python applications
