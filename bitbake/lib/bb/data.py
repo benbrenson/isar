@@ -303,6 +303,8 @@ def {function}(d):
 
 def emit_func_make(func, o=sys.__stdout__, d = init()):
     """ Emit all items of a function in a format such that it can be sourced by a makefile. """
+    regexp = re.compile('^[\t ]+', re.MULTILINE)
+
     o.write('\n')
     o.write('%s: ' % d.getVarFlag(func, 'target', True))
     tdeps = d.getVarFlag(func, 'tdeps', True)
@@ -310,7 +312,11 @@ def emit_func_make(func, o=sys.__stdout__, d = init()):
     if tdeps:
         o.write('%s' % tdeps)
     o.write('\n')
-    o.write(d.getVar(func,True))
+
+    # Replace all lines beginning with whitespaces with tabs.
+    unclean_var = d.getVar(func,True)
+    clean_var = regexp.sub('\t', unclean_var)
+    o.write(clean_var)
 
 
 def emit_func_python(func, o=sys.__stdout__, d = init()):
