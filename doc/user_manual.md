@@ -851,8 +851,123 @@ PRIORITY = "optional"
 ```
 
 ## Add a New Kernel
-`WORK IN PROGRESS`
+Adding a kernel can be done in two ways. Either you select the kernel image from the official debian repositories related to your hardware, or you create a own recipe to compile a custom version of the kernel image.
 
+In the former case, you only have to add the kernel package name to the `IMAGE_PREINSTALL` variable in the image recipe.
+
+
+
+
+If you want to make use of an custom kernel from another repository of yourself, you have to add a kernel recipe.
+The file defines the following important variables:
+- `DTBO_SRC_DIR` - When using device tree overlay files, this variable will define the location where isar can find those files for installing them later to the image. Those files where copied to this location before (see do_copy_device_tree() task).
+- `DTBO_DEST_DIR` - This will set the final destination within the rootfs image, where the device tree overlays where installed.
+
+The following example will show how that can be achieved:
+
+```
+DESCRIPTION_nanopi ?= "Mainline linux kernel support for the nanopi."
+
+DESCRIPTION_nanopi-neo-air = "Mainline linux kernel support for the nanopi-neo-air."
+
+
+# We will cross compile the kernel, because qemu has poor performance.
+inherit debianize kernel
+DEPENDS_class-cross = "dtc-native"
+
+FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}-${PV}:"
+
+URL = "git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git"
+BRANCH="master"
+SRCREV = "ef954844c7ace62f773f4f23e28d2d915adc419f"
+
+SRC_DIR = "git"
+SRC_URI += " \
+        ${URL};branch=${BRANCH};protocol=https \
+        file://${MACHINE}_defconfig \
+        file://dts/sun8i-h3-nanopi.dtsi \
+        file://dts/sun8i-h3-nanopi-neo.dts \
+        file://dts/sun8i-h3-nanopi-neo-air.dts \
+        file://dts/overlays/sun8i-h3-i2c2.dts
+        file://debian \
+        file://0001-Added-support-for-compiling-device-tree-overlays.patch \
+        file://0002-can-mcp251x-Fixed-delay-after-hw-reset.patch \
+        file://0003-spi-sun6i-Added-support-for-gpio-chipselect.patch \
+        file://0004-spi-sun6i-Fixed-maximum-transfer-size-of-64bit.patch \
+        file://0005-net-Added-device-tree-support-for-w5100-driver.patch \
+        file://0006-can-mcp251x-Fixed-deadlock-for-free_irq-while-irq-wa.patch \
+        "
+
+SRC_URI_append_nanopi-neo-air = "file://firmware"
+
+DTBO_SRC_DIR  = "arch/${TARGET_ARCH}/boot/dts/overlays"
+DTBO_DEST_DIR = "boot/dts/overlays"
+
+do_copy_device_tree() {
+    cp  ${EXTRACTDIR}/dts/sun8i-h3-nanopi.dtsi \
+        ${EXTRACTDIR}/dts/sun8i-h3-nanopi-neo.dts \
+        ${EXTRACTDIR}/dts/sun8i-h3-nanopi-neo-air.dts \
+        ${S}/arch/${TARGET_ARCH}/boot/dts
+        cp -r ${EXTRACTDIR}/dts/overlays ${S}/arch/${TARGET_ARCH}/boot/dts/
+}
+do_copy_defconfig[postfuncs] += "do_copy_device_tree"
+
+# Overwrite the standart dtc with the overlay capable one.
+debianize_build_prepend() {
+    ${MAKE} scripts
+    cp /opt/bin/overlay-dtc ${PPS}/scripts/dtc/dtc
+}
+
+# for now only install overlays.txt file
+debianize_install_append() {
+    echo "overlays=${DTBOS_LOAD}" | xargs > debian/${BPN}/boot/overlays.txt
+}
+
+# Install required firmware binary and nvram config file for
+# ap6212 (BCM43430) wireless chipset
+debianize_install_append_nanopi-neo-air() {
+    install -m 644 -d debian/${BPN}/lib/firmware/brcm
+    install -m 644 ${PP}/firmware/brcmfmac43430-sdio.bin.7.45.77.0.ucode1043.2054 debian/${BPN}/lib/firmware/brcm/brcmfmac43430-sdio.bin
+    install -m 644 ${PP}/firmware/brcmfmac43430-sdio.txt debian/${BPN}/lib/firmware/brcm
+}
+
+
+BBCLASSEXTEND = "cross"
+```
+
+As this example shows you have to define such a kernel recipe, and customize it by defining own versions of debianize_* tasks for compiling and install different components.
+
+The following example shows what is needed for setting up a simpler kernel recipe:
+```
+DESCRIPTION ?= "Mainline linux kernel support for the imx6."
+
+DESCRIPTION_nitrogen6x = "Mainline linux kernel support for the nitrogen6x."
+
+
+# We will cross compile the kernel, because qemu has poor performance.
+inherit debianize kernel
+DEPENDS_class-cross = "dtc-native"
+
+URL = "git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git"
+BRANCH="master"
+SRCREV = "eab260db417449f5c6500319c9d2f3fc33087051"
+
+SRC_DIR = "git"
+SRC_URI += " \
+        ${URL};branch=${BRANCH};protocol=https \
+        file://${MACHINE}_defconfig \
+        file://firmware \
+        file://debian \
+        "
+
+copy_firmware() {
+    mkdir -p ${S}/firmware/
+    cp -r ${EXTRACTDIR}/firmware/* ${S}/firmware/
+}
+do_build[prefuncs] += "copy_firmware"
+
+BBCLASSEXTEND = "cross"
+```
 
 ## Dependency management
 The dependency management should as much as possible get managed by the package manager itself.
