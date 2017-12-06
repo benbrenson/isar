@@ -119,7 +119,7 @@ python do_deb_depends() {
     rdepends      = ''
 
     for var in vars.split():
-        depends = oe.utils.rmDupVar(d, var)
+        depends = oe.utils.separated_unqiue_string_from_var(d, var)
         depends = depends.split()
 
         # Try to clean depends from possible skipp value, since
@@ -140,7 +140,10 @@ python do_deb_depends() {
                 continue
             depends[i] = depends[i].replace(':',' ')
 
-            # Exchange -native suffix with DEB_HOST_ARCH and
+            # Replace 'virtual/' prefix with preferred provided item
+            depends[i] = oe.utils.convert_virtuals(depends[i], d)
+
+            # Replace -native suffix with DEB_HOST_ARCH and
             # -cross suffix with DISTRO_ARCH
             if depends[i].endswith('-native'):
                 depends[i] = depends[i].replace('-native', ':' + deb_host_arch)
@@ -150,7 +153,7 @@ python do_deb_depends() {
         # Now concentate fixed strings
         # TODO:
         # Each 'Depends' variable collects all rdepends based variables
-        # Need to distinguish between different package types, and
+        # Need to distinguish between different debian binary package types, and
         # distribute associated variables.
         if var in d.getVar('BUILD_DEPENDS_VARS', True).split():
             build_depends += ', '.join(depends)
@@ -159,8 +162,8 @@ python do_deb_depends() {
             rdepends += ', '.join(depends)
             rdepends += ', '
 
-    build_depends = oe.utils.rmDupString(build_depends, ',')
-    rdepends = oe.utils.rmDupString(rdepends, ',')
+    build_depends = oe.utils.separated_unqiue_string(build_depends, ',')
+    rdepends = oe.utils.separated_unqiue_string(rdepends, ',')
 
     # Now concentate DEPENDS and RDEPENDS and DEB_DEPENDS into DEPS_FIXED
     d.setVar('DEPS_FIXED', build_depends)
@@ -171,17 +174,17 @@ python do_deb_depends() {
 CONTROL="${EXTRACTDIR}/debian/control"
 do_generate_debcontrol() {
 
-    sed -i -e 's/##PACKAGE##/${PACKAGE_NAME}/g'      ${CONTROL}
-    sed -i -e 's/##PACKAGE_BASE##/${SOURCE_NAME}/g'  ${CONTROL}
-    sed -i -e 's/##SECTION##/${SECTION}/g'           ${CONTROL}
-    sed -i -e 's/##PRIORITY##/${PRIORITY}/g'         ${CONTROL}
+    sed -i -e 's|##PACKAGE##|${PACKAGE_NAME}|g'      ${CONTROL}
+    sed -i -e 's|##PACKAGE_BASE##|${SOURCE_NAME}|g'  ${CONTROL}
+    sed -i -e 's|##SECTION##|${SECTION}|g'           ${CONTROL}
+    sed -i -e 's|##PRIORITY##|${PRIORITY}|g'         ${CONTROL}
     sed -i -e 's|##URL##|${URL}|g'                   ${CONTROL}
-    sed -i -e 's/##DEB_ARCH##/${DEB_ARCH_CTRL}/g'    ${CONTROL}
-    sed -i -e 's/##DESCRIPTION##/${DESCRIPTION}/g'   ${CONTROL}
-    sed -i -e 's/##MAINTAINER##/${MAINTAINER}/g'     ${CONTROL}
-    sed -i -e 's/##DEPENDS##/${DEPS_FIXED}/g'        ${CONTROL}
-    sed -i -e 's/##VERSION##/${DEB_VERSION}/g'       ${CONTROL}
-    sed -i -e 's/##RDEPENDS##/${RDEPS_FIXED}/g'      ${CONTROL}
+    sed -i -e 's|##DEB_ARCH##|${DEB_ARCH_CTRL}|g'    ${CONTROL}
+    sed -i -e 's|##DESCRIPTION##|${DESCRIPTION}|g'   ${CONTROL}
+    sed -i -e 's|##MAINTAINER##|${MAINTAINER}|g'     ${CONTROL}
+    sed -i -e 's|##DEPENDS##|${DEPS_FIXED}|g'        ${CONTROL}
+    sed -i -e 's|##VERSION##|${DEB_VERSION}|g'       ${CONTROL}
+    sed -i -e 's|##RDEPENDS##|${RDEPS_FIXED}|g'      ${CONTROL}
 }
 addtask do_generate_debcontrol after do_test_vars before do_dh_make
 do_generate_debcontrol[stamp-extra-info] = "${DISTRO}"

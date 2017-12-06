@@ -351,6 +351,10 @@ Adding a new machine is usually done by creating a new BSP layer. If a new machi
 Every machine is described in its configuration file. The file defines the following variables:
 
  - `FIX_KVERSION` - Complete kernel version. This can be extracted from the kernel makefile. Required for running **depmod** within the rootfs, since kernel recipe doesn't contain complete version (e.g. -rc5 is missing). The current version of Isar automatically extracts kernel version from the kernel makefile, so setting this variable is not mandatory anymore.
+ - `PREFERRED_PROVIDER_virtual/kernel` - Set the kernel recipe name which will be used for the current machine.
+ - `PREFERRED_VERSION_virtual/kernel` - Set the kernel recipe version.
+ - `PREFERRED_PROVIDER_virtual/bootloader` - Set the bootloader recipe name which will be used for the current machine.
+ - `PREFERRED_VERSION_virtual/bootloader` - Set the bootloader recipe version.
  - `KERNEL_CMDLINE` - Kernel commandline substituted within uboots bootscript.
  - `TARGET_ARCH` - Some buildsystems (e.g. Kconfig) need architecture specific settings for this type of machine.
  - `TARGET_PREFIX` - Sets the cross compiler prefix for this machine.
@@ -378,6 +382,11 @@ Every machine is described in its configuration file. The file defines the follo
 
 Below is an example of machine configuration file for `NanoPi-Neo` board:
 ```
+PREFERRED_PROVIDER_virtual/kernel = "linux-image-sunxi-cross"
+PREFERRED_VERSION_virtual/kernel = "4.13"
+PREFERRED_PROVIDER_virtual/bootloader = "u-boot-sunxi-cross"
+PREFERRED_VERSION_virtual/bootloader = "2017.13"
+
 KIMAGE_TYPE="uImage"
 KERNEL_CMDLINE="console=${MACHINE_SERIAL},115200 console=tty1 rw rootwait panic=10"
 
@@ -872,8 +881,6 @@ Adding a kernel can be done in two ways. Either you select the kernel image from
 In the former case, you only have to add the kernel package name to the `IMAGE_PREINSTALL` variable in the image recipe.
 
 
-
-
 If you want to make use of an custom kernel from another repository of yourself, you have to add a kernel recipe.
 The file defines the following important variables:
 - `DTBO_SRC_DIR` - When using device tree overlay files, this variable will define the location where isar can find those files for installing them later to the image. Those files where copied to this location before (see do_copy_device_tree() task).
@@ -886,10 +893,8 @@ DESCRIPTION_nanopi ?= "Mainline linux kernel support for the nanopi."
 
 DESCRIPTION_nanopi-neo-air = "Mainline linux kernel support for the nanopi-neo-air."
 
-
-# We will cross compile the kernel, because qemu has poor performance.
 inherit debianize kernel
-DEPENDS_class-cross = "dtc-native"
+DEPENDS = "dtc-native"
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}-${PV}:"
 
@@ -904,7 +909,6 @@ SRC_URI += " \
         file://dts/sun8i-h3-nanopi.dtsi \
         file://dts/sun8i-h3-nanopi-neo.dts \
         file://dts/sun8i-h3-nanopi-neo-air.dts \
-        file://dts/overlays/sun8i-h3-i2c2.dts
         file://debian \
         file://0001-Added-support-for-compiling-device-tree-overlays.patch \
         file://0002-can-mcp251x-Fixed-delay-after-hw-reset.patch \
@@ -913,7 +917,6 @@ SRC_URI += " \
         file://0005-net-Added-device-tree-support-for-w5100-driver.patch \
         file://0006-can-mcp251x-Fixed-deadlock-for-free_irq-while-irq-wa.patch \
         "
-
 SRC_URI_append_nanopi-neo-air = "file://firmware"
 
 DTBO_SRC_DIR  = "arch/${TARGET_ARCH}/boot/dts/overlays"
@@ -924,7 +927,6 @@ do_copy_device_tree() {
         ${EXTRACTDIR}/dts/sun8i-h3-nanopi-neo.dts \
         ${EXTRACTDIR}/dts/sun8i-h3-nanopi-neo-air.dts \
         ${S}/arch/${TARGET_ARCH}/boot/dts
-        cp -r ${EXTRACTDIR}/dts/overlays ${S}/arch/${TARGET_ARCH}/boot/dts/
 }
 do_copy_defconfig[postfuncs] += "do_copy_device_tree"
 
@@ -953,16 +955,16 @@ BBCLASSEXTEND = "cross"
 
 As this example shows you have to define such a kernel recipe, and customize it by defining own versions of debianize_* tasks for compiling and install different components.
 
+**NOTE: The kernel class has to be inheritet after the debianize class. Otherwise defined tasks within the kernel class will be overwritten by the debianize class.**
+
 The following example shows what is needed for setting up a simpler kernel recipe:
 ```
 DESCRIPTION ?= "Mainline linux kernel support for the imx6."
 
 DESCRIPTION_nitrogen6x = "Mainline linux kernel support for the nitrogen6x."
 
-
-# We will cross compile the kernel, because qemu has poor performance.
 inherit debianize kernel
-DEPENDS_class-cross = "dtc-native"
+DEPENDS = "dtc-native"
 
 URL = "git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git"
 BRANCH="master"
@@ -989,6 +991,16 @@ BBCLASSEXTEND = "cross"
 The dependency management should as much as possible get managed by the package manager itself.
 There are two kinds of main dependencies which should be distinguished:
 
+
+### Dependencies to official debian packages
+Other dependencies, mostly packages not generated by Isar itself, but installed from official debian repositories, where added to `DEB_DEPENDS` and
+`DEB_RDEPENDS`.
+
+The behavior is the same as for `DEPENDS` and `RDEPENDS`, but instead using dependencies to other recipes, dependencies to official debian binary packages
+where selected.
+This also means, that specified elements will not be pushed onto the build chain of Isar!
+
+
 ### Dependencies to other recipes
 In order to append other recipes to the dependency **and build chain** of Isar, these should added to the `DEPENDS` and `RDEPENDS` variables.
 While the former one adds build-time dependencies the latter one will add run-time dependencies.
@@ -999,22 +1011,23 @@ About the debian control file substitution, we can say that:
 * Depends variable is substituted with RDEPENDS.
 * Build-Depends is substituted with DEPENDS.
 
-This behavior is specified by debian.
+So Isar will substitute the variables within the `control` file and the dpkg-buildpackage tool, used by Isar, will handle the dependency management by its own.
 
+When a recipe provides multiple additional binary packages, the names of those packages should be appended to `PROVIDES`.
+You can consider the `swupdate` and `u-boot` packages for example.
+Uboot provides to binary packages: `uboot` and `libubootenv`. Swupdate in turn depends on the binary package `libubootenv`.
+Uboot will provide the `libubootenv` package after adding it the provides variable.
+Swupdate must add `libubootenv` to `DEPENDS`:
 
-### Dependencies to official debian packages
-Other dependencies, mostly packages not generated by Isar itself, but installed from official debian repositories, where added to `DEB_DEPENDS` and
-`DEB_RDEPENDS`.
+swupdate.bb:
+```
+DEPENDS += " mtd-utils-dev libubootenv "
+```
 
-The behavior is the same as for `DEPENDS` and `RDEPENDS`, but instead using dependencies to other recipes, dependencies to official debian binary packages
-where selected.
-This also means, that specified elements will not be pushed onto the build chain of Isar!
-
-**Note:** A little bug is still present, when setting dependencies to a Isar generated binary package (multiple binary packages can be build out of one debian source package), whose name differs from the recipe name.
-A workaround would be to add the recipe itself to `DEPENDS` or `RDEPENDS` and also add the binary package name to `DEB_DEPENDS` or `DEB_RDEPENDS`.
-This will ensure putting the the recipe to the work chain and also install the dependency into the local debian repository.
-A example is the `libubootenv` package, which is a binary package build out of the u-boot recipe (u-boot source package).
-While `DEPENDS` has to contain u-boot (or u-boot-cross), `DEP_DEPENDS` contains the libubootenv dependency.
+uboot.bb:
+```
+PROVIDES_append = " libubootenv "
+```
 
 
 ## Running chrooted tasks

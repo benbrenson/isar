@@ -1,8 +1,7 @@
-###                              ###
-### debianize makefile functions ###
-###                              ###
+# This software is a part of ISAR.
+# Copyright (C) 2017 Mixed Mode GmbH
 
-CROSS_COMPILE ?= ""
+PROVIDES_append = " virtual/bootloader "
 
 MAKE ?= "make ARCH=${TARGET_ARCH}"
 MAKE_class-cross = "make ARCH=${TARGET_ARCH} CROSS_COMPILE=${TARGET_PREFIX}-"
@@ -52,6 +51,9 @@ do_copy_defconfig(){
 addtask do_copy_defconfig after do_patch before do_build
 
 
+###                              ###
+### debianize makefile functions ###
+###                              ###
 debianize_build[target] = "build"
 debianize_build() {
 	@echo "Running build target."

@@ -11,8 +11,8 @@ IMAGE_PREINSTALL += " ${INIT} "
 IMAGE_INSTALL ?= ""
 
 # Install self-compiled packages
-BOOTLOADER_IMAGE ?= "u-boot-cross"
-KERNEL_IMAGE ?= "linux-image-cross"
+BOOTLOADER_IMAGE ?= "virtual/bootloader"
+KERNEL_IMAGE ?= "virtual/kernel"
 INITRD_IMAGE ?= "initrd.img"
 
 # Change to / inside chroot.
@@ -196,7 +196,8 @@ do_configure_rootfs[id] = "${ROOTFS_ID}"
 
 
 # Install Debian packages, that were built from sources
-IMAGE_INSTALL_DEBS="${@oe.utils.explode_dep_pkg_suffix(d.getVar('IMAGE_INSTALL', True), d)}"
+IMAGE_INSTALL_DEBS = "${@oe.utils.convert_virtuals(d.getVar('IMAGE_INSTALL', True), d)}"
+IMAGE_INSTALL_DEBS_FINAL = "${@oe.utils.prune_suffixes(d.getVar('IMAGE_INSTALL_DEBS', True), d.getVar('SPECIAL_PKGSUFFIX', True), '',d)}"
 do_populate() {
     if [ -n "${IMAGE_INSTALL_DEBS}" ]; then
 
@@ -205,7 +206,7 @@ do_populate() {
         echo "deb [ trusted=yes ] file:${CHROOT_DEPLOY_DIR_DEB}/${DISTRO_ARCH}/ ./" >> /etc/apt/sources.list.d/local.list
 
         apt-get update
-        apt-get install -y ${IMAGE_INSTALL_DEBS}
+        apt-get install -y ${IMAGE_INSTALL_DEBS_FINAL}
 
         # Cleanup
         rm -f /etc/apt/sources.list.d/local.list
@@ -238,7 +239,9 @@ python do_post_rootfs(){
 }
 addtask do_post_rootfs after do_populate before do_package_tunes
 
-
+#
+# Only run when override 'update' set
+#
 python do_image_swupdate() {
     import subprocess as shell
 

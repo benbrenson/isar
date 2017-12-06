@@ -49,7 +49,10 @@ Where distro may be "debian" and distro_suite may be "jessie".
  - `DISTRO_APT_SOURCE` - Repository URL.
  - `DISTRO_KEYRINGS` - Keyring packages needed by multistrap to achieve secure repository authentication.
 
-
+ - `PREFERRED_PROVIDER_virtual/kernel` - Set the kernel recipe name which will be used for the current machine.
+ - `PREFERRED_VERSION_virtual/kernel` - Set the kernel recipe version.
+ - `PREFERRED_PROVIDER_virtual/bootloader` - Set the bootloader recipe name which will be used for the current machine.
+ - `PREFERRED_VERSION_virtual/bootloader` - Set the bootloader recipe version.
  - `FIX_KVERSION` - Complete kernel version. This can be extracted from the kernel makefile. Required for running **depmod** within the rootfs, since kernel recipe doesn't contain complete version (-rc5 is missing).
  - `KERNEL_CMDLINE` - Kernel commandline substituted within uboots bootscript.
  - `TARGET_ARCH` - Some buildsystems (e.g. Kconfig) need architecture specific settings for this type of machine.

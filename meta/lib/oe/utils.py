@@ -275,41 +275,31 @@ class ThreadedPool:
             worker.join()
 
 
-
 def prune_suffix(var, suffixes, d):
     # See if var ends with any of the suffixes listed and
     # remove it if found
-    bb.early_utils(var,suffixes, d)
+    return bb.early_utils.prune_suffix(var,suffixes, d)
 
 
-def explode_dep_pkg_suffix(s, d):
-    # Take a RDEPENDS like string and unbind
-    # all pkg suffixes
-    suffixes = d.getVar('SPECIAL_PKGSUFFIX', True).split()
-    s = s.split()
-    for i in range(len(s)):
-        for suffix in suffixes:
-            if s[i].endswith(suffix):
-                s[i] = s[i].replace(suffix, '')
-
-    return ' '.join(s)
+def prune_suffixes(var, suffixes, skip, d):
+    # Does the same as prune_suffix(), but for DEPENDS like strings.
+    # Replaces suffixes for each item in the string.
+    return bb.early_utils.prune_suffixes(var,suffixes, skip, d)
 
 
-def append_dep_pkg_suffix(suffix, s, d):
-    # Append pkg suffixes to an RDEPENDS like
-    # string
-    new = explode_dep_pkg_sufix(s,d)
-
-    new = old.split()
-
-    for i in range(len(new)):
-        new[i] += suffix
-
-    return ' '.join(new)
+def append_suffix(var, suffix, d):
+    # Add a suffix to a variable.
+    return bb.early_utils.append_suffix(var, suffix, d)
 
 
-def rmDupString(s, separator=' '):
-    """ Convert string sperated by 'separator' to format which only contains uniq values. """
+def append_suffixes(var, suffix, skip, d):
+    # Does the same as append_suffix(), but for DEPENDS like strings.
+    # Appends suffixes for each item in the string.
+    return bb.early_utils.append_suffixes(var, suffix, skip, d)
+
+
+def separated_unqiue_string(s, separator=' '):
+    """ Convert string sperated by 'separator' to format which only contains unique values. """
     t = s.strip(' ').strip(separator)
     clean_list = [ x.strip(' ')  for x in t.split(separator) ]
     clean_set = set(clean_list)
@@ -318,14 +308,30 @@ def rmDupString(s, separator=' '):
     return t
 
 
-def rmDupVar(d, s, separator=' '):
+def separated_unqiue_string_from_var(d, s, separator=' '):
     """ Extract the value from variable s and remove duplicate values
         from it. Then return a string version not containing duplicate values.
     """
     t = d.getVar(s, True) or ""
-    return rmDupString(t)
+    return separated_unqiue_string(t)
 
 
 def convertSpaces(d, s, to=':'):
     """ Convert strings separated by spaces into other separators. """
     bb.early_utils.convertSpaces(d, s, to)
+
+
+def convert_virtuals(virtual_str, d):
+    """ Convert all items with 'virtual/' prefix within  a string into
+        its preferred provider item.
+    """
+    t = virtual_str.split()
+
+    for item in range(len(t)):
+        if t[item].startswith('virtual'):
+            repl = d.getVar('PREFERRED_PROVIDER_%s' % t[item], True)
+            t[item] = repl
+
+    return ' '.join(t)
+
+

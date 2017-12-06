@@ -42,10 +42,11 @@ do_prepare_initramfs[stamp-extra-info] = "${DISTRO}.chroot"
 do_prepare_initramfs[chroot] = "1"
 do_prepare_initramfs[id] = "${ROOTFS_ID}"
 
-
+LINUX_IMAGE ?= "${@oe.utils.prune_suffixes(d.getVar('PREFERRED_PROVIDER_virtual/kernel', True), '-cross', '', d)}"
 do_generate_initramfs() {
 
-    LINUX_VERSION=$(dpkg-query --showformat='${Version}' --show linux-image || true)
+    LINUX_VERSION=$(dpkg-query --showformat='${Version}' --show ${LINUX_IMAGE} || true)
+    bbwarn "${LINUX_IMAGE}"
     if [ -n "${LINUX_VERSION}" ]; then
         rm -rf /boot/${INITRD_IMAGE}-${LINUX_VERSION}
         update-initramfs -k ${LINUX_VERSION} -c

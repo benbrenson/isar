@@ -47,7 +47,6 @@ def oe_import(d):
 DO_IMPORT := "${@oe_import(d)}"
 
 
-
 addtask showdata
 do_showdata[nostamp] = "1"
 python do_showdata() {

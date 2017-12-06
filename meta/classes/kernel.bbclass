@@ -3,12 +3,12 @@
 
 # Class implementing common functionalities for compiling the kernel.
 # The kernel has to be capable to compile device tree overlays with the '-@' option.
-# See commit baa05fa for information how the kernels kconfig system gets capable of compiling device tree overlays.
 # So basically three steps have to be done:
 # 1. Get an overlay capable dtc
 # 2. Overwrite the kernel dtc with the overlay capable one.
 # 3. Modify the kernel makefiles for beeing capable of compiling overlays (see commit baa05fa of kernel repository).
-# TODO: Maybe we should move the dt compilation into a seperate bbclass, to get independent from kernel dtc support?
+
+PROVIDES_append = " virtual/kernel "
 
 DTB_SRC_DIR ?= "arch/${TARGET_ARCH}/boot/dts"
 DTBS        ?= ""
@@ -27,7 +27,6 @@ UIMAGE_LOADADDR ?= ""
 
 MAKE = " make ARCH=${TARGET_ARCH} "
 MAKE_append_class-cross = "CROSS_COMPILE=${TARGET_PREFIX}-"
-
 
 # Generate make command for dtbs and dtbos
 python() {
