@@ -138,17 +138,20 @@ python do_deb_depends() {
             # Skipp ${*:*} similiar vars
             if depends[i].startswith('$'):
                 continue
-            depends[i] = depends[i].replace(':',' ')
 
             # Replace 'virtual/' prefix with preferred provided item
             depends[i] = oe.utils.convert_virtuals(depends[i], d)
 
+            pn = oe.utils.deb_get_pn(depends[i])
+            pv = oe.utils.deb_get_pv(depends[i])
+            arch = oe.utils.deb_get_arch_suffix(depends[i])
+
             # Replace -native suffix with DEB_HOST_ARCH and
             # -cross suffix with DISTRO_ARCH
-            if depends[i].endswith('-native'):
-                depends[i] = depends[i].replace('-native', ':' + deb_host_arch)
-            if depends[i].endswith('-cross'):
-                depends[i] = depends[i].replace('-cross', ':' + distro_arch)
+            arch = arch.replace('-cross', ':' + distro_arch)
+            arch = arch.replace('-native', ':' + deb_host_arch)
+
+            depends[i] = pn + arch + ' %s' % pv
 
         # Now concentate fixed strings
         # TODO:

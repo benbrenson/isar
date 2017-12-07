@@ -1,3 +1,4 @@
+import re
 import bb.early_utils
 
 try:
@@ -333,5 +334,37 @@ def convert_virtuals(virtual_str, d):
             t[item] = repl
 
     return ' '.join(t)
+
+#
+# Helper functions for extracting parts
+# of DEB_DEPENDS like strings
+def deb_get_pn(s):
+    reg = re.compile(' *[A-Za-z0-9\-\.]*')
+    reg_sub = re.compile('(-cross|-native)+')
+    new = reg.match(s)
+
+    if new:
+        print(new.group(0))
+        pn = reg_sub.sub('', new.group(0))
+        return pn
+
+def deb_get_pv(s):
+    reg = re.compile('[:\(]+[<>=\.0-9]*[\):]*')
+    reg_ver = re.compile('[<>=0-9\.]+')
+    reg_pre = re.compile('[<>=]+')
+
+    new = reg.search(s)
+    if new:
+        version = reg_ver.search(new.group(0))
+        if version:
+            return '(%s)' % version.group(0)
+    return ''
+
+def deb_get_arch_suffix(s):
+    reg = re.compile('(\-cross|\-native)')
+    new = reg.search(s)
+    if new:
+        return new.group(0)
+    return ''
 
 

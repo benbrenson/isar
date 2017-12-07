@@ -1000,6 +1000,11 @@ The behavior is the same as for `DEPENDS` and `RDEPENDS`, but instead using depe
 where selected.
 This also means, that specified elements will not be pushed onto the build chain of Isar!
 
+When the recipe also provides crossbuild support, all items of `DEPENDS` and `RDEPENDS` will be suffixed with **-cross**. Keep that in mind, because
+sometimes also some cross builded packages depend on a native (host arch) package.
+To skipp those packages from beeing suffixed add the package name to `SKIP_APPEND_CROSS_SUFFIX`.
+The same applies to native build packages, with `SKIP_APPEND_NATIVE_SUFFIX`.
+
 
 ### Dependencies to other recipes
 In order to append other recipes to the dependency **and build chain** of Isar, these should added to the `DEPENDS` and `RDEPENDS` variables.
@@ -1011,7 +1016,7 @@ About the debian control file substitution, we can say that:
 * Depends variable is substituted with RDEPENDS.
 * Build-Depends is substituted with DEPENDS.
 
-So Isar will substitute the variables within the `control` file and the dpkg-buildpackage tool, used by Isar, will handle the dependency management by its own.
+So Isar will substitute the related `control` file variables and the dpkg-buildpackage tool, used by Isar, will handle the dependency management. Isar will only run the basic tasks for compiling and installing the package to the local repository and dpkg-buildpackage, will install the dependend packages.
 
 When a recipe provides multiple additional binary packages, the names of those packages should be appended to `PROVIDES`.
 You can consider the `swupdate` and `u-boot` packages for example.

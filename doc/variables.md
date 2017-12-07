@@ -113,3 +113,5 @@ Where distro may be "debian" and distro_suite may be "jessie".
  - `APT_EXTRA_OPTS` - Extra options when running apt command in Isar.
 
  - `ROOTFS_IMAGE_SIZE` - Size of the rootfs partitions. Multipliers k, M ang G can be used.
+ - `SKIP_APPEND_CROSS_SUFFIX` - Prevent all existent items from beeing suffixed with `-cross`, when supporting cross build.
+ - `SKIP_APPEND_NATIVE_SUFFIX` - Prevent all existent items from beeing suffixed with `-native`, when supporting native build
