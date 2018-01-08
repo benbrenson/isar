@@ -264,8 +264,9 @@ class Partition():
         mnt_cmd = 'mount -o loop %s %s' % (rootfs, rootfs_mnt)
         exec_cmd(mnt_cmd)
 
-        cpy_cmd = 'cp -aR %s/* %s' % (rootfs_dir, rootfs_mnt)
-        exec_cmd(cpy_cmd, as_shell=True)
+        if os.listdir(rootfs_dir) != []:
+            cpy_cmd = 'cp -aR %s/* %s' % (rootfs_dir, rootfs_mnt)
+            exec_cmd(cpy_cmd, as_shell=True)
 
         umnt_cmd = 'umount %s' % rootfs_mnt
         exec_cmd(umnt_cmd)
