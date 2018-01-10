@@ -24,6 +24,7 @@ addtask do_emit_wicvars after do_post_rootfs before do_image
 do_emit_wicvars[stamp-extra-info] = "${MACHINE}"
 
 ROOTFS_IMAGE_SIZE ?= ""
+UPDATE_DIR ?= "${ROOTFS_DIR}/${update_prefix}"
 
 do_generate_wks() {
     set -x
@@ -35,10 +36,13 @@ do_generate_wks() {
     for image_type in `eval echo ${IMAGE_FSTYPES}` ; do
         echo "Generating ${EXTRACTDIR}/${image_type}.wks"
         sed -i "s|##ROOTFS_SIZE_OPTION##|$ROOTFS_IMAGE_SIZE_OPTION|g" ${EXTRACTDIR}/${image_type}.wks
+        sed -i "s|##UPDATE_DIR##|${UPDATE_DIR}|g" ${EXTRACTDIR}/${image_type}.wks
     done
 }
 
 do_image(){
+
+    ${SUDO} mkdir -p ${UPDATE_DIR}
 
     for image_type in `eval echo ${IMAGE_FSTYPES}` ; do
         ${SUDO} -- wic create -o ${DEPLOY_DIR_IMAGE} \
