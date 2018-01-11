@@ -1,9 +1,0 @@
-# short-description: Create a sd-card image with two redundant partitions
-# long-description: Creates a partitioned sd-card image that the user
-# can directly dd to boot media.
-
-bootloader --source bootstream
-part /boot --source bootimg-partition --fstype=vfat --label boot --active --align 2048
-part /       --source rootfs --rootfs-dir=rootfs --ondisk mmcblk --fstype=ext4 --label rootfs_a --align 2048 ##ROOTFS_SIZE_OPTION##
-part /rescue --source rootfs --rootfs-dir=rootfs --ondisk mmcblk --fstype=ext4 --label rootfs_b --align 2048 ##ROOTFS_SIZE_OPTION##
-part /update --source rootfs --rootfs-dir=##UPDATE_DIR## --ondisk mmcblk --fstype=ext4 --label update --align 2048 ##ROOTFS_SIZE_OPTION##

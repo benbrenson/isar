@@ -1,0 +1,45 @@
+{
+    "partitions" : {
+
+        "rootfs" : {
+            "type" : "rootfs",
+            "label" : "root_prim",
+            "mountpoint" : "/",
+            "filesystem" : "ext4",
+            "size" : -1,
+            "num" : 0
+
+        },
+
+        "rootfs_sec" : {
+            "type" : "rootfs",
+            "label" : "root_sec",
+            "mountpoint" : "/",
+            "filesystem" : "ext4",
+            "size" : -1,
+            "num" : 1
+
+        },
+
+        "recovery" : {
+            "type" : "bootimg-partition",
+            "label" : "recovery",
+            "mountpoint" : "/boot/recovery",
+            "filesystem" : "vfat",
+            "size" : -1,
+            "num" : 2
+        },
+
+        "update" : {
+            "type" : "rootfs",
+            "label" : "update",
+            "src-dir" : "UPDATE_DIR",
+            "mountpoint" : "/update",
+            "filesystem" : "ext4",
+            "size" : -1,
+            "num" : 3
+
+        }
+
+    }
+}

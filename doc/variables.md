@@ -60,7 +60,7 @@ Where distro may be "debian" and distro_suite may be "jessie".
  - `KIMAGE_TYPE` - The name of kernel binary that it installed to `/boot` folder in target filesystem. This variable is used by isar for determing which
  image type has to be compiled by the kernel.
  - `MACHINE_SERIAL` - The name of serial device that will be used for console output.
- - `IMAGE_FSTYPES` - The type of images to be generated for this machine (e.g. sdcard).
+ - `IMAGE_TYPES` - The type of images to be generated for this machine (e.g. sdcard).
  - `DTBS` - The primary device tree file. Isar will install this device tree to the location specified with ${DTB_INSTALL_DIR}.
  - `DTBOS` - Device tree overlay files. The kernel has to be capable of compiling device tree overlays.
  - `BOOT_IMG` - The name of the uboot image. Isar will also build a complete debian package for uboot.
@@ -72,6 +72,8 @@ Where distro may be "debian" and distro_suite may be "jessie".
  - `BOOTP_SEC_NUM` - Number of the secondary boot partition. This will set the secondary boot partition on the first boot by uboot.
  - `ROOTDEV_PRIM` - Interface for the primary rootfs partition, interpreted by the linux kernel on the kernel cmdline. This variable is also used to detect the partition which should be updated.
  - `ROOTDEV_SEC` - Interface for the secondary rootfs partition, interpreted by the linux kernel on the kernel cmdline. This variable is also used to detect the partition which should be updated.
+ - `IMAGE_BOOT_FILES` - When setting this variable, only the specified files will be copied into the boot partition. When not set, the whole content of
+ the /boot folder will be copied. The semicolon separates files and has following meaning: **source;destination**.
 
 
  - `DEPLOY_DIR` - Base for deploy directories pointing to `${TMPDIR}/deploy`.
@@ -112,6 +114,5 @@ Where distro may be "debian" and distro_suite may be "jessie".
  - `DEB_HOST_ARCH` - The build host architecture. This version of Isar autodetects the host arch, but you can overwrite it.
  - `APT_EXTRA_OPTS` - Extra options when running apt command in Isar.
 
- - `ROOTFS_IMAGE_SIZE` - Size of the rootfs partitions. Multipliers k, M ang G can be used.
  - `SKIP_APPEND_CROSS_SUFFIX` - Prevent all existent items from beeing suffixed with `-cross`, when supporting cross build.
  - `SKIP_APPEND_NATIVE_SUFFIX` - Prevent all existent items from beeing suffixed with `-native`, when supporting native build

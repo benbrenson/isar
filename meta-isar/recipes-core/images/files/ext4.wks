@@ -1,4 +1,0 @@
-# short-description: Create a single partition image file, not containing any partition table.
-# long-description: Creates a single image which is not suitable for directly dd to media.
-
-part --source rootfs --rootfs-dir=rootfs --fstype=ext4 --label roota --no-table

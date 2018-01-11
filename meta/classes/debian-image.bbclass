@@ -1,7 +1,7 @@
 # This software is a part of ISAR.
 # Copyright (C) 2017 Mixed-Mode GmbH
 
-inherit wic useradd pkg-tune-task shrinkfs fetch
+inherit image useradd pkg-tune-task shrinkfs fetch
 
 DEPENDS += " ${IMAGE_INSTALL} "
 S = "${ROOTFS_DIR}"
@@ -17,6 +17,10 @@ INITRD_IMAGE ?= "initrd.img"
 
 # Change to / inside chroot.
 PP="/"
+
+IMAGE_LAYOUT_FILE ?= "image_layout.json"
+
+SRC_URI += "file://${IMAGE_LAYOUT_FILE}"
 
 do_install_keyrings() {
     if [ -z "${DISTRO_KEYRINGS}" ]; then
@@ -239,41 +243,44 @@ python do_post_rootfs(){
 }
 addtask do_post_rootfs after do_populate before do_package_tunes
 
+SWUPDATE_DEPLOY_DIR ?= "${DEPLOY_DIR_IMAGE}/update"
 #
 # Only run when override 'update' set
+# TODO: Add overwrite 'update'
 #
 python do_image_swupdate() {
-    import subprocess as shell
+    import subprocess
+    import glob
 
     generate_image = bb.utils.contains('IMAGE_FEATURES', 'update' ,'true', 'false', d)
     updateable_fstypes = d.getVar('UPDATEABLE_FSTYPES', True)
-    pn = d.getVar('PN', True)
     datetime = d.getVar('DATETIME', True)
-    image_fstypes = d.getVar('IMAGE_FSTYPES', True)
+    swupdate_deploy_dir = d.getVar('SWUPDATE_DEPLOY_DIR', True)
     cwd = os.getcwd()
 
     os.chdir(d.getVar('DEPLOY_DIR_IMAGE', True))
-
     if generate_image == "true":
-        for fstype in image_fstypes.split():
-            if fstype in updateable_fstypes:
-                files='sw-description %s.%s' % (pn, fstype)
+        for fstype in updateable_fstypes.split():
+            for fn in glob.glob('*.' + fstype + '.%s' % datetime):
 
-                shell.call('bash -c "for i in %s;do echo \$i;done | cpio -ovL -H crc >  %s.%s.%s.swu"' % (files, pn, fstype, datetime), shell=True)
+                filebasename= fn.replace('.%s' % datetime, '')
+                files='sw-description %s' % fn
+                ret = subprocess.call('bash -c "for i in %s ; do echo \$i ; done | cpio -ovL -H crc >  %s/%s.swu"' % (files, swupdate_deploy_dir, fn), shell=True)
+
                 try:
-                    os.unlink('%s.%s.swu' % (pn, fstype))
+                    os.unlink('%s/%s.swu' % (swupdate_deploy_dir, filebasename))
                 except FileNotFoundError:
                     pass
 
-                os.link('%s.%s.%s.swu' % (pn, fstype, datetime), '%s.%s.swu' % (pn, fstype))
+                os.symlink('%s.swu' % fn, '%s/%s.swu' % (swupdate_deploy_dir, filebasename))
     else:
-        bb.warn('Skipping creation of %s.%s.swu.' % (pn, datetime))
+        bb.warn('Skipping creation of swupdate files.')
 
     os.chdir(cwd)
 
 }
 addtask do_image_swupdate after do_image before do_build
-
+do_image_swupdate[dirs] += "${SWUPDATE_DEPLOY_DIR}"
 
 do_clean_append() {
     rootfs_dir = d.getVar('ROOTFS_DIR', True)

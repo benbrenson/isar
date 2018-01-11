@@ -361,7 +361,7 @@ Every machine is described in its configuration file. The file defines the follo
  - `KIMAGE_TYPE` - The name of kernel binary that it installed to `/boot` folder in target filesystem. This variable is used by isar for determing which
  image type has to be compiled by the kernel.
  - `MACHINE_SERIAL` - The name of serial device that will be used for console output.
- - `IMAGE_FSTYPES` - The type of images to be generated for this machine (e.g. sdcard).
+ - `IMAGE_TYPES` - The type of images to be generated for this machine (e.g. sdcard).
  - `DTBS` - The primary device tree file. Isar will install this device tree to the location specified with ${DTB_INSTALL_DIR}.
  - `DTBOS` - Device tree overlay files. The kernel has to be capable of compiling device tree overlays, when adding device tree overlays to this variable.
  - `BOOT_IMG` - The name of the uboot image. Isar will also build a complete debian package for uboot.
@@ -411,7 +411,7 @@ IMAGE_BOOT_FILES = "${BOOTSCRIPT} ${KIMAGE_TYPE} dts/${DTBS};${DTBS}"
 
 MACHINE_SERIAL = "ttyS0"
 
-IMAGE_FSTYPES = "ext4 sdcard-redundant"
+IMAGE_FSTYPES = "sdcard sdcard-redundant"
 
 # Set further target architecture specifics
 TARGET_ARCH="arm"
@@ -458,9 +458,6 @@ Image in Isar contains the following artifacts:
  - Image recipe - Describes set of rules how to generate target image.
  - `Multistrap` configuration file - Contains information about distro, suite, `apt` source etc.
 
-In image recipe, the following variable defines the list of packages that will be included to target image: `IMAGE_PREINSTALL`. These packages will be taken from `apt` source.
-
-
 ### General Information
 The image recipe in Isar creates a folder with the target root filesystem. The default location is:
 ```
@@ -468,56 +465,100 @@ tmp/rootfs/${MACHINE}
 ```
 Isar uses the openembedded tool called **wic** for creating bootable rootfs images.
 For describing the partition layout for images, wic in turn uses so called **kickstart** files.
+Those kickstart files will be generated from isar out of the `image_layout.json` file.
+The image_layout file describes the partitioning of a single image type.
+So what isar does for each type in `ÌMAGE_TYPES` is to look which partitions are available in the
+layout_image.json file.
+For each described partition, a single partition image will be created, and then
+a complete bootable image will be created out of those partition images.
+All attributes like size, filesystem type, label and mountpoint where specified within the json file.
 
-There are two things to be done in order to create new image types:
-1. Create a new kickstart file
-2. Add the image type to `SUPPORTED_FSTYPES` if it is not present there, yet.
+There are two things to be done in order to create new images:
+1. Create new image_layout.json file (or copy a persistent one). This file must be located by the image recipes search folder, so setting the FILESPATH variable must be done.
+2. Add your image type (e.g. sdcard image) to the `IMAGE_TYPES` variable to the machine configuration file.
 
 
 Currently supported filesystem types are:
 
 * sdcard (simple sd card image with two partitions: boot, rootfs)
 * sdcard-redundant(same as sdcard but containing two equal rootfs partitions)
-* ext4(ext4 partition image)
 
 **Note: No flash filesystems are supported (e.g. ubifs or jffs), yet.**
 
 
 ### Create a new Custom Image
-new_image.bb:
+**new_image.bb:**
 ```
 inherit debian-image
-SRC_URI += "file://new_image.wks \
-           "
+
+FILESPATH_prepend := "${THISDIR}/${PN}-${PV}:${THISDIR}/files:"
 
 # Additional packages to install (from debian repositories)
 IMAGE_PREINSTALL += " openssh-server "
 
 # Additional packages to install (from other recipes)
 IMAGE_INSTALL += " linux-image-cross u-boot-cross "
-
-ROOTFS_IMAGE_SIZE = "4000M"
-```
-- `ROOTFS_IMAGE_SIZE` - Size of the rootfs partition. Multipliers k, M ang G can be used.
-
-
-new_image.wks:
-```
-# Example kickstart file for creating a sd-card image with two redundant rootfs partitions.
-# Save the bootloader into free space after the MBR and before the start of the first partition.
-bootloader --source bootstream
-
-# Bootpartition
-part /boot --source bootimg-partition --ondisk mmcblk --fstype=vfat --label boot --active --align 2048
-
-# First rootfs partition
-part / --source rootfs --rootfs-dir=rootfs1 --ondisk mmcblk --fstype=ext4 --label root --align 2048 ##ROOTFS_SIZE_OPTION##
-
-# Second rootfs partition
-part /rescue --source rootfs --rootfs-dir=rootfs2 --ondisk mmcblk --fstype=ext4 --label root --align 2048 ##ROOTFS_SIZE_OPTION##
 ```
 
- - `##ROOTFS_SIZE_OPTION##` - This variable is getting substituted with `ROOTFS_IMAGE_SIZE`.
+
+**image_layout.json:**
+```
+{
+    "partitions" : {
+
+        "rootfs" : {
+            "type" : "rootfs",
+            "label" : "root_prim",
+            "mountpoint" : "/",
+            "filesystem" : "ext4",
+            "size" : -1,
+            "num" : 0
+
+        },
+
+        "rootfs_sec" : {
+            "type" : "rootfs",
+            "label" : "root_sec",
+            "mountpoint" : "/",
+            "filesystem" : "ext4",
+            "size" : -1,
+            "num" : 1
+
+        },
+
+        "recovery" : {
+            "type" : "bootimg-partition",
+            "label" : "recovery",
+            "mountpoint" : "/boot/recovery",
+            "filesystem" : "vfat",
+            "size" : -1,
+            "num" : 2
+        },
+
+        "update" : {
+            "type" : "rootfs",
+            "label" : "update",
+            "src-dir" : "UPDATE_DIR",
+            "mountpoint" : "/update",
+            "filesystem" : "ext4",
+            "size" : -1,
+            "num" : 3
+
+        }
+
+    }
+}
+```
+Each partition of the `image_layout.json` file contains following attributes:
+
+- `type` - Set the type of partition content. This will in turn select the proper source plugin for WIC. The type `rootfs` is required for simple filesystem images, whose data will be copied out of the `ROOTFS_DIR` folder. The `bootimg-partition` type is needed when you don't copy the complete rootfs folder, but instead you choose single files or folders with the `IMAGE_BOOT_FILES` variable.
+- `label` - Set the filesystem label for a partition.
+- `src-dir` - When using the `rootfs` type, this variable will change the folder from which data will be copied. Default is `ROOTFS_DIR`.
+- `mountpoint` - Selects the mountpoint within the image.
+- `filesystem` - Selects the filesystem for this partition. For each partition a filesystem image will be generated by isar.
+- `size` - The minimal size of the filesystem. When -1 is selected, the size is calculated automatically by WIC.
+- `num` - This will set the order of all partitions, the partitions will be created in ascending order.
+
 
 
 **Note: No flash filesystems are supported (e.g. ubifs or jffs), yet.**

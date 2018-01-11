@@ -7,11 +7,6 @@ PV = "1.0"
 
 inherit debian-image initramfs
 
-SRC_URI += "file://ext4.wks \
-            file://sdcard.wks \
-            file://sdcard-redundant.wks \
-           "
-
 
 IMAGE_NAME = "${PN}-${PV}-${MACHINE}-${DISTRO_ARCH}"
 
