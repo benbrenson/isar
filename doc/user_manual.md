@@ -479,7 +479,10 @@ There are two things to be done in order to create new images:
 
 
 Currently supported filesystem types are:
+* ext2/3/4
+* vfat
 
+Currently supported image types are:
 * sdcard (simple sd card image with two partitions: boot, rootfs)
 * sdcard-redundant(same as sdcard but containing two equal rootfs partitions)
 

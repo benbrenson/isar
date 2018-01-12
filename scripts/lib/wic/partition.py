@@ -28,6 +28,7 @@
 import logging
 import os
 import tempfile
+import time
 
 from wic import WicError
 from wic.utils.misc import exec_cmd, exec_native_cmd, get_bitbake_var
@@ -268,8 +269,17 @@ class Partition():
             cpy_cmd = 'cp -aR %s/* %s' % (rootfs_dir, rootfs_mnt)
             exec_cmd(cpy_cmd, as_shell=True)
 
+        os.sync()
+
+        try_cnt = 3
         umnt_cmd = 'umount %s' % rootfs_mnt
-        exec_cmd(umnt_cmd)
+        while try_cnt:
+            try:
+                exec_cmd(umnt_cmd)
+                break
+            except:
+                try_cnt -= 1
+                time.sleep(10)
 
         mkfs_cmd = "fsck.%s -pvf %s" % (self.fstype, rootfs)
         exec_cmd(mkfs_cmd)
