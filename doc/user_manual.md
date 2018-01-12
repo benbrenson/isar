@@ -585,7 +585,8 @@ custom stuff (adding packages, do stuff after rootfs generation etc.)
 
 ### Last steps (rootfs customizations at the end)
 As already mentioned, Isar uses `bitbake`to accomplish the work. The whole build process is a sequence of tasks. This sequence is generated using task dependencies, so the next task in chain requires completion of previous ones.
-A list of tasks for the image recipe is contained in `POST_ROOTFS_TASKS`, so if you want to do customize the rootfs at the very last moment of creation, you can add all required tasks to this variable.
+The very last tasks when building the image are processed for tasks defined by the `POST_ROOTFS_TASKS` variable.
+So if you want to customize the rootfs at the very last moment of creation, you can add all required tasks to this variable.
 ```
 do_foo(){
     do something
@@ -593,6 +594,7 @@ do_foo(){
 
 POST_ROOTFS_TASKS += "do_foo;"
 ```
+Those tasks are also able to be executed in chroot context.
 
 **Note: These tasks can only be run when defining them within the scope of the image recipe.**
 
