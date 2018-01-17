@@ -2,7 +2,7 @@
 # Copyright (C) 2015-2016 ilbers GmbH
 # Copyright (C) 2017 Mixed Mode GmbH
 
-inherit fetch patch
+inherit fetch patch apt-cache
 
 # Add dependency from buildchroot creation
 DEPENDS += "buildchroot"
@@ -27,20 +27,11 @@ python () {
 }
 
 
+OPTS = "--tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y ${APT_EXTRA_OPTS}'"
 do_install_depends() {
     cd ${PPS}
-    # Get list of dependencies manually. The package is not in apt, so no apt-get
-    # build-dep. dpkg-checkbuilddeps output contains version information and isn't
-    # directly suitable for apt-get install.
-    DEPS=`perl -ne 'next if /^#/; $p=(s/^Build-Depends:\s*/ / or (/^ / and $p)); s/\s*,\s*|\n|\([^)]+\)/ /mg; print if $p' < debian/control`
-
-
-    # DEPS can either be DEB_HOST_ARCH when running in cross buildchroot
-    # or DISTRO_ARCH when running in buildchroot. Both cases differ when
-    # setting DEB_ARCH in cross.bbclass or native.bbclass.
-    for dep in $DEPS; do
-        apt-get ${APT_EXTRA_OPTS} install -y ${dep}
-    done
+    apt-get update
+    mk-build-deps ${OPTS} -i -r debian/control
 }
 addtask do_install_depends after do_patch before do_build
 do_install_depends[lockfiles] = "${DPKG_LOCK}"
@@ -59,26 +50,19 @@ do_build[chroot] = "1"
 do_build[id] = "${BUILDCHROOT_ID}"
 
 
-# Install package to dedicated deploy directory
-do_pre_install() {
-    install -d ${DEPLOY_DIR_DEB}/${DEB_ARCH}
-    install -m 755 ${BUILDROOT}/*.deb ${DEPLOY_DIR_DEB}/${DEB_ARCH}
-}
-addtask do_pre_install after do_build before do_install
-do_pre_install[stamp-extra-info] = "${DISTRO}"
-do_pre_install[dirs] += "${DEPLOY_DIR_IMAGE}"
-
-# Update the local apt cache
 do_install() {
-
-    # Need to cd into directory, since index is relative
-    cd ${CHROOT_DEPLOY_DIR_DEB}/${DEB_ARCH}
-    # gzip is not required for local repos
-    dpkg-scanpackages ./ > ${CHROOT_DEPLOY_DIR_DEB}/${DEB_ARCH}/Packages
-    apt-get update
+    cache_add_package ${ISAR_REPO_LOCAL} ${ISAR_CACHE_LOCAL_PREFIX} ${BUILDROOT}/*.deb
 }
-addtask do_install after do_pre_install
+addtask do_install after do_build
 do_install[lockfiles] = "${DPKG_LOCK}"
 do_install[stamp-extra-info] = "${DISTRO}.chroot"
-do_install[chroot] = "1"
-do_install[id] = "${BUILDCHROOT_ID}"
+do_install[dirs] += "${DEPLOY_DIR_IMAGE}"
+
+
+do_clean_cache_pkg() {
+    pkgs="$(ls ${BUILDROOT}/*.deb || true)"
+    for pkg in $pkgs ; do
+        cache_delete_package ${ISAR_REPO_LOCAL} ${ISAR_CACHE_LOCAL_PREFIX} "$(basename $pkg | sed 's/_.*.deb//')"
+    done
+}
+addtask do_clean_cache_pkg before do_clean do_cleanall

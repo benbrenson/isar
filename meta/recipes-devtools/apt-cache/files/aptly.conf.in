@@ -1,0 +1,17 @@
+{
+  "rootDir": "##CACHE_DIR##",
+  "downloadConcurrency": 6,
+  "downloadSpeedLimit": 0,
+  "architectures": [],
+  "dependencyFollowSuggests": false,
+  "dependencyFollowRecommends": true,
+  "dependencyFollowAllVariants": false,
+  "dependencyFollowSource": false,
+  "gpgDisableSign": true,
+  "gpgDisableVerify": true,
+  "downloadSourcePackages": false,
+  "ppaDistributorID": "ubuntu",
+  "ppaCodename": "",
+  "S3PublishEndpoints": {},
+  "SwiftPublishEndpoints": {}
+}

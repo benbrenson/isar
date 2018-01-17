@@ -1,7 +1,7 @@
 # This software is a part of ISAR.
-# Copyright (C) 2017 Mixed-Mode GmbH
+# Copyright (C) 2017-2018 Mixed-Mode GmbH
 
-inherit image useradd pkg-tune-task shrinkfs fetch
+inherit rootfs image useradd pkg-tune-task shrinkfs
 
 DEPENDS += " ${IMAGE_INSTALL} "
 S = "${ROOTFS_DIR}"
@@ -13,170 +13,53 @@ BOOTLOADER_IMAGE ?= "virtual/bootloader"
 KERNEL_IMAGE ?= "virtual/kernel"
 INITRD_IMAGE ?= "initrd.img"
 
+# Install Debian packages, that were built from sources
+# replace suffixes (e.g. cross -> armhf)
+IMAGE_INSTALL_DEBS = "${@oe.utils.convert_virtuals(d.getVar('IMAGE_INSTALL', True), d)}"
+IMAGE_INSTALL_DEBS_FINAL = "${@oe.utils.prune_suffixes(d.getVar('IMAGE_INSTALL_DEBS', True), d.getVar('SPECIAL_PKGSUFFIX', True), '',d)}"
+
+
 # Change to / inside chroot.
 PP="/"
+ROOT_DIR = "${ROOTFS_DIR}"
+CHROOT_ID = "${ROOTFS_ID}"
+ARCH = "${DISTRO_ARCH}"
+INSTALL = "${ESSENTIAL_INSTALL} ${IMAGE_PREINSTALL} ${IMAGE_INSTALL_DEBS_FINAL}"
+
+CACHE_PREINSTALL = "${ESSENTIAL_INSTALL} ${IMAGE_PREINSTALL}"
 
 IMAGE_LAYOUT_FILE ?= "image_layout.json"
 
-SRC_URI += "file://${IMAGE_LAYOUT_FILE}"
-
-do_install_keyrings() {
-    if [ -z "${DISTRO_KEYRINGS}" ]; then
-        return
-    fi
-
-    for keyring in `eval echo ${DISTRO_KEYRINGS}`
-    do
-        cd ${ROOTFS_DIR}/tmp
-        apt-get download -y ${keyring}
-        deb=`ls ${keyring}_*.deb`
-        dpkg -X $deb ${ROOTFS_DIR}/tmp/keyrings
-        cp -r ${ROOTFS_DIR}/tmp/keyrings/usr/share/keyrings/*    ${ROOTFS_DIR}/etc/apt/trusted.gpg.d || true
-        cp -r ${ROOTFS_DIR}/tmp/keyrings/etc/apt/trusted.gpg.d/* ${ROOTFS_DIR}/etc/apt/trusted.gpg.d || true
-        rm -r $deb ${ROOTFS_DIR}/tmp/keyrings
-    done
-}
-do_install_keyrings[dirs] += "${ROOTFS_DIR}/etc/apt/trusted.gpg.d ${ROOTFS_DIR}/tmp/keyrings"
-
-# Multistrap based creation of rootfs
-do_rootfs() {
-    # Copy config file
-    install -m 644 ${THISDIR}/files/multistrap.conf.in ${WORKDIR}/multistrap.conf
-
-    # Adjust multistrap config
-    sed -i 's|##IMAGE_PREINSTALL##|${IMAGE_PREINSTALL}|' ${WORKDIR}/multistrap.conf
-    sed -i 's|##DISTRO##|${DISTRO}|' ${WORKDIR}/multistrap.conf
-    sed -i 's|##DISTRO_APT_SOURCE##|${DISTRO_APT_SOURCE}|' ${WORKDIR}/multistrap.conf
-    sed -i 's|##DISTRO_SUITE##|${DISTRO_SUITE}|' ${WORKDIR}/multistrap.conf
-    sed -i 's|##DISTRO_COMPONENTS##|${DISTRO_COMPONENTS}|' ${WORKDIR}/multistrap.conf
-
-    # Install QEMU emulator to execute ARM binaries
-    sudo mkdir -p ${ROOTFS_DIR}/usr/bin
-    sudo cp /usr/bin/qemu-arm-static ${ROOTFS_DIR}/usr/bin
-
-    # Create root filesystem
-    sudo multistrap -a ${DISTRO_ARCH} -d "${S}" -f "${WORKDIR}/multistrap.conf" || true
-
-}
-addtask rootfs before do_setup_rootfs
-do_rootfs[stamp-extra-info] = "${MACHINE}"
-do_rootfs[depends] = "schroot:do_setup_schroot"
-do_rootfs[prefuncs] += "do_install_keyrings"
+SRC_URI += "file://${IMAGE_LAYOUT_FILE} \
+            file://multistrap-isar-upstream.list.in"
 
 
-# First rootfs setup steps
-do_setup_rootfs() {
-# Prevent daemons from starting in buildchroot
-  if [ -x "${ROOTFS_DIR}/sbin/start-stop-daemon" ]; then
-      echo "initctl: Trying to prevent daemons from starting in ${ROOTFS_DIR}"
-
-      # Disable start-stop-daemon
-      sudo mv ${ROOTFS_DIR}/sbin/start-stop-daemon ${ROOTFS_DIR}/sbin/start-stop-daemon.REAL
-      sudo tee ${ROOTFS_DIR}/sbin/start-stop-daemon > /dev/null  << EOF
-#!/bin/sh
-echo
-echo Warning: Fake start-stop-daemon called, doing nothing
-EOF
-      sudo chmod 755 ${ROOTFS_DIR}/sbin/start-stop-daemon
-  fi
-
-  if [ -x "${ROOTFS_DIR}/sbin/initctl" ]; then
-      echo "start-stop-daemon: Trying to prevent daemons from starting in ${ROOTFS_DIR}"
-
-      # Disable initctl
-      sudo mv "${ROOTFS_DIR}/sbin/initctl" "${ROOTFS_DIR}/sbin/initctl.REAL"
-      sudo tee ${ROOTFS_DIR}/sbin/initctl > /dev/null << EOF
-#!/bin/sh
-echo
-echo "Warning: Fake initctl called, doing nothing"
-EOF
-      sudo chmod 755 ${ROOTFS_DIR}/sbin/initctl
-  fi
-
-  # Define sysvinit policy 101 to prevent daemons from starting in buildchroot
-  if [ -x "${ROOTFS_DIR}/sbin/init" -a ! -f "${ROOTFS_DIR}/usr/sbin/policy-rc.d" ]; then
-    echo "sysvinit: Using policy-rc.d to prevent daemons from starting in ${ROOTFS_DIR}"
-
-    sudo tee ${ROOTFS_DIR}/usr/sbin/policy-rc.d > /dev/null << EOF
-#!/bin/sh
-echo "sysvinit: All runlevel operations denied by policy" >&2
-exit 101
-EOF
-    sudo chmod a+x ${ROOTFS_DIR}/usr/sbin/policy-rc.d
-  fi
-
-  # Set hostname
-  sudo sh -c 'echo "isar" > ${ROOTFS_DIR}/etc/hostname'
-
-  # Create packages build folder
-  sudo install -m 0777 -d ${ROOTFS_DIR}/home/builder
-
-  # Install host networking settings
-  sudo cp /etc/resolv.conf ${ROOTFS_DIR}/etc
-}
-addtask do_setup_rootfs after do_rootfs before do_configure_rootfs
-do_setup_rootfs[stamp-extra-info] = "${MACHINE}"
+#do_setup_rootfs_prepend() {
+#	cache_disable_remote_repos ${ROOT_DIR}
+#}
 
 
-# Run late configurations on rootfs
-do_configure_rootfs() {
-    echo "LANG=en_US.UTF-8"     >> /etc/default/locale
-    echo "LANGUAGE=en_US.UTF-8" >> /etc/default/locale
-    echo "LC_ALL=C"             >> /etc/default/locale
-    echo "LC_CTYPE=C"           >> /etc/default/locale
-    echo "LANG=en_US.UTF-8"     >> /etc/default/locale
+do_configure_rootfs_append() {
+    cat<<-__EOF__ >  /${sysconfdir}/fstab
+		# Begin /etc/fstab
+		#/dev/mmcblk0   /       ext4        defaults        1   1
+		proc        /proc       proc        nosuid,noexec,nodev 0   0
+		sysfs       /sys        sysfs       nosuid,noexec,nodev 0   0
+		devpts      /dev/pts    devpts      gid=5,mode=620      0   0
+		tmpfs       /run        tmpfs       defaults        0   0
+		devtmpfs    /dev        devtmpfs    mode=0755,nosuid    0   0
 
-    ## Configuration file for localepurge(8)
-    cat > /etc/locale.nopurge << EOF
-# Remove localized man pages
-MANDELETE
-
-# Delete new locales which appear on the system without bothering you
-DONTBOTHERNEWLOCALE
-
-# Keep these locales after package installations via apt-get(8)
-en
-en_US
-en_US.UTF-8
-EOF
-
-    debconf-set-selections <<END
-locales locales/locales_to_be_generated multiselect en_US.UTF-8 UTF-8
-locales locales/default_environment_locale select en_US.UTF-8
-END
-
-    # Set up non-interactive configuration
-    export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
-    export LC_ALL=C LANGUAGE=C LANG=C
-
-    # Run pre installation script
-    /var/lib/dpkg/info/dash.preinst install
-
-    echo "running dpkg -a"
-    dpkg --configure -a
-    echo "running dpkg -a"
-    dpkg --configure -a
-
-    cat > /etc/fstab << "EOF"
-# Begin /etc/fstab
-#/dev/mmcblk0   /       ext4        defaults        1   1
-proc        /proc       proc        nosuid,noexec,nodev 0   0
-sysfs       /sys        sysfs       nosuid,noexec,nodev 0   0
-devpts      /dev/pts    devpts      gid=5,mode=620      0   0
-tmpfs       /run        tmpfs       defaults        0   0
-devtmpfs    /dev        devtmpfs    mode=0755,nosuid    0   0
-
-# End /etc/fstab
-EOF
+		# End /etc/fstab
+	__EOF__
 
     # Don't install suggests and recommends
-    cat > /etc/apt/apt.conf.d/10nosuggests << "EOF"
-APT::Install-Recommends "0";
-APT::Install-Suggests "0";
-EOF
+    cat<<-__EOF__ > /${sysconfdir}/apt/apt.conf.d/10nosuggests
+		APT::Install-Recommends "0";
+		APT::Install-Suggests "0";
+	__EOF__
 
     # Enable tty
-    echo "T0:23:respawn:/sbin/getty -L ${MACHINE_SERIAL} 115200 vt100" >> /etc/inittab
+    echo "T0:23:respawn:/sbin/getty -L ${MACHINE_SERIAL} 115200 vt100" >> /${sysconfdir}/inittab
 
     # Undo setup script changes
     if [ -x "/sbin/start-stop-daemon.REAL" ]; then
@@ -191,41 +74,12 @@ EOF
         rm -f /usr/sbin/policy-rc.d
     fi
 }
-addtask do_configure_rootfs after do_setup_rootfs before do_populate
-do_configure_rootfs[stamp-extra-info] = "${MACHINE}.chroot"
-do_configure_rootfs[chroot] = "1"
-do_configure_rootfs[id] = "${ROOTFS_ID}"
-
-
-# Install Debian packages, that were built from sources
-IMAGE_INSTALL_DEBS = "${@oe.utils.convert_virtuals(d.getVar('IMAGE_INSTALL', True), d)}"
-IMAGE_INSTALL_DEBS_FINAL = "${@oe.utils.prune_suffixes(d.getVar('IMAGE_INSTALL_DEBS', True), d.getVar('SPECIAL_PKGSUFFIX', True), '',d)}"
-do_populate() {
-    if [ -n "${IMAGE_INSTALL_DEBS}" ]; then
-
-        # Temporary add local sources for installing packages created by isar
-        echo "deb [ trusted=yes ] file:${CHROOT_DEPLOY_DIR_DEB}/${DEB_HOST_ARCH}/ ./" > /etc/apt/sources.list.d/local.list
-        echo "deb [ trusted=yes ] file:${CHROOT_DEPLOY_DIR_DEB}/${DISTRO_ARCH}/ ./" >> /etc/apt/sources.list.d/local.list
-
-        apt-get update
-        apt-get install -y ${IMAGE_INSTALL_DEBS_FINAL}
-
-        # Cleanup
-        rm -f /etc/apt/sources.list.d/local.list
-        apt-get update
-    fi
-}
-addtask populate before do_post_rootfs
-do_populate[stamp-extra-info] = "${MACHINE}"
-do_populate[deptask] = "do_install"
-do_populate[chroot] = "1"
-do_populate[id] = "${ROOTFS_ID}"
 
 
 # Post tasks running after all other important base tasks have finished.
 # It is useful for doing late stuff like modifying, customizing or cleaning
 # the root filesystem.
-python do_post_rootfs(){
+python do_post_rootfs() {
     post_tasks = d.getVar('POST_ROOTFS_TASKS', True)
     bb.note('Running last tasks on rootfs. (%s)' % post_tasks)
     for task in post_tasks.strip().split(';'):
@@ -237,9 +91,43 @@ python do_post_rootfs(){
 
                 bb.note("Executing %s() ..." % task)
                 bb.build.exec_func(task, d)
-
 }
-addtask do_post_rootfs after do_populate before do_package_tunes
+addtask do_post_rootfs after do_configure_rootfs before do_package_tunes
+
+
+do_finalize_cache() {
+
+    # Only create upstream list file, when fetching packages from the cache.
+    # On the very first build, those upstream sections are already created by multistrap
+    if [ -e "${ISAR_FIRST_BUILD_DONE}" ] && [ "${REPRODUCIBLE_BUILD_ENABLED}" == "1" ]; then
+        sed -e 's|##DISTRO_APT_SOURCE##|${DISTRO_APT_SOURCE}|g' \
+            -e 's|##DISTRO_APT_SOURCE_SEC##|${DISTRO_APT_SOURCE_SEC}|g' \
+            -e 's|##DISTRO_SUITE##|${DISTRO_SUITE}|' \
+            -e 's|##DISTRO_COMPONENTS##|${DISTRO_COMPONENTS}|g' \
+            ${WORKDIR}/multistrap-isar-upstream.list.in > \
+            ${WORKDIR}/multistrap-isar-upstream.list
+
+        sudo install -m 644 ${WORKDIR}/multistrap-isar-upstream.list \
+                     ${ROOT_DIR}/${sysconfdir}/apt/sources.list.d/
+    fi
+
+
+
+    sudo rm -f ${ROOT_DIR}/${sysconfdir}/apt/sources.list.d/multistrap-${DISTRO_CACHE_SECTION}.list
+
+    # Adding last packages, installed during do_install_deps() tasks
+    stage_packages ${ROOT_DIR} ${CACHE_STAGING_DIR}/
+    stage_packages ${BUILDCHROOT_DIR} ${CACHE_STAGING_DIR}/
+    stage_packages ${CROSS_BUILDCHROOT_DIR} ${CACHE_STAGING_DIR}/
+
+    cache_add_package ${ISAR_REPO_LOCAL} \
+                      ${ISAR_CACHE_LOCAL_PREFIX} \
+                      ${CACHE_STAGING_DIR}/
+
+    cache_create_snapshot
+}
+addtask do_finalize_cache after do_install before do_build
+
 
 SWUPDATE_DEPLOY_DIR ?= "${DEPLOY_DIR_IMAGE}/update"
 #
@@ -280,14 +168,8 @@ python do_image_swupdate() {
 addtask do_image_swupdate after do_image before do_build
 do_image_swupdate[dirs] += "${SWUPDATE_DEPLOY_DIR}"
 
-do_clean_append() {
-    rootfs_dir = d.getVar('ROOTFS_DIR', True)
-    checkmount(rootfs_dir)
-    shell.call(['sudo', 'rm', '-rf', rootfs_dir])
-}
-
-do_cleanall_append() {
-    rootfs_dir = d.getVar('ROOTFS_DIR', True)
-    checkmount(rootfs_dir)
-    shell.call(['sudo', 'rm', '-rf', rootfs_dir])
+do_build() {
+    if [ ! -e "${ISAR_FIRST_BUILD_DONE}" ]; then
+        touch ${ISAR_FIRST_BUILD_DONE}
+    fi
 }

@@ -5,7 +5,7 @@
 IMAGE_PREINSTALL_append = " initramfs-tools "
 
 # initramfs.conf settings
-CFG_FILE ?= "/etc/initramfs-tools/initramfs.conf"
+CFG_FILE_INITRAMFS ?= "/etc/initramfs-tools/initramfs.conf"
 CFG_MODULES ?= "most"
 CFG_BUSYBOX ?= "auto"
 CFG_KEYMAP  ?= "n"
@@ -22,22 +22,24 @@ CFG_UPDATE_BACKUP ?= "no"
 
 do_prepare_initramfs() {
     # prepare initramfs.conf
-    sed -i -e 's/MODULES=.*$/MODULES=${CFG_MODULES}/g'  ${CFG_FILE}
-    sed -i -e 's/BUSYBOX=.*$/BUSYBOX=${CFG_BUSYBOX}/g'  ${CFG_FILE}
-    sed -i -e 's/KEYMAP=.*$/KEYMAP=${CFG_KEYMAP}/g'     ${CFG_FILE}
-    sed -i -e 's/COMPRESS=.*$/COMPRESS=${CFG_COMPRESS}/g'   ${CFG_FILE}
-    sed -i -e 's/DEVICE=.*$/DEVICE=${CFG_DEVICE}/g'     ${CFG_FILE}
-    sed -i -e 's/NFSROOT=.*$/NFSROOT=${CFG_NFSROOT}/g'   ${CFG_FILE}
+    sed -i -e 's/MODULES=.*$/MODULES=${CFG_MODULES}/g' \
+        -e 's/BUSYBOX=.*$/BUSYBOX=${CFG_BUSYBOX}/g' \
+        -e 's/KEYMAP=.*$/KEYMAP=${CFG_KEYMAP}/g' \
+        -e 's/COMPRESS=.*$/COMPRESS=${CFG_COMPRESS}/g' \
+        -e 's/DEVICE=.*$/DEVICE=${CFG_DEVICE}/g' \
+        -e 's/NFSROOT=.*$/NFSROOT=${CFG_NFSROOT}/g' \
+        ${CFG_FILE_INITRAMFS}
 
-    echo "ROOT=${CFG_ROOT}" >> ${CFG_FILE}
+    echo "ROOT=${CFG_ROOT}" >> ${CFG_FILE_INITRAMFS}
 
 
     # prepare update-initramfs.conf
-    sed -i -e 's/update_initramfs=.*$/update_initramfs=${CFG_UPDATE_UPDATE}/g'  ${CFG_UPDATE_FILE}
-    sed -i -e 's/backup_initramfs=.*$/backup_initramfs=${CFG_UPDATE_BACKUP}/g'  ${CFG_UPDATE_FILE}
+    sed -i -e 's/update_initramfs=.*$/update_initramfs=${CFG_UPDATE_UPDATE}/g' \
+        -e 's/backup_initramfs=.*$/backup_initramfs=${CFG_UPDATE_BACKUP}/g' \
+        ${CFG_UPDATE_FILE}
 
 }
-addtask do_prepare_initramfs after do_populate before do_generate_initramfs
+addtask do_prepare_initramfs after do_configure_rootfs before do_generate_initramfs
 do_prepare_initramfs[stamp-extra-info] = "${DISTRO}.chroot"
 do_prepare_initramfs[chroot] = "1"
 do_prepare_initramfs[id] = "${ROOTFS_ID}"

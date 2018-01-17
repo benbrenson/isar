@@ -20,6 +20,11 @@ do_install_depends_pip() {
 		pip${PYTHON_VERSION} install -I --root ${S}/debian/${BPN} -e .
 	fi
 }
+addtask do_install_depends_pip after do_install_depends before do_build
+do_install_depends_pip[stamp-extra-info] = "${MACHINE}.chroot"
+do_install_depends_pip[id] = "${BUILDCHROOT_ID}"
+do_install_depends_pip[chroot] = "1"
+
 
 
 debianize_build[target] = "build"

@@ -86,12 +86,10 @@ do_generate_postinst() {
 }
 addtask do_generate_postinst after do_copy_defconfig before do_generate_debcontrol
 
-do_pre_install_append(){
+do_install_append(){
     install -m 0644 ${S}/arch/${TARGET_ARCH}/boot/${KIMAGE_TYPE} ${DEPLOY_DIR_IMAGE}
     install -m 0644 ${S}/arch/${TARGET_ARCH}/boot/dts/${DTBS} ${DEPLOY_DIR_IMAGE}
 }
-do_install[dirs] += "${DEPLOY_DIR_IMAGE}"
-
 
 
 ###                              ###

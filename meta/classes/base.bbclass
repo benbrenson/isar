@@ -61,11 +61,13 @@ python do_showdata() {
 
 addtask listtasks
 do_listtasks[nostamp] = "1"
+do_listtasks[doc] = "List all executable tasks of a recipe."
 python do_listtasks() {
-	import sys
-	for e in bb.data.keys(d):
-		if bb.data.getVarFlag(e, 'task', d):
-			sys.__stdout__.write("%s\n" % e)
+    import sys
+    for e in bb.data.keys(d):
+        if bb.data.getVarFlag(e, 'task', d):
+            desc = d.getVarFlag(e, 'doc', True) or ''
+            bb.plain('%s: %s' % (e, desc))
 }
 
 addtask build
@@ -151,6 +153,3 @@ def checkmount(dir):
 
     if err == True:
         bb.fatal('Cleaning ROOTFS_DIR not possible. Still busy.')
-
-
-EXPORT_FUNCTIONS do_clean do_mrproper do_build

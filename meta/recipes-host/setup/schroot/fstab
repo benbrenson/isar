@@ -8,7 +8,7 @@
 /dev            /dev            none    rw,bind         0       0
 #/dev/pts        /dev/pts        none    rw,bind         0       0
 /tmp            /tmp            none    rw,bind         0       0
-##DEPLOY_DEB##  ##CHROOT_DEPLOY_DEB## none    rw,bind         0       0
+##DEPLOY_DIR_DEB##  ##CHROOT_CACHE_DIR## none    rw,bind         0       0
 
 
 # It may be desirable to have access to /run, especially if you wish

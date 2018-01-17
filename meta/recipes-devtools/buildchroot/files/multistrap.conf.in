@@ -1,15 +1,36 @@
 # This software is a part of ISAR.
 # Copyright (C) 2015-2016 ilbers GmbH
+#               2017-2018 Mixed-Mode GmbH
 
 [General]
-noauth=false
+noauth=true
 unpack=true
-bootstrap=##DISTRO##
-aptsources=##DISTRO##
+bootstrap=##DISTRO_MULTICONF_BOOTSTRAP##
+aptsources=##DISTRO_MULTICONF_APTSOURCES##
 
-[##DISTRO##]
+[base]
 source=##DISTRO_APT_SOURCE##
 suite=##DISTRO_SUITE##
 components=##DISTRO_COMPONENTS##
-packages=##BUILDCHROOT_PREINSTALL##
+packages=##INSTALL##
+omitdebsrc=true
+
+[updates]
+source=##DISTRO_APT_SOURCE##
+suite=##DISTRO_SUITE##-updates
+components=##DISTRO_COMPONENTS##
+omitdebsrc=true
+
+[security]
+source=##DISTRO_APT_SOURCE_SEC##
+suite=##DISTRO_SUITE##/updates
+components=##DISTRO_COMPONENTS##
+omitdebsrc=true
+
+[##DISTRO_CACHE_SECTION##]
+packages=##INSTALL##
+source=##DISTRO_APT_SOURCE_CACHE_ISAR##
+suite=##DISTRO_SUITE##
+components=main
+omitdebsrc=true
 

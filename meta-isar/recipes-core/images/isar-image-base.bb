@@ -13,7 +13,6 @@ IMAGE_NAME = "${PN}-${PV}-${MACHINE}-${DISTRO_ARCH}"
 BASE_PACKAGES = " \
                 python3 \
                 python3-serial \
-                apt \
                 dbus \
                 "
 
@@ -66,7 +65,6 @@ PACKAGE_TUNES_append = " openssh-server "
 IMAGE_FEATURES ?= " systemd "
 
 IMAGE_INSTALL_append = " \
-                         \
                         ${ADD_INSTALL} \
                         ${BOOTLOADER_IMAGE} \
                         ${KERNEL_IMAGE} \
