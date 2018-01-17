@@ -3,38 +3,29 @@
 
 inherit debianize
 
-DEB_DEPENDS += "python${PYTHON_VERSION}-setuptools"
+PYTHON_VERSION ?= ""
 DEB_RDEPENDS += "${python3:Depends}"
 
-PYTHON_VERSION ?= ""
-DH_MAKE ?= "dh_make -n --copyright ${LICENSE} -y --createorig --python -t ${EXTRACTDIR}/debian/ -p ${DEB_PKG}"
+DH_MAKE = "dh_make -n --copyright ${LICENSE} -y --createorig --python -t ${EXTRACTDIR}/debian/ -p ${DEB_PKG}"
 
 DEB_ARCH_CTRL="all"
+
+
+#
+# Install python package dependencies with pip
+#
+do_install_depends_pip() {
+	cd ${PPS}
+	if [ -e "setup.py" ]; then
+		pip${PYTHON_VERSION} install -I --root ${S}/debian/${BPN} -e .
+	fi
+}
+
 
 debianize_build[target] = "build"
 debianize_build() {
 	@echo "Running build target."
 	python${PYTHON_VERSION} setup.py build
-}
-
-
-debianize_clean[target] = "clean"
-debianize_clean() {
-	@echo "Running clean target."
-	rm -rf debian/${BPN}
-	python${PYTHON_VERSION} setup.py clean --all
-}
-
-
-debianize_build-arch[target] = "build-arch"
-debianize_build-arch() {
-	@echo "Running build-arch target."
-}
-
-
-debianize_build-indep[target] = "build-indep"
-debianize_build-indep() {
-	@echo "Running build-indep target."
 }
 
 
@@ -44,8 +35,7 @@ debianize_install() {
 	@echo "Running install target."
 	dh_testdir
 	dh_testroot
-	dh_clean  -k
-	python${PYTHON_VERSION} setup.py install --root debian/${BPN}/
+	python${PYTHON_VERSION} setup.py install --root ${PPS}/debian/${BPN}/
 }
 
 
