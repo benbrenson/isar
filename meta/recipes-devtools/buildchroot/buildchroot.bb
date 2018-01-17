@@ -49,7 +49,6 @@ APT_SRC_DIR = "${BUILDCHROOT_DIR}/etc/apt/sources.list.d/"
 APT_SRC_FILE = "${APT_SRC_DIR}/local.list"
 
 do_install_keyrings() {
-
     if [ -z "${DISTRO_KEYRINGS}" ]; then
         return
     fi
@@ -94,66 +93,67 @@ do_buildchroot[prefuncs] += "do_install_keyrings"
 
 do_setup_buildchroot() {
 
-  # Prevent daemons from starting in buildchroot
-  if [ -x "${BUILDCHROOT_DIR}/sbin/start-stop-daemon" ]; then
-      echo "initctl: Trying to prevent daemons from starting in ${BUILDCHROOT_DIR}"
+    # Prevent daemons from starting in buildchroot
+    if [ -x "${BUILDCHROOT_DIR}/sbin/start-stop-daemon" ]; then
+    #echo "initctl: Trying to prevent daemons from starting in ${BUILDCHROOT_DIR}"
 
-      # Disable start-stop-daemon
-      sudo mv ${BUILDCHROOT_DIR}/sbin/start-stop-daemon ${BUILDCHROOT_DIR}/sbin/start-stop-daemon.REAL
-      sudo tee ${BUILDCHROOT_DIR}/sbin/start-stop-daemon > /dev/null  << EOF
-#!/bin/sh
-echo
-echo Warning: Fake start-stop-daemon called, doing nothing
-EOF
-      sudo chmod 755 ${BUILDCHROOT_DIR}/sbin/start-stop-daemon
-  fi
+        # Disable start-stop-daemon
+        sudo mv ${BUILDCHROOT_DIR}/sbin/start-stop-daemon ${BUILDCHROOT_DIR}/sbin/start-stop-daemon.REAL
+        sudo tee ${BUILDCHROOT_DIR}/sbin/start-stop-daemon > /dev/null  <<-__EOF__
+			#!/bin/sh
+			echo
+			echo Warning: Fake start-stop-daemon called, doing nothing
+		__EOF__
+        sudo chmod 755 ${BUILDCHROOT_DIR}/sbin/start-stop-daemon
+    fi
 
-  if [ -x "${BUILDCHROOT_DIR}/sbin/initctl" ]; then
-      echo "start-stop-daemon: Trying to prevent daemons from starting in ${BUILDCHROOT_DIR}"
+    if [ -x "${BUILDCHROOT_DIR}/sbin/initctl" ]; then
+        #echo "start-stop-daemon: Trying to prevent daemons from starting in ${BUILDCHROOT_DIR}"
 
-      # Disable initctl
-      sudo mv "${BUILDCHROOT_DIR}/sbin/initctl" "${BUILDCHROOT_DIR}/sbin/initctl.REAL"
-      sudo tee ${BUILDCHROOT_DIR}/sbin/initctl > /dev/null << EOF
-#!/bin/sh
-echo
-echo "Warning: Fake initctl called, doing nothing"
-EOF
-      sudo chmod 755 ${BUILDCHROOT_DIR}/sbin/initctl
-  fi
+        # Disable initctl
+        sudo mv "${BUILDCHROOT_DIR}/sbin/initctl" "${BUILDCHROOT_DIR}/sbin/initctl.REAL"
+        sudo tee ${BUILDCHROOT_DIR}/sbin/initctl > /dev/null <<-__EOF__
+			#!/bin/sh
+			echo
+			echo "Warning: Fake initctl called, doing nothing"
+		__EOF__
+
+        sudo chmod 755 ${BUILDCHROOT_DIR}/sbin/initctl
+    fi
 
   # Define sysvinit policy 101 to prevent daemons from starting in buildchroot
-  if [ -x "${BUILDCHROOT_DIR}/sbin/init" -a ! -f "${BUILDCHROOT_DIR}/usr/sbin/policy-rc.d" ]; then
-    echo "sysvinit: Using policy-rc.d to prevent daemons from starting in ${BUILDCHROOT_DIR}"
+    if [ -x "${BUILDCHROOT_DIR}/sbin/init" -a ! -f "${BUILDCHROOT_DIR}/usr/sbin/policy-rc.d" ]; then
+        echo "sysvinit: Using policy-rc.d to prevent daemons from starting in ${BUILDCHROOT_DIR}"
 
-    sudo tee ${BUILDCHROOT_DIR}/usr/sbin/policy-rc.d > /dev/null << EOF
-#!/bin/sh
-echo "sysvinit: All runlevel operations denied by policy" >&2
-exit 101
-EOF
-    sudo chmod a+x ${BUILDCHROOT_DIR}/usr/sbin/policy-rc.d
-  fi
+        sudo tee ${BUILDCHROOT_DIR}/usr/sbin/policy-rc.d > /dev/null <<-__EOF__
+			#!/bin/sh
+			echo "sysvinit: All runlevel operations denied by policy" >&2
+			exit 101
+		__EOF__
+        sudo chmod a+x ${BUILDCHROOT_DIR}/usr/sbin/policy-rc.d
+    fi
 
-  # Set hostname
-  sudo sh -c 'echo "isar" > ${BUILDCHROOT_DIR}/etc/hostname'
+    # Set hostname
+    sudo sh -c 'echo "isar" > ${BUILDCHROOT_DIR}/etc/hostname'
 
-  # Create packages build folder
-  sudo install -m 0777 -d ${BUILDCHROOT_DIR}/home/builder
+    # Create packages build folder
+    sudo install -m 0777 -d ${BUILDCHROOT_DIR}/home/builder
 
-  # Create deb folder for installing potential dependencies
-  sudo install -m 0777 -d ${BUILDCHROOT_DIR}${CHROOT_DEPLOY_DIR_DEB}
+    # Create deb folder for installing potential dependencies
+    sudo install -m 0777 -d ${BUILDCHROOT_DIR}${CHROOT_DEPLOY_DIR_DEB}
 
-  # Add local apt repository for auto install dependencies
-  sudo install -m 0755 -d ${APT_SRC_DIR}
-  install -m 0755 -d ${DEPLOY_DIR_DEB}/${DISTRO_ARCH}
-  install -m 0755 -d ${DEPLOY_DIR_DEB}/${DEB_HOST_ARCH}
-  sudo sh -c 'echo "deb [ trusted=yes ] file:${CHROOT_DEPLOY_DIR_DEB}/${DEB_HOST_ARCH}/ ./" > ${APT_SRC_FILE}'
-  sudo sh -c 'echo "deb [ trusted=yes ] file:${CHROOT_DEPLOY_DIR_DEB}/${DISTRO_ARCH}/ ./" >> ${APT_SRC_FILE}'
-  touch ${DEPLOY_DIR_DEB}/${DEB_HOST_ARCH}/Packages
-  touch ${DEPLOY_DIR_DEB}/${DISTRO_ARCH}/Packages
+    # Add local apt repository for auto install dependencies
+    sudo install -m 0755 -d ${APT_SRC_DIR}
+    install -m 0755 -d ${DEPLOY_DIR_DEB}/${DISTRO_ARCH}
+    install -m 0755 -d ${DEPLOY_DIR_DEB}/${DEB_HOST_ARCH}
+    sudo sh -c 'echo "deb [ trusted=yes ] file:${CHROOT_DEPLOY_DIR_DEB}/${DEB_HOST_ARCH}/ ./" > ${APT_SRC_FILE}'
+    sudo sh -c 'echo "deb [ trusted=yes ] file:${CHROOT_DEPLOY_DIR_DEB}/${DISTRO_ARCH}/ ./" >> ${APT_SRC_FILE}'
+    touch ${DEPLOY_DIR_DEB}/${DEB_HOST_ARCH}/Packages
+    touch ${DEPLOY_DIR_DEB}/${DISTRO_ARCH}/Packages
 
 
-  # Install host networking settings
-  sudo cp /etc/resolv.conf ${BUILDCHROOT_DIR}/etc
+    # Install host networking settings
+    sudo cp /etc/resolv.conf ${BUILDCHROOT_DIR}/etc
 
 }
 addtask do_setup_buildchroot before do_configure_buildchroot
@@ -163,33 +163,32 @@ do_setup_buildchroot[stamp-extra-info] = "${DISTRO}"
 
 do_configure_buildchroot() {
     # Configure root filesystem
-    echo "LANG=en_US.UTF-8"     >> /etc/default/locale
-    echo "LANGUAGE=en_US.UTF-8" >> /etc/default/locale
-    echo "LC_ALL=C"             >> /etc/default/locale
-    echo "LC_CTYPE=C"           >> /etc/default/locale
-
+	cat<<-__EOF__ > /etc/default/locale
+		LANG=en_US.UTF-8
+		LANGUAGE=en_US.UTF-8
+		LC_ALL=C
+		LC_CTYPE=C
+	__EOF__
 
 
     ## Configuration file for localepurge(8)
-    cat > /etc/locale.nopurge << EOF
+    cat<<-__EOF__ > /etc/locale.nopurge
+		# Remove localized man pages
+		MANDELETE
 
-# Remove localized man pages
-MANDELETE
+		# Delete new locales which appear on the system without bothering you
+		DONTBOTHERNEWLOCALE
 
-# Delete new locales which appear on the system without bothering you
-DONTBOTHERNEWLOCALE
+		# Keep these locales after package installations via apt-get(8)
+		en
+		en_US
+		en_US.UTF-8
+	__EOF__
 
-# Keep these locales after package installations via apt-get(8)
-en
-en_US
-en_US.UTF-8
-EOF
-
-
-    debconf-set-selections <<END
-locales locales/locales_to_be_generated multiselect en_US.UTF-8 UTF-8
-locales locales/default_environment_locale select en_US.UTF-8
-END
+    debconf-set-selections <<-__EOF__
+		locales locales/locales_to_be_generated multiselect en_US.UTF-8 UTF-8
+		locales locales/default_environment_locale select en_US.UTF-8
+	__EOF__
 
     #set up non-interactive configuration
     export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
@@ -199,7 +198,6 @@ END
     /var/lib/dpkg/info/dash.preinst install
 
     #configuring packages
-    dpkg --configure -a
     dpkg --configure -a
     apt-get update
 }

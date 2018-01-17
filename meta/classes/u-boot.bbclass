@@ -7,13 +7,9 @@ MAKE ?= "make ARCH=${TARGET_ARCH}"
 MAKE_class-cross = "make ARCH=${TARGET_ARCH} CROSS_COMPILE=${TARGET_PREFIX}-"
 GENERATE_BOOTSCRIPT ?= ""
 
-DH_SHLIBDEPS="\
-${@bb.utils.contains('CROSS_COMPILE_ENABLED', \
-'true', \
-'dh_shlibdeps -l/usr/arm-linux-gnueabihf/lib/', \
-'dh_shlibdeps', \
-d)} \
-"
+DH_SHLIBDEPS = "dh_shlibdeps"
+DH_SHLIBDEPS_append_class-cross = " -l/usr/arm-linux-gnueabihf/lib/"
+
 
 BOOT="${EXTRACTDIR}/${BOOTSCRIPT_SRC}"
 BOOT_DEVICE_NAME ?= ""

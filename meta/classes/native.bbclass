@@ -13,6 +13,7 @@ S = "${EXTRACTDIR}/${SRC_DIR}"
 DEB_ARCH = "${DEB_HOST_ARCH}"
 
 # Set chroot environment for do build and do_install task
+do_install_depends[id] = "${CROSS_BUILDCHROOT_ID}"
 do_build[id] = "${CROSS_BUILDCHROOT_ID}"
 do_install[id] = "${CROSS_BUILDCHROOT_ID}"
 

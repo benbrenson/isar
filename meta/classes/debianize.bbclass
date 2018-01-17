@@ -209,7 +209,7 @@ addtask do_generate_rules after do_generate_debcontrol before do_dh_make
 do_generate_rules[stamp-extra-info] = "${DISTRO}"
 
 DH_MAKE ?= "dh_make -n --copyright ${LICENSE} -y --createorig --single -t ${EXTRACTDIR}/debian/ -p ${DEB_PKG}"
-do_dh_make(){
+do_dh_make() {
     cd ${S}
 
     rm -f ${BUILDROOT}/${DEB_PKG}${DEB_ORIG_SUFFIX}
@@ -219,7 +219,7 @@ do_dh_make(){
 
     ${DH_MAKE}
 }
-addtask do_dh_make after do_generate_rules before do_build
+addtask do_dh_make after do_generate_rules before do_install_depends
 do_dh_make[stamp-extra-info] = "${DISTRO}"
 
 

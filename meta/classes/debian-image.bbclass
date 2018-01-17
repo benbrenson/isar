@@ -9,8 +9,6 @@ S = "${ROOTFS_DIR}"
 INIT = "${@bb.utils.contains('IMAGE_FEATURES', 'systemd', 'systemd systemd-sysv', 'sysvinit-core sysvinit-utils', d)}"
 IMAGE_PREINSTALL += " ${INIT} "
 IMAGE_INSTALL ?= ""
-
-# Install self-compiled packages
 BOOTLOADER_IMAGE ?= "virtual/bootloader"
 KERNEL_IMAGE ?= "virtual/kernel"
 INITRD_IMAGE ?= "initrd.img"

@@ -69,6 +69,7 @@ u-boot-tools
 bc
 device-tree-compiler
 quilt
+devscripts
 ```
 
 When running docker based builds, the following packages should also be installed:
