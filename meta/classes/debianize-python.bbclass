@@ -18,7 +18,7 @@ DEB_ARCH_CTRL="all"
 do_install_depends_pip() {
 	cd ${PPS}
 	if [ -e "setup.py" ]; then
-		pip${PYTHON_VERSION} install -I --root ${S}/debian/${BPN} -e .
+		pip${PYTHON_VERSION} install -I --root ${PPS}/debian/${BPN} -e .
 	fi
 }
 addtask do_install_depends_pip after do_install_depends before do_build
