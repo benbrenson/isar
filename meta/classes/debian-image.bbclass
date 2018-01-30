@@ -34,11 +34,6 @@ SRC_URI += "file://${IMAGE_LAYOUT_FILE} \
             file://multistrap-isar-upstream.list.in"
 
 
-#do_setup_rootfs_prepend() {
-#	cache_disable_remote_repos ${ROOT_DIR}
-#}
-
-
 do_configure_rootfs_append() {
     cat<<-__EOF__ >  /${sysconfdir}/fstab
 		# Begin /etc/fstab
@@ -95,8 +90,10 @@ python do_post_rootfs() {
 addtask do_post_rootfs after do_configure_rootfs before do_package_tunes
 
 
+#
+# Do late configurations related to the local apt caches
+#
 do_finalize_cache() {
-
     # Only create upstream list file, when fetching packages from the cache.
     # On the very first build, those upstream sections are already created by multistrap
     if [ -e "${ISAR_FIRST_BUILD_DONE}" ] && [ "${REPRODUCIBLE_BUILD_ENABLED}" == "1" ]; then
@@ -110,8 +107,6 @@ do_finalize_cache() {
         sudo install -m 644 ${WORKDIR}/multistrap-isar-upstream.list \
                      ${ROOT_DIR}/${sysconfdir}/apt/sources.list.d/
     fi
-
-
 
     sudo rm -f ${ROOT_DIR}/${sysconfdir}/apt/sources.list.d/multistrap-${DISTRO_CACHE_SECTION}.list
 

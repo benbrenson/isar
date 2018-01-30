@@ -66,17 +66,7 @@ do_install_keyrings() {
 }
 
 
-#
-# When one build was successful, the complete cache was build.
-# This means we can now remove DISTRO_MULTICONF_BOOTSTRAP since
-# "Isar" section will now contain all required packages.
-#
 do_rootfs() {
-
-    #sudo mkdir -p ${ROOT_DIR}/${sysconfdir}/apt/sources.list.d/
-    # Copy config files
-    #install -m 644 ${FILESDIR}/multistrap.conf.in ${WORKDIR}/multistrap.conf
-    #install -m 644 ${FILESDIR}/multistrap-${DISTRO_CACHE_SECTION}.list.in ${WORKDIR}/multistrap-${DISTRO_CACHE_SECTION}.list
 
     # Adjust multistrap config
     sed -e 's|##INSTALL##|${INSTALL}|g' \
@@ -225,8 +215,6 @@ stage_packages() {
 }
 
 
-#cache_add_package ${ROOT_DIR}/var/cache/apt/archives/*.deb
-#sudo rm -rf ${ROOT_DIR}/var/cache/apt/archives/*.deb
 do_install() {
     stage_packages ${ROOT_DIR} ${CACHE_STAGING_DIR}/
 }
