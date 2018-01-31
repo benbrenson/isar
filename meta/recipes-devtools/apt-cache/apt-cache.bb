@@ -14,6 +14,10 @@ do_cache_setup() {
     # Very first build of isar. Setting up the cache.
     if [ ! -e "${CFG_FILE}" ]; then
         bbplain "Creating local apt cache for first build."
+
+        # Check if aptly is installed
+        aptly version
+
         sed -e 's|##CACHE_DIR##|${CACHE_DIR}|' \
             ${FILESDIR}/${CACHE_CFG_FILE}.in > ${CFG_FILE} || rm ${CFG_FILE}
 
