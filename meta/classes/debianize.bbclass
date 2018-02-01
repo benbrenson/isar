@@ -218,6 +218,10 @@ do_dh_make() {
     rm -f ${BUILDROOT}/${DEB_PKG}-*.dsc
 
     ${DH_MAKE}
+
+    # dh_make return 0, even in error cases (e.g. unknown option).
+    # In those cases the required debian folder is not created.
+    [ -e "${S}/debian" ] || bbfatal "dh_make failed"
 }
 addtask do_dh_make after do_generate_rules before do_install_depends
 do_dh_make[stamp-extra-info] = "${DISTRO}"

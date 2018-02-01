@@ -7,8 +7,6 @@ PYTHON_VERSION ?= ""
 DEB_DEPENDS += "python3-wheel"
 DEB_RDEPENDS += "${python3:Depends}"
 
-DH_MAKE = "dh_make -n --copyright ${LICENSE} -y --createorig --python -t ${EXTRACTDIR}/debian/ -p ${DEB_PKG}"
-
 DEB_ARCH_CTRL="all"
 
 
