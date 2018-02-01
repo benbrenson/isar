@@ -41,6 +41,7 @@ Isar provides:
  add support of layering those defined tasks.
  - Build images with docker.
  - Linux Firmware update with swupdate (meta-swupdate required).
+ - Support for reproducible builds (by caching all fetched debian packages).
 
 
 ---
