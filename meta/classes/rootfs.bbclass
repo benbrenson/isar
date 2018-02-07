@@ -68,6 +68,15 @@ do_install_keyrings() {
 
 do_rootfs() {
 
+	# Fix errors due to non authorized package repository.
+	# Isar local repository is not signed and it makes no sence
+	# when doing so...
+    sudo mkdir -p ${ROOT_DIR}/${sysconfdir}/apt/apt.conf.d
+    cat<<-__EOF__ | sudo tee ${ROOT_DIR}/${sysconfdir}/apt/apt.conf.d/01unprivileged
+		Acquire::AllowInsecureRepositories "true";
+		APT::Get::AllowUnauthenticated "true";
+	__EOF__
+
     # Adjust multistrap config
     sed -e 's|##INSTALL##|${INSTALL}|g' \
         -e 's|##DISTRO_APT_SOURCE##|${DISTRO_APT_SOURCE}|g' \
