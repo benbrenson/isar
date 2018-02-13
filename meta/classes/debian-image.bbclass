@@ -147,6 +147,8 @@ python do_image_swupdate() {
                 filebasename= fn.replace('.%s' % datetime, '')
                 files='sw-description %s' % fn
                 ret = subprocess.call('bash -c "for i in %s ; do echo \$i ; done | cpio -ovL -H crc >  %s/%s.swu"' % (files, swupdate_deploy_dir, fn), shell=True)
+                if ret:
+                    bb.warn("Creating swu file returned a non-zero exit status.")
 
                 try:
                     os.unlink('%s/%s.swu' % (swupdate_deploy_dir, filebasename))

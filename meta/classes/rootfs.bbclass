@@ -220,7 +220,7 @@ do_configure_rootfs[id] = "${CHROOT_ID}"
 
 
 stage_packages() {
-    sudo find . -name "*.deb" -exec mv '{}' $2 \;
+    sudo find $1 -name "*.deb" -exec mv '{}' $2 \;
 }
 
 
