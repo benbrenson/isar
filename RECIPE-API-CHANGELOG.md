@@ -629,3 +629,11 @@ into kernel kbuild package.
     Only the "host" specific package is built automatically at cross builds.
 
   * Support emulated module build with cross-compiled kernel for linux-module
+
+### Change DEPLOY_DIR_IMAGE
+Change DEPLOY_DIR_IMAGE from ${DEPLOY_DIR}/images/${MACHINE} to
+${DEPLOY_DIR}/images/${MACHINE}-${DISTRO}. When building different distros
+with the same machine the following error occurs:
+do_copy_boot_files: The recipe isar-image-base is trying to install files
+into a shared area when those files already exists. It happens when some
+files have the same names (e.g., dtb files) for different distros.
