@@ -192,7 +192,9 @@ class NoCrossTest(CIBaseTest):
             'mc:qemuamd64-bullseye:isar-initramfs',
             'mc:qemumipsel-bullseye:isar-image-base',
             'mc:imx6-sabrelite-bullseye:isar-image-base',
+            'mc:imx6-sabrelite-bullseye:isar-image-debug',
             'mc:phyboard-mira-bullseye:isar-image-base',
+            'mc:phyboard-mira-bullseye:isar-image-debug',
             'mc:hikey-bullseye:isar-image-base',
             'mc:virtualbox-bullseye:isar-image-base',
             'mc:virtualbox-bookworm:isar-image-base',
@@ -252,6 +254,7 @@ class NoCrossTest(CIBaseTest):
             'mc:qemuriscv64-sid:isar-image-base',
             'mc:sifive-fu540-sid:isar-image-base',
             'mc:starfive-visionfive2-sid:isar-image-base',
+            'mc:starfive-visionfive2-sid:isar-image-debug',
                   ]
 
         self.init()
