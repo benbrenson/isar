@@ -112,7 +112,10 @@ dpkg_runbuild() {
 
     DSC_FILE=$(find ${WORKDIR} -maxdepth 1 -name "${DEBIAN_SOURCE}_*.dsc" -print)
 
+    chroot_name="${SBUILD_CHROOT}"
+    echo "Starting sbuild with chroot ${chroot_name}..."
     sbuild -A -n -c ${SBUILD_CHROOT} \
+        -D -v \
         --host=${PACKAGE_ARCH} --build=${BUILD_ARCH} ${profiles} \
         --no-run-lintian --no-run-piuparts --no-run-autopkgtest --resolve-alternatives \
         --bd-uninstallable-explainer=apt \

@@ -16,7 +16,7 @@ SBUILD_CONFIG="${WORKDIR}/sbuild.conf"
 
 schroot_create_configs() {
     mkdir -p "${TMPDIR}/schroot-overlay"
-    echo "Creating ${SCHROOT_CONF_FILE}"
+    echo "Creating ${SCHROOT_CONF_FILE} for ${SCHROOT_DIR}"
     sudo -s <<'EOSUDO'
         set -e
 
@@ -61,6 +61,7 @@ schroot_delete_configs() {
             rm -rf "${SBUILD_CONF_DIR}"
         fi
         echo "Removing ${SCHROOT_CONF_FILE}"
+        cat "${SCHROOT_CONF_FILE}"
         rm -f "${SCHROOT_CONF_FILE}"
 EOSUDO
 }
