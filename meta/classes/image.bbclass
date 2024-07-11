@@ -332,6 +332,7 @@ do_copy_boot_files[cleandirs] += "${DEPLOYDIR}"
 do_copy_boot_files[sstate-inputdirs] = "${DEPLOYDIR}"
 do_copy_boot_files[sstate-outputdirs] = "${DEPLOY_DIR_IMAGE}"
 do_copy_boot_files[network] = "${TASK_USE_SUDO}"
+do_copy_boot_files[depends] = "dtb-files-${MACHINE}:do_deploy"
 do_copy_boot_files() {
     kernel="$(realpath -q '${IMAGE_ROOTFS}'/vmlinu[xz])"
     if [ ! -f "$kernel" ]; then
