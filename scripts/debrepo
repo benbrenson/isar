@@ -419,8 +419,9 @@ class DebRepo(object):
         progress = apt.progress.text.AcquireProgress()
 
         self.cache = apt_pkg.Cache()
-        self.cache.update(progress, sources)
-        self.cache = apt_pkg.Cache()
+        if init:
+            self.cache.update(progress, sources)
+            self.cache = apt_pkg.Cache()
 
         if self.extrarepo:
             os.remove(f"{self.workdir}/etc/apt/sources.list.d/extrarepo.list")
