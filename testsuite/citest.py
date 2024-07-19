@@ -522,3 +522,24 @@ class VmBootTestFull(CIBaseTest):
         self.init()
         self.vm_start('mipsel','bookworm', image='isar-image-ci',
                       script='test_kernel_module.sh example_module')
+
+
+    def test_amd64_bookworm_prebuilt_containers(self):
+        self.init()
+        self.vm_start('amd64', 'bookworm', image='isar-image-ci',
+                      cmd='echo root | su -c \'' \
+                          'PATH=\$PATH:/usr/sbin;' \
+                          'for n in \$(seq 30); do docker images | grep -q alpine && break; sleep 10; done;' \
+                          'docker run --rm quay.io/libpod/alpine:3.10.2 true && ' \
+                          'for n in \$(seq 30); do podman images | grep -q alpine && break; sleep 10; done;' \
+                          'podman run --rm quay.io/libpod/alpine:latest true\'')
+
+    def test_arm64_bookworm_prebuilt_containers(self):
+        self.init()
+        self.vm_start('arm64', 'bookworm', image='isar-image-ci',
+                      cmd='echo root | su -c \'' \
+                          'PATH=\$PATH:/usr/sbin;' \
+                          'for n in \$(seq 30); do docker images | grep -q alpine && break; sleep 10; done;' \
+                          'docker run --rm quay.io/libpod/alpine:3.10.2 true && ' \
+                          'for n in \$(seq 30); do podman images | grep -q alpine && break; sleep 10; done;' \
+                          'podman run --rm quay.io/libpod/alpine:latest true\'')
